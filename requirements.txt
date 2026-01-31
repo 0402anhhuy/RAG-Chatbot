@@ -1,0 +1,24 @@
+# Core LangChain
+langchain>=0.2.6
+langchain-community>=0.2.6
+langchain-huggingface>=0.0.3
+
+# Vector Store
+faiss-cpu>=1.8.0
+
+# Embeddings (Local)
+sentence-transformers>=2.6.1
+torch>=2.1.0
+
+# Google Gemini (LLM)
+langchain-google-genai>=1.0.5
+google-genai>=0.3.0
+google-generativeai>=0.7.0
+
+# Document loaders
+pypdf>=4.0.0
+unstructured>=0.12.0
+
+# Utils
+python-dotenv>=1.0.1
+tqdm>=4.66.0
