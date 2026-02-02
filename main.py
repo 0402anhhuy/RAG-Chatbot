@@ -5,26 +5,25 @@ from domain.chunking import chunk_documents
 from retrieval.retriever import build_vectorstore, get_retriever
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
+from debug.print_utils import print_chunks_table
 from utils.config import CHAT_MODEL, GOOGLE_API_KEY
 
 
 def main():
-    pdf_dir = r"D:\AnhHuy\Code\Project\RAG_Chatbot\data\pdf"
+    pdf_dir = r"D:\AnhHuy\Code\Project\RAG_Chatbot\data\pdfs"
 
     # INGESTION
     print("📄 Loading PDFs...")
     documents = load_pdfs_from_dir(pdf_dir)
 
-    print("✂️ Chunking documents...")
     chunks = chunk_documents(documents)
-
-    print(chunks)
-
+    print_chunks_table(chunks)
+    
     print("📦 Building vector database...")
     vectorstore = build_vectorstore(chunks)
     retriever = get_retriever(vectorstore)
 
-    print(vectorstore)
+    print(retriever)
 
     # LLM
     llm = ChatGoogleGenerativeAI(
