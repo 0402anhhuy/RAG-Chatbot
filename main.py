@@ -19,7 +19,7 @@ def main():
     chunks = chunk_documents(documents)
     print_chunks_table(chunks)
     
-    print("📦 Building vector database...")
+    print("Building vector database...")
     vectorstore = build_vectorstore(chunks)
     retriever = get_retriever(vectorstore)
     
