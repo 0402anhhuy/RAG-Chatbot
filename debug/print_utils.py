@@ -1,5 +1,6 @@
 from tabulate import tabulate
 
+
 def print_chunks_table(chunks, max_len=120):
     table = []
 
