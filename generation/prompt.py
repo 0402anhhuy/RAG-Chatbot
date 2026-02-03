@@ -8,10 +8,8 @@ def get_rag_prompt():
         Answer the question ONLY using the context below.
         If the answer is not in the context, say you don't know.
 
-        Context:
-        {context}
+        Context: {context}
 
-        Question:
-        {question}
+        Question: {question}
         """
     )
