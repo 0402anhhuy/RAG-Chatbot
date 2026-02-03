@@ -22,9 +22,7 @@ def main():
     print("📦 Building vector database...")
     vectorstore = build_vectorstore(chunks)
     retriever = get_retriever(vectorstore)
-
-    print(retriever)
-
+    
     # LLM
     llm = ChatGoogleGenerativeAI(
         model=CHAT_MODEL,
