@@ -129,7 +129,7 @@ if process_pdf_btn:
         st.sidebar.success("PDF processed successfully!")
 
 # ---------------- LLM ----------------
-CHAT_MODEL = "models/gemini-2.5-flash"
+CHAT_MODEL = "gemini-2.5-flash"
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 
 st.sidebar.info(GOOGLE_API_KEY)
