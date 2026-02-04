@@ -30,14 +30,14 @@ if "flashcards" not in st.session_state:
 
 
 # ---------------- Sidebar ----------------
-st.sidebar.title("📂 Dashboard")
+st.sidebar.title("Dashboard")
 
 uploaded_file = st.sidebar.file_uploader(
     "Upload a PDF file",
     type=["pdf"]
 )
 
-generate_flashcard_btn = st.sidebar.button("🃏 Generate Flashcards")
+generate_flashcard_btn = st.sidebar.button("Generate Flashcards")
 
 
 # ---------------- Main UI ----------------
@@ -62,7 +62,7 @@ if uploaded_file:
             st.session_state.chunks = chunks
             st.session_state.retriever = retriever
 
-    st.success("✅ PDF indexed successfully!")
+    st.success("PDF indexed successfully!")
 
 
 # ---------------- LLM ----------------
@@ -94,7 +94,7 @@ if generate_flashcard_btn:
 
 # ---------------- Flashcard UI ----------------
 if st.session_state.flashcards:
-    st.markdown("## 🃏 Flashcards")
+    st.markdown("## Flashcards")
 
     for i, card in enumerate(st.session_state.flashcards):
         with st.expander(f"{i+1}. {card['question']}"):
@@ -104,7 +104,7 @@ if st.session_state.flashcards:
 
 # ---------------- Chat Section ----------------
 st.markdown("---")
-st.markdown("## 💬 Ask Questions")
+st.markdown("## Ask Questions")
 
 question = st.text_input("Ask a question about the document")
 
