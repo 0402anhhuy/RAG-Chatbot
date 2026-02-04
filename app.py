@@ -47,8 +47,6 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    st.markdown("---")
-
     st.markdown("## Document")
 
     process_pdf_btn = st.button(
@@ -56,8 +54,6 @@ with st.sidebar:
         use_container_width=True,
         disabled=st.session_state.pdf_processed
     )
-
-    st.markdown("---")
 
     st.markdown("## Study Modes")
 
