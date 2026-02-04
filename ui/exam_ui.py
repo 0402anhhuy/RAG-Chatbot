@@ -23,7 +23,7 @@ def render_exam(questions):
 
         st.markdown("---")
 
-    if st.button("✅ Submit Exam"):
+    if st.button("Submit Exam"):
         for i, q in enumerate(questions):
             if user_answers.get(i) == "":
                 continue
@@ -35,4 +35,4 @@ def render_exam(questions):
         with st.expander("📘 Review Answers"):
             for i, q in enumerate(questions):
                 st.markdown(f"**Q{i+1}: {q['question']}**")
-                st.write(f"✅ Correct answer: {q['correct_answer']}")
+                st.markdown(f"## Correct answer: {q['correct_answer']}")
