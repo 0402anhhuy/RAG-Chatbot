@@ -47,6 +47,8 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
+    st.markdown("---")
+
     st.markdown("## Document")
 
     process_pdf_btn = st.button(
