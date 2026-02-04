@@ -1,64 +1,80 @@
 import streamlit as st
 import tempfile
 import os
+import time
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from loaders.pdf_loader import load_pdfs_from_dir
 from domain.chunking import chunk_documents
 from retrieval.retriever import build_vectorstore, get_retriever
+
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
 from generation.flashcard import generate_flashcards
 from generation.exam import generate_exam_questions
+
 from ui.exam_ui import render_exam
 
 
-# ---------------- Page Config ----------------
+# ================= PAGE CONFIG =================
 st.set_page_config(
     page_title="RAG PDF Study App",
     layout="wide"
 )
 
-# ---------------- Session State ----------------
-if "pdf_processed" not in st.session_state:
-    st.session_state.pdf_processed = False
 
-if "chunks" not in st.session_state:
-    st.session_state.chunks = []
-
-if "retriever" not in st.session_state:
-    st.session_state.retriever = None
-
-if "flashcards" not in st.session_state:
-    st.session_state.flashcards = []
-
-if "exam_questions" not in st.session_state:
-    st.session_state.exam_questions = []
+# ================= CONSTANTS =================
+CHAT_MODEL = "models/gemini-1.5-flash"   # ✅ STABLE
+MAX_CONTEXT_CHARS = 6000
 
 
-# ---------------- Sidebar ----------------
+# ================= SESSION STATE =================
+def init_state():
+    defaults = {
+        "pdf_processed": False,
+        "chunks": [],
+        "retriever": None,
+        "flashcards": [],
+        "exam_questions": [],
+        "uploaded_file_name": None
+    }
+    for k, v in defaults.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
+
+init_state()
+
+
+# ================= SIDEBAR =================
 with st.sidebar:
     st.markdown("## 📂 PDF Workspace")
 
     uploaded_file = st.file_uploader(
-        "Upload a PDF file",
+        "Upload PDF",
         type=["pdf"],
         label_visibility="collapsed"
     )
 
-    st.markdown("---")
+    # detect NEW file upload → reset state
+    if uploaded_file and uploaded_file.name != st.session_state.uploaded_file_name:
+        st.session_state.uploaded_file_name = uploaded_file.name
+        st.session_state.pdf_processed = False
+        st.session_state.chunks = []
+        st.session_state.retriever = None
+        st.session_state.flashcards = []
+        st.session_state.exam_questions = []
 
+    st.markdown("---")
     st.markdown("## ⚙️ Document")
 
     process_pdf_btn = st.button(
         "📄 Process PDF",
         use_container_width=True,
-        disabled=st.session_state.pdf_processed
+        disabled=st.session_state.pdf_processed or not uploaded_file
     )
 
     st.markdown("---")
-
     st.markdown("## 📚 Study Modes")
 
     col1, col2 = st.columns(2)
@@ -78,123 +94,117 @@ with st.sidebar:
         )
 
     st.markdown("---")
-
     st.markdown("## ℹ️ Status")
 
     if st.session_state.pdf_processed:
         st.success("PDF processed")
         st.caption(f"📄 Chunks: {len(st.session_state.chunks)}")
     else:
-        st.info("No PDF processed yet")
+        st.info("No PDF processed")
 
     if st.button("♻️ Reset", use_container_width=True):
-        for key in [
-            "pdf_processed",
-            "chunks",
-            "retriever",
-            "flashcards",
-            "exam_questions"
-        ]:
-            st.session_state.pop(key, None)
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.rerun()
 
 
+# ================= MAIN =================
+st.title("📘 RAG PDF Study Assistant")
+st.caption("Chat with your PDF or study using flashcards & exams")
 
-# ---------------- Load & Index PDF ----------------
+
+# ================= PROCESS PDF =================
 if process_pdf_btn:
-    if not uploaded_file:
-        st.sidebar.warning("Please upload a PDF first.")
-    else:
-        with st.spinner("Processing PDF..."):
-            with tempfile.TemporaryDirectory() as tmpdir:
-                pdf_path = os.path.join(tmpdir, uploaded_file.name)
-                with open(pdf_path, "wb") as f:
-                    f.write(uploaded_file.read())
+    with st.spinner("Processing PDF..."):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pdf_path = os.path.join(tmpdir, uploaded_file.name)
+            with open(pdf_path, "wb") as f:
+                f.write(uploaded_file.read())
 
-                documents = load_pdfs_from_dir(tmpdir)
-                chunks = chunk_documents(documents)
+            documents = load_pdfs_from_dir(tmpdir)
+            chunks = chunk_documents(documents)
 
-                vectorstore = build_vectorstore(chunks)
-                retriever = get_retriever(vectorstore)
+            vectorstore = build_vectorstore(chunks)
+            retriever = get_retriever(vectorstore)
 
-                # LƯU STATE
-                st.session_state.chunks = chunks
-                st.session_state.retriever = retriever
-                st.session_state.pdf_processed = True
+            st.session_state.chunks = chunks
+            st.session_state.retriever = retriever
+            st.session_state.pdf_processed = True
+            st.session_state.flashcards = []
+            st.session_state.exam_questions = []
 
-                # reset data phụ
-                st.session_state.flashcards = []
-                st.session_state.exam_questions = []
-
-        st.sidebar.success("PDF processed successfully!")
-
-# ---------------- LLM ----------------
-CHAT_MODEL = "models/gemini-2.5-flash"
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-
-llm = ChatGoogleGenerativeAI(
-    model=CHAT_MODEL,
-    google_api_key=GOOGLE_API_KEY,
-    temperature=0.3
-)
+    msg = st.sidebar.success("PDF processed successfully!")
+    time.sleep(5)
+    msg.empty()
 
 
-# ---------------- Flashcard Generation ----------------
+# ================= FLASHCARDS =================
 if generate_flashcard_btn:
-    if not st.session_state.chunks:
-        st.warning("Please upload a PDF first.")
-    else:
-        with st.spinner("Generating flashcards from entire document..."):
-            flashcards = generate_flashcards(
-                llm=llm,
-                chunks=st.session_state.chunks
-            )
+    with st.spinner("Generating flashcards..."):
+        llm = ChatGoogleGenerativeAI(
+            model=CHAT_MODEL,
+            google_api_key=st.secrets["GOOGLE_API_KEY"],
+            temperature=0.3,
+            max_output_tokens=800
+        )
 
-            st.session_state.flashcards = flashcards
+        st.session_state.flashcards = generate_flashcards(
+            llm=llm,
+            chunks=st.session_state.chunks
+        )
 
-        st.success(f"Created {len(flashcards)} flashcards!")
+    st.success(f"🧠 Created {len(st.session_state.flashcards)} flashcards")
 
 
-# ---------------- Flashcard UI ----------------
 if st.session_state.flashcards:
-    st.markdown("## Flashcards")
-    if not st.session_state.pdf_processed:
-        st.warning("Please process a PDF first.")
-    else:
-        for i, card in enumerate(st.session_state.flashcards):
-            with st.expander(f"{i+1}. {card['question']}"):
-                st.markdown(card["answer"])
-                st.caption(f"📄 Source page: {card.get('page', 'N/A')}")
-    
+    st.markdown("## 🧠 Flashcards")
+    for i, card in enumerate(st.session_state.flashcards):
+        with st.expander(f"{i+1}. {card['question']}"):
+            st.markdown(card["answer"])
+            st.caption(f"📄 Page: {card.get('page', 'N/A')}")
 
-# ---------------- Exam UI ---------------------
+
+# ================= EXAM =================
 if generate_exam_btn:
-    if not st.session_state.chunks:
-        st.warning("Please upload a PDF first.")
-    else:
-        with st.spinner("Generating exam questions..."):
-            exam_questions = generate_exam_questions(
-                llm=llm,
-                chunks=st.session_state.chunks
-            )
+    with st.spinner("Generating exam questions..."):
+        llm = ChatGoogleGenerativeAI(
+            model=CHAT_MODEL,
+            google_api_key=st.secrets["GOOGLE_API_KEY"],
+            temperature=0.3,
+            max_output_tokens=1200
+        )
 
-            st.session_state.exam_questions = exam_questions
+        st.session_state.exam_questions = generate_exam_questions(
+            llm=llm,
+            chunks=st.session_state.chunks
+        )
 
-        st.success(f"📝 Created {len(exam_questions)} exam questions!")
+    st.success(f"📝 Created {len(st.session_state.exam_questions)} questions")
+
 
 if st.session_state.exam_questions:
     render_exam(st.session_state.exam_questions)
 
-# ---------------- Chat Section ----------------
+
+# ================= CHAT =================
 st.markdown("---")
-st.markdown("## Ask Questions")
+st.markdown("## 💬 Ask Questions")
 
 question = st.text_input("Ask a question about the document")
 
 if question and st.session_state.retriever:
     with st.spinner("Thinking..."):
         docs = st.session_state.retriever.invoke(question)
+
         context = "\n\n".join(d.page_content for d in docs)
+        context = context[:MAX_CONTEXT_CHARS]  # 🔥 FIX TOKEN
+
+        llm = ChatGoogleGenerativeAI(
+            model=CHAT_MODEL,
+            google_api_key=st.secrets["GOOGLE_API_KEY"],
+            temperature=0.3,
+            max_output_tokens=512
+        )
 
         answer = generate_answer(
             llm=llm,
