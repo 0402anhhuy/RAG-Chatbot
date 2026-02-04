@@ -7,7 +7,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from loaders.pdf_loader import load_pdfs_from_dir
 from domain.chunking import chunk_documents
 from retrieval.retriever import build_vectorstore, get_retriever
-
+from ui.flashcard_ui import render_flashcards
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
 from generation.flashcard import generate_flashcards
