@@ -2,7 +2,7 @@ import streamlit as st
 
 
 def render_exam(questions):
-    st.markdown("## 📝 Exam Mode")
+    st.markdown("## Exam")
 
     score = 0
     user_answers = {}
@@ -30,9 +30,9 @@ def render_exam(questions):
             if user_answers.get(i) == q["correct_answer"]:
                 score += 1
 
-        st.success(f"🎯 Your score: {score} / {len(questions)}")
+        st.success(f"Your score: {score} / {len(questions)}")
 
         with st.expander("📘 Review Answers"):
             for i, q in enumerate(questions):
                 st.markdown(f"**Q{i+1}: {q['question']}**")
-                st.markdown(f"*Correct answer: {q['correct_answer']}*")
+                st.markdown(f"**Correct answer: {q['correct_answer']}**")
