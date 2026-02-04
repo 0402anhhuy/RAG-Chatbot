@@ -21,9 +21,6 @@ st.set_page_config(
 )
 
 # ---------------- Session State ----------------
-if "uploaded_pdf" not in st.session_state:
-    st.session_state.uploaded_pdf = None
-
 if "pdf_processed" not in st.session_state:
     st.session_state.pdf_processed = False
 
@@ -42,7 +39,7 @@ if "exam_questions" not in st.session_state:
 
 # ---------------- Sidebar ----------------
 with st.sidebar:
-    st.markdown("## PDF Workspace")
+    st.markdown("## 📂 PDF Workspace")
 
     uploaded_file = st.file_uploader(
         "Upload a PDF file",
@@ -50,40 +47,47 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    if uploaded_file is not None:
-        st.session_state.uploaded_pdf = uploaded_file
-
     st.markdown("---")
 
-    st.markdown("## Document")
+    st.markdown("## ⚙️ Document")
 
     process_pdf_btn = st.button(
-        "Process PDF",
+        "📄 Process PDF",
         use_container_width=True,
         disabled=st.session_state.pdf_processed
     )
 
-    st.markdown("## Study Modes")
+    st.markdown("---")
+
+    st.markdown("## 📚 Study Modes")
 
     col1, col2 = st.columns(2)
 
     with col1:
         generate_flashcard_btn = st.button(
-            "Flashcards",
+            "🧠 Flashcards",
             use_container_width=True,
             disabled=not st.session_state.pdf_processed
         )
 
     with col2:
         generate_exam_btn = st.button(
-            "Exam",
+            "📝 Exam",
             use_container_width=True,
             disabled=not st.session_state.pdf_processed
         )
 
     st.markdown("---")
 
-    if st.button("Reset", use_container_width=True):
+    st.markdown("## ℹ️ Status")
+
+    if st.session_state.pdf_processed:
+        st.success("PDF processed")
+        st.caption(f"📄 Chunks: {len(st.session_state.chunks)}")
+    else:
+        st.info("No PDF processed yet")
+
+    if st.button("♻️ Reset", use_container_width=True):
         for key in [
             "pdf_processed",
             "chunks",
@@ -94,10 +98,6 @@ with st.sidebar:
             st.session_state.pop(key, None)
         st.rerun()
 
-
-# ---------------- Main UI ----------------
-st.title("📘 RAG PDF Study Assistant")
-st.caption("Chat with your PDF or study using flashcards")
 
 
 # ---------------- Load & Index PDF ----------------
@@ -127,7 +127,6 @@ if process_pdf_btn:
                 st.session_state.exam_questions = []
 
         st.sidebar.success("PDF processed successfully!")
-
 
 # ---------------- LLM ----------------
 CHAT_MODEL = "models/gemini-2.5-flash"
