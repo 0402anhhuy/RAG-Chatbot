@@ -11,8 +11,6 @@ from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
 from generation.flashcard import generate_flashcards
 
-from utils.config import CHAT_MODEL, GOOGLE_API_KEY
-
 
 # ---------------- Page Config ----------------
 st.set_page_config(
@@ -68,6 +66,9 @@ if uploaded_file:
 
 
 # ---------------- LLM ----------------
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+CHAT_MODEL = "models/gemini-2.5-flash"
+
 llm = ChatGoogleGenerativeAI(
     model=CHAT_MODEL,
     google_api_key=GOOGLE_API_KEY,
