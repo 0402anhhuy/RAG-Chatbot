@@ -38,16 +38,65 @@ if "exam_questions" not in st.session_state:
 
 
 # ---------------- Sidebar ----------------
-st.sidebar.title("Dashboard")
+with st.sidebar:
+    st.markdown("## 📂 PDF Workspace")
 
-uploaded_file = st.sidebar.file_uploader(
-    "Upload a PDF file",
-    type=["pdf"]
-)
+    uploaded_file = st.file_uploader(
+        "Upload a PDF file",
+        type=["pdf"],
+        label_visibility="collapsed"
+    )
 
-process_pdf_btn = st.sidebar.button("Process PDF")
-generate_flashcard_btn = st.sidebar.button("Generate Flashcards")
-generate_exam_btn = st.sidebar.button("Generate Exam")
+    st.markdown("---")
+
+    st.markdown("## ⚙️ Document")
+
+    process_pdf_btn = st.button(
+        "📄 Process PDF",
+        use_container_width=True,
+        disabled=st.session_state.pdf_processed
+    )
+
+    st.markdown("---")
+
+    st.markdown("## 📚 Study Modes")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        generate_flashcard_btn = st.button(
+            "🧠 Flashcards",
+            use_container_width=True,
+            disabled=not st.session_state.pdf_processed
+        )
+
+    with col2:
+        generate_exam_btn = st.button(
+            "📝 Exam",
+            use_container_width=True,
+            disabled=not st.session_state.pdf_processed
+        )
+
+    st.markdown("---")
+
+    st.markdown("## ℹ️ Status")
+
+    if st.session_state.pdf_processed:
+        st.success("PDF processed")
+        st.caption(f"📄 Chunks: {len(st.session_state.chunks)}")
+    else:
+        st.info("No PDF processed yet")
+
+    if st.button("♻️ Reset", use_container_width=True):
+        for key in [
+            "pdf_processed",
+            "chunks",
+            "retriever",
+            "flashcards",
+            "exam_questions"
+        ]:
+            st.session_state.pop(key, None)
+        st.rerun()
 
 
 # ---------------- Main UI ----------------
