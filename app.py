@@ -66,8 +66,8 @@ if uploaded_file:
 
 
 # ---------------- LLM ----------------
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 CHAT_MODEL = "models/gemini-2.5-flash"
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 
 llm = ChatGoogleGenerativeAI(
     model=CHAT_MODEL,
