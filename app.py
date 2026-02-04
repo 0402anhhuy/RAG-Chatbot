@@ -102,10 +102,12 @@ st.caption("Chat with your PDF or study using flashcards")
 
 # ---------------- Load & Index PDF ----------------
 if process_pdf_btn:
-    if not uploaded_file:
+    if st.session_state.uploaded_pdf is None:
         st.sidebar.warning("Please upload a PDF first.")
     else:
         with st.spinner("Processing PDF..."):
+            uploaded_file = st.session_state.uploaded_pdf
+
             with tempfile.TemporaryDirectory() as tmpdir:
                 pdf_path = os.path.join(tmpdir, uploaded_file.name)
                 with open(pdf_path, "wb") as f:
