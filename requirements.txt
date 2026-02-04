@@ -17,7 +17,7 @@ google-generativeai>=0.7.0
 
 # Document loaders (PIN VERSION)
 pypdf>=4.0.0
-unstructured==0.10.30
+unstructured==0.18.18
 
 # Utils
 python-dotenv>=1.0.1
