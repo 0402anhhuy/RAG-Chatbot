@@ -35,4 +35,4 @@ def render_exam(questions):
         with st.expander("📘 Review Answers"):
             for i, q in enumerate(questions):
                 st.markdown(f"**Q{i+1}: {q['question']}**")
-                st.markdown(f"## Correct answer: {q['correct_answer']}")
+                st.markdown(f"*Correct answer: {q['correct_answer']}*")
