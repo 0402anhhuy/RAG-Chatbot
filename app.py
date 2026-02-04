@@ -16,6 +16,13 @@ from generation.exam import generate_exam_questions
 
 from ui.exam_ui import render_exam
 
+if "GOOGLE_API_KEY" in st.secrets:
+    key = st.secrets["GOOGLE_API_KEY"]
+    st.sidebar.info(
+        f"GOOGLE_API_KEY loaded ✅ ({key[:4]}****{key[-4:]})"
+    )
+else:
+    st.sidebar.error("❌ GOOGLE_API_KEY not found in st.secrets")
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
