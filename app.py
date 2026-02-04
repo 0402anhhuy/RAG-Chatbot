@@ -10,6 +10,8 @@ from retrieval.retriever import build_vectorstore, get_retriever
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
 from generation.flashcard import generate_flashcards
+from generation.exam import generate_exam_questions
+from ui.exam_ui import render_exam
 
 
 # ---------------- Page Config ----------------
@@ -19,6 +21,9 @@ st.set_page_config(
 )
 
 # ---------------- Session State ----------------
+if "pdf_processed" not in st.session_state:
+    st.session_state.pdf_processed = False
+
 if "chunks" not in st.session_state:
     st.session_state.chunks = []
 
@@ -27,6 +32,9 @@ if "retriever" not in st.session_state:
 
 if "flashcards" not in st.session_state:
     st.session_state.flashcards = []
+
+if "exam_questions" not in st.session_state:
+    st.session_state.exam_questions = []
 
 
 # ---------------- Sidebar ----------------
@@ -37,7 +45,9 @@ uploaded_file = st.sidebar.file_uploader(
     type=["pdf"]
 )
 
+process_pdf_btn = st.sidebar.button("Process PDF")
 generate_flashcard_btn = st.sidebar.button("Generate Flashcards")
+generate_exam_btn = st.sidebar.button("Generate Exam")
 
 
 # ---------------- Main UI ----------------
@@ -46,23 +56,32 @@ st.caption("Chat with your PDF or study using flashcards")
 
 
 # ---------------- Load & Index PDF ----------------
-if uploaded_file:
-    with st.spinner("Processing PDF..."):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            pdf_path = os.path.join(tmpdir, uploaded_file.name)
-            with open(pdf_path, "wb") as f:
-                f.write(uploaded_file.read())
+if process_pdf_btn:
+    if not uploaded_file:
+        st.sidebar.warning("Please upload a PDF first.")
+    else:
+        with st.spinner("Processing PDF..."):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                pdf_path = os.path.join(tmpdir, uploaded_file.name)
+                with open(pdf_path, "wb") as f:
+                    f.write(uploaded_file.read())
 
-            documents = load_pdfs_from_dir(tmpdir)
-            chunks = chunk_documents(documents)
+                documents = load_pdfs_from_dir(tmpdir)
+                chunks = chunk_documents(documents)
 
-            vectorstore = build_vectorstore(chunks)
-            retriever = get_retriever(vectorstore)
+                vectorstore = build_vectorstore(chunks)
+                retriever = get_retriever(vectorstore)
 
-            st.session_state.chunks = chunks
-            st.session_state.retriever = retriever
+                # LƯU STATE
+                st.session_state.chunks = chunks
+                st.session_state.retriever = retriever
+                st.session_state.pdf_processed = True
 
-    st.success("PDF indexed successfully!")
+                # reset data phụ
+                st.session_state.flashcards = []
+                st.session_state.exam_questions = []
+
+        st.sidebar.success("PDF processed successfully!")
 
 
 # ---------------- LLM ----------------
@@ -89,18 +108,38 @@ if generate_flashcard_btn:
 
             st.session_state.flashcards = flashcards
 
-        st.success(f"🃏 Created {len(flashcards)} flashcards!")
+        st.success(f"Created {len(flashcards)} flashcards!")
 
 
 # ---------------- Flashcard UI ----------------
 if st.session_state.flashcards:
     st.markdown("## Flashcards")
+    if not st.session_state.pdf_processed:
+        st.warning("Please process a PDF first.")
+    else:
+        for i, card in enumerate(st.session_state.flashcards):
+            with st.expander(f"{i+1}. {card['question']}"):
+                st.markdown(card["answer"])
+                st.caption(f"📄 Source page: {card.get('page', 'N/A')}")
+    
 
-    for i, card in enumerate(st.session_state.flashcards):
-        with st.expander(f"{i+1}. {card['question']}"):
-            st.markdown(card["answer"])
-            st.caption(f"📄 Source page: {card.get('page', 'N/A')}")
+# ---------------- Exam UI ---------------------
+if generate_exam_btn:
+    if not st.session_state.chunks:
+        st.warning("Please upload a PDF first.")
+    else:
+        with st.spinner("Generating exam questions..."):
+            exam_questions = generate_exam_questions(
+                llm=llm,
+                chunks=st.session_state.chunks
+            )
 
+            st.session_state.exam_questions = exam_questions
+
+        st.success(f"📝 Created {len(exam_questions)} exam questions!")
+
+if st.session_state.exam_questions:
+    render_exam(st.session_state.exam_questions)
 
 # ---------------- Chat Section ----------------
 st.markdown("---")
