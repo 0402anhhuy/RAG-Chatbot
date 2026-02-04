@@ -6,6 +6,8 @@ from retrieval.retriever import build_vectorstore, get_retriever
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
 from debug.print_utils import print_chunks_table
+from generation.flashcard import generate_flashcards
+from generation.prompt_flashcard import get_flashcard_prompt
 from utils.config import CHAT_MODEL, GOOGLE_API_KEY
 
 
@@ -56,6 +58,20 @@ def main():
         pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
         print(f"\n📚 Sources: pages {pages}")
         print("-" * 60)
+
+        flashcard_prompt = get_flashcard_prompt()
+        flashcards = generate_flashcards(
+            llm=llm,
+            prompt=flashcard_prompt,
+            context=context
+        )
+
+        print("\n🃏 Flashcards:")
+        for card in flashcards:
+            print(f"Q: {card['question']}")
+            print(f"A: {card['answer']}")
+            print(f"Page: {card['page']}")
+            print("-" * 40)
 
 
 if __name__ == "__main__":
