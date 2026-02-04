@@ -21,6 +21,9 @@ st.set_page_config(
 )
 
 # ---------------- Session State ----------------
+if "uploaded_pdf" not in st.session_state:
+    st.session_state.uploaded_pdf = None
+
 if "pdf_processed" not in st.session_state:
     st.session_state.pdf_processed = False
 
@@ -46,6 +49,9 @@ with st.sidebar:
         type=["pdf"],
         label_visibility="collapsed"
     )
+
+    if uploaded_file is not None:
+        st.session_state.uploaded_pdf = uploaded_file
 
     st.markdown("---")
 
