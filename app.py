@@ -25,7 +25,7 @@ st.set_page_config(
 
 
 # ================= CONSTANTS =================
-CHAT_MODEL = "models/gemini-1.5-flash"   # ✅ STABLE
+CHAT_MODEL = "models/gemini-1.0-pro"   # ✅ STABLE
 MAX_CONTEXT_CHARS = 6000
 
 
