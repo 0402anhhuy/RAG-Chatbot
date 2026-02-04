@@ -24,11 +24,11 @@ FLASHCARD QUALITY RULES:
 
 JSON FORMAT (strict):
 [
-  {
+  {{
     "question": "Clear, concept-based question",
     "answer": "Concise factual answer",
     "page": "single page number or comma-separated pages"
-  }
+  }}
 ]
 
 IMPORTANT:
