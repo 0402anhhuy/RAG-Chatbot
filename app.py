@@ -38,6 +38,8 @@ if "exam_questions" not in st.session_state:
 
 
 # ---------------- Sidebar ----------------
+st.title("RAG PDF Study App")
+
 with st.sidebar:
     st.markdown("## PDF Workspace")
 
@@ -87,7 +89,7 @@ with st.sidebar:
     else:
         st.info("No PDF processed yet")
 
-    if st.button("♻️ Reset", use_container_width=True):
+    if st.button("Reset", use_container_width=True):
         for key in [
             "pdf_processed",
             "chunks",
