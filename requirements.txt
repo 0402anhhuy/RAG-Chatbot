@@ -22,3 +22,6 @@ unstructured==0.10.30
 # Utils
 python-dotenv>=1.0.1
 tqdm>=4.66.0
+
+# Web App
+streamlit>=1.25.0
