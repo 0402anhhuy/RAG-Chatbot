@@ -39,7 +39,7 @@ if "exam_questions" not in st.session_state:
 
 # ---------------- Sidebar ----------------
 with st.sidebar:
-    st.markdown("## 📂 PDF Workspace")
+    st.markdown("## PDF Workspace")
 
     uploaded_file = st.file_uploader(
         "Upload a PDF file",
@@ -49,37 +49,37 @@ with st.sidebar:
 
     st.markdown("---")
 
-    st.markdown("## ⚙️ Document")
+    st.markdown("## Document")
 
     process_pdf_btn = st.button(
-        "📄 Process PDF",
+        "Process PDF",
         use_container_width=True,
         disabled=st.session_state.pdf_processed
     )
 
     st.markdown("---")
 
-    st.markdown("## 📚 Study Modes")
+    st.markdown("## Study Modes")
 
     col1, col2 = st.columns(2)
 
     with col1:
         generate_flashcard_btn = st.button(
-            "🧠 Flashcards",
+            "Flashcards",
             use_container_width=True,
             disabled=not st.session_state.pdf_processed
         )
 
     with col2:
         generate_exam_btn = st.button(
-            "📝 Exam",
+            "Exam",
             use_container_width=True,
             disabled=not st.session_state.pdf_processed
         )
 
     st.markdown("---")
 
-    st.markdown("## ℹ️ Status")
+    st.markdown("## Status")
 
     if st.session_state.pdf_processed:
         st.success("PDF processed")
@@ -126,13 +126,9 @@ if process_pdf_btn:
                 st.session_state.flashcards = []
                 st.session_state.exam_questions = []
 
-        st.sidebar.success("PDF processed successfully!")
-
 # ---------------- LLM ----------------
-CHAT_MODEL = "gemini-2.5-flash"
+CHAT_MODEL = "models/gemini-2.5-flash"
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-
-st.sidebar.info(GOOGLE_API_KEY)
 
 llm = ChatGoogleGenerativeAI(
     model=CHAT_MODEL,
@@ -166,7 +162,7 @@ if st.session_state.flashcards:
         for i, card in enumerate(st.session_state.flashcards):
             with st.expander(f"{i+1}. {card['question']}"):
                 st.markdown(card["answer"])
-                st.caption(f"📄 Source page: {card.get('page', 'N/A')}")
+                st.caption(f"Source page: {card.get('page', 'N/A')}")
     
 
 # ---------------- Exam UI ---------------------
@@ -182,7 +178,7 @@ if generate_exam_btn:
 
             st.session_state.exam_questions = exam_questions
 
-        st.success(f"📝 Created {len(exam_questions)} exam questions!")
+        st.success(f"Created {len(exam_questions)} exam questions!")
 
 if st.session_state.exam_questions:
     render_exam(st.session_state.exam_questions)
@@ -209,4 +205,4 @@ if question and st.session_state.retriever:
     st.write(answer)
 
     pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
-    st.caption(f"📚 Sources: pages {pages}")
+    st.caption(f"Sources: pages {pages}")
