@@ -6,7 +6,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from loaders.pdf_loader import load_pdfs_from_dir
 from domain.chunking import chunk_documents
-from retrieval.retriever import build_vectorstore, get_retriever
+from retrieval.retriever import build_vectorstore, get_retriever, retrieve_with_threshold, build_context
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
 from generation.flashcard import generate_flashcards
@@ -24,8 +24,14 @@ st.set_page_config(
 if "pdf_processed" not in st.session_state:
     st.session_state.pdf_processed = False
 
+if "last_uploaded_file" not in st.session_state:
+    st.session_state.last_uploaded_file = None
+
 if "chunks" not in st.session_state:
     st.session_state.chunks = []
+
+if "vectorstore" not in st.session_state:
+    st.session_state.vectorstore = None
 
 if "retriever" not in st.session_state:
     st.session_state.retriever = None
@@ -49,18 +55,27 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    st.markdown("---")
+    # --- LOGIC THÔNG MINH VỚI TOAST ---
+    if uploaded_file is not None:
+        if uploaded_file.name != st.session_state.last_uploaded_file:
+            if st.session_state.last_uploaded_file is not None:
+                st.toast(
+                    f":blue[**NOTICE**]: Detected new file: {uploaded_file.name}", duration='long')
+            st.session_state.pdf_processed = False
+    else:
+        st.session_state.pdf_processed = False
+        st.session_state.last_uploaded_file = None
 
+    st.markdown("---")
     st.markdown("## Document")
 
     process_pdf_btn = st.button(
         "Process PDF",
         use_container_width=True,
-        disabled=st.session_state.pdf_processed
+        disabled=(uploaded_file is None or st.session_state.pdf_processed)
     )
 
     st.markdown("---")
-
     st.markdown("## Study Modes")
 
     col1, col2 = st.columns(2)
@@ -81,31 +96,17 @@ with st.sidebar:
 
     st.markdown("---")
 
-    st.markdown("## Status")
-
-    if st.session_state.pdf_processed:
-        st.success("PDF processed")
-        st.caption(f"📄 Chunks: {len(st.session_state.chunks)}")
-    else:
-        st.info("No PDF processed yet")
-
     if st.button("Reset", use_container_width=True):
-        for key in [
-            "pdf_processed",
-            "chunks",
-            "retriever",
-            "flashcards",
-            "exam_questions"
-        ]:
+        for key in ["pdf_processed", "last_uploaded_file", "chunks", "vectorstore", "retriever", "flashcards", "exam_questions"]:
             st.session_state.pop(key, None)
         st.rerun()
-
 
 
 # ---------------- Load & Index PDF ----------------
 if process_pdf_btn:
     if not uploaded_file:
-        st.sidebar.warning("Please upload a PDF first.")
+        st.toast(
+            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
         with st.spinner("Processing PDF..."):
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -119,14 +120,19 @@ if process_pdf_btn:
                 vectorstore = build_vectorstore(chunks)
                 retriever = get_retriever(vectorstore)
 
-                # LƯU STATE
+                # CẬP NHẬT STATE
                 st.session_state.chunks = chunks
+                st.session_state.vectorstore = vectorstore
                 st.session_state.retriever = retriever
+                st.session_state.last_uploaded_file = uploaded_file.name
                 st.session_state.pdf_processed = True
 
-                # reset data phụ
                 st.session_state.flashcards = []
                 st.session_state.exam_questions = []
+
+                st.toast(
+                    ":green[**SUCCESS**]: PDF processed successfully!", duration='short')
+                st.rerun()
 
 # ---------------- LLM ----------------
 CHAT_MODEL = "models/gemini-2.5-flash"
@@ -142,45 +148,42 @@ llm = ChatGoogleGenerativeAI(
 # ---------------- Flashcard Generation ----------------
 if generate_flashcard_btn:
     if not st.session_state.chunks:
-        st.warning("Please upload a PDF first.")
+        st.toast(
+            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
-        with st.spinner("Generating flashcards from entire document..."):
+        with st.spinner("Generating flashcards..."):
             flashcards = generate_flashcards(
                 llm=llm,
                 chunks=st.session_state.chunks
             )
-
             st.session_state.flashcards = flashcards
-
-        st.success(f"Created {len(flashcards)} flashcards!")
+        st.toast(
+            f":green[**SUCCESS**]: Created {len(flashcards)} flashcards!", duration='short')
 
 
 # ---------------- Flashcard UI ----------------
 if st.session_state.flashcards:
     st.markdown("## Flashcards")
-    if not st.session_state.pdf_processed:
-        st.warning("Please process a PDF first.")
-    else:
-        for i, card in enumerate(st.session_state.flashcards):
-            with st.expander(f"{i+1}. {card['question']}"):
-                st.markdown(card["answer"])
-                st.caption(f"Source page: {card.get('page', 'N/A')}")
-    
+    for i, card in enumerate(st.session_state.flashcards):
+        with st.expander(f"{i+1}. {card['question']}"):
+            st.markdown(card["answer"])
+            st.caption(f"📄 Source page: {card.get('page', 'N/A')}")
+
 
 # ---------------- Exam UI ---------------------
 if generate_exam_btn:
     if not st.session_state.chunks:
-        st.warning("Please upload a PDF first.")
+        st.toast(
+            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
         with st.spinner("Generating exam questions..."):
             exam_questions = generate_exam_questions(
                 llm=llm,
                 chunks=st.session_state.chunks
             )
-
             st.session_state.exam_questions = exam_questions
-
-        st.success(f"Created {len(exam_questions)} exam questions!")
+        st.toast(
+            f":green[**SUCCESS**]: Created {len(exam_questions)} exam questions!", duration='short')
 
 if st.session_state.exam_questions:
     render_exam(st.session_state.exam_questions)
@@ -191,20 +194,25 @@ st.markdown("## Ask Questions")
 
 question = st.text_input("Ask a question about the document")
 
-if question and st.session_state.retriever:
-    with st.spinner("Thinking..."):
-        docs = st.session_state.retriever.invoke(question)
-        context = "\n\n".join(d.page_content for d in docs)
+if question:
+    if not st.session_state.retriever:
+        st.toast(
+            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
+    else:
+        with st.spinner("Thinking..."):
+            docs = retrieve_with_threshold(
+                st.session_state.vectorstore, question)
+            context = build_context(docs)
 
-        answer = generate_answer(
-            llm=llm,
-            prompt=get_rag_prompt(),
-            context=context,
-            question=question
-        )
+            answer = generate_answer(
+                llm=llm,
+                prompt=get_rag_prompt(),
+                context=context,
+                question=question
+            )
 
-    st.markdown("### 🤖 Answer")
-    st.write(answer)
+        st.markdown("### 🤖 Answer")
+        st.write(answer)
 
-    pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
-    st.caption(f"Sources: pages {pages}")
+        pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
+        st.caption(f"📚 Sources: pages {pages}")
