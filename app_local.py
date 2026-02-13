@@ -129,7 +129,7 @@ if process_pdf_btn:
                 st.session_state.flashcards = []
                 st.session_state.exam_questions = []
 
-                st.toast(":green[**SUCCESS**]: PDF processed successfully!", duration='short')
+                st.toast(":green[**SUCCESS**]: PDF processed successfully", duration='short')
                 st.rerun()
 
 # ---------------- LLM ----------------
