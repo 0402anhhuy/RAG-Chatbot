@@ -5,11 +5,17 @@ def get_rag_prompt():
     return ChatPromptTemplate.from_template(
         """
         You are a helpful AI assistant.
-        Answer the question ONLY using the context below.
-        If the answer is not in the context, say you don't know.
 
-        Context: {context}
+        Use ONLY the provided context to answer the question.
+        If the context contains enough information to infer the answer, explain it clearly.
+        If the context does not contain sufficient information, say "I don't know."
 
-        Question: {question}
+        Answer in a concise and clear way.
+
+        Context:
+        {context}
+
+        Question:
+        {question}
         """
     )
