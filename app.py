@@ -1,9 +1,9 @@
 import streamlit as st
 import tempfile
 import os
-import time # Thêm thư viện time để xử lý độ trễ nếu cần
 
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 
 from loaders.pdf_loader import load_pdfs_from_dir
 from domain.chunking import chunk_documents
@@ -13,6 +13,7 @@ from generation.answer import generate_answer
 from generation.flashcard import generate_flashcards
 from generation.exam import generate_exam_questions
 from ui.exam_ui import render_exam
+from utils.config import CHAT_MODEL, GOOGLE_API_KEY, CHAT_MODEL_GROQ, GROQ_API_KEY
 
 
 # ---------------- Page Config ----------------
@@ -24,18 +25,27 @@ st.set_page_config(
 # ---------------- Session State ----------------
 if "pdf_processed" not in st.session_state:
     st.session_state.pdf_processed = False
+
 if "last_uploaded_file" not in st.session_state:
     st.session_state.last_uploaded_file = None
+
 if "chunks" not in st.session_state:
     st.session_state.chunks = []
+
 if "vectorstore" not in st.session_state:
     st.session_state.vectorstore = None
+
 if "retriever" not in st.session_state:
     st.session_state.retriever = None
+
 if "flashcards" not in st.session_state:
     st.session_state.flashcards = []
+
 if "exam_questions" not in st.session_state:
     st.session_state.exam_questions = []
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 
 # ---------------- Sidebar ----------------
@@ -50,10 +60,12 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
+    # --- LOGIC THÔNG MINH VỚI TOAST ---
     if uploaded_file is not None:
         if uploaded_file.name != st.session_state.last_uploaded_file:
             if st.session_state.last_uploaded_file is not None:
-                st.toast(f":blue[**NOTICE**]: Detected new file: {uploaded_file.name}")
+                st.toast(
+                    f":blue[**NOTICE**]: Detected new file: {uploaded_file.name}", duration='long')
             st.session_state.pdf_processed = False
     else:
         st.session_state.pdf_processed = False
@@ -88,74 +100,86 @@ with st.sidebar:
         )
 
     st.markdown("---")
+    st.markdown("## Controls")
 
-    if st.button("Reset", use_container_width=True):
-        for key in ["pdf_processed", "last_uploaded_file", "chunks", "vectorstore", "retriever", "flashcards", "exam_questions"]:
-            st.session_state.pop(key, None)
-        st.rerun()
+    col_ctrl1, col_ctrl2 = st.columns(2)
+    
+    with col_ctrl1:
+        if st.button("New Chat", use_container_width=True):
+            st.session_state.messages = []
+            st.toast("Chat history cleared", duration='short')
+            st.rerun()
+            
+    with col_ctrl2:
+        if st.button("Reset All", use_container_width=True):
+            for key in ["pdf_processed", "last_uploaded_file", "chunks", "vectorstore", "retriever", "flashcards", "exam_questions", "messages"]:
+                st.session_state.pop(key, None)
+            st.rerun()
 
 
 # ---------------- Load & Index PDF ----------------
 if process_pdf_btn:
     if not uploaded_file:
-        st.toast(":yellow:[**NOTICE**]: Please upload a PDF first")
+        st.toast(
+            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
         with st.spinner("Processing PDF..."):
-            try:
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    pdf_path = os.path.join(tmpdir, uploaded_file.name)
-                    with open(pdf_path, "wb") as f:
-                        f.write(uploaded_file.read())
+            with tempfile.TemporaryDirectory() as tmpdir:
+                pdf_path = os.path.join(tmpdir, uploaded_file.name)
+                with open(pdf_path, "wb") as f:
+                    f.write(uploaded_file.read())
 
-                    documents = load_pdfs_from_dir(tmpdir)
-                    chunks = chunk_documents(documents)
+                documents = load_pdfs_from_dir(tmpdir)
+                chunks = chunk_documents(documents)
 
-                    vectorstore = build_vectorstore(chunks)
-                    retriever = get_retriever(vectorstore)
+                vectorstore = build_vectorstore(chunks)
+                retriever = get_retriever(vectorstore)
 
-                    st.session_state.chunks = chunks
-                    st.session_state.vectorstore = vectorstore
-                    st.session_state.retriever = retriever
-                    st.session_state.last_uploaded_file = uploaded_file.name
-                    st.session_state.pdf_processed = True
+                # CẬP NHẬT STATE
+                st.session_state.chunks = chunks
+                st.session_state.vectorstore = vectorstore
+                st.session_state.retriever = retriever
+                st.session_state.last_uploaded_file = uploaded_file.name
+                st.session_state.pdf_processed = True
 
-                    st.session_state.flashcards = []
-                    st.session_state.exam_questions = []
+                st.session_state.flashcards = []
+                st.session_state.exam_questions = []
 
-                    st.toast(":green[**SUCCESS**]: PDF processed successfully")
-                    st.rerun()
-            except Exception as e:
-                st.error(f"Error processing PDF: {str(e)}")
+                st.toast(
+                    ":green[**SUCCESS**]: PDF processed successfully", duration='short')
+                st.rerun()
 
 # ---------------- LLM ----------------
-# Cải tiến: Thêm max_retries để tự động xử lý lỗi 429 nhẹ
-CHAT_MODEL = "models/gemini-2.5-flash"
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+# llm = ChatGoogleGenerativeAI(
+#     model=CHAT_MODEL,
+#     google_api_key=GOOGLE_API_KEY,
+#     temperature=0.3
+# )
 
-llm = ChatGoogleGenerativeAI(
-    model=CHAT_MODEL,
-    google_api_key=GOOGLE_API_KEY,
-    temperature=0.3,
-    max_retries=3,
-    timeout=60
+CHAT_MODEL_GROQ = "llama-3.3-70b-versatile"
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+
+llm = ChatGroq(
+    groq_api_key=GROQ_API_KEY,
+    model_name=CHAT_MODEL_GROQ,
+    temperature=0.3
 )
 
 
 # ---------------- Flashcard Generation ----------------
 if generate_flashcard_btn:
     if not st.session_state.chunks:
-        st.toast(":yellow:[**NOTICE**]: Please upload a PDF first")
+        st.toast(
+            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
         with st.spinner("Generating flashcards..."):
-            try:
-                flashcards = generate_flashcards(llm=llm, chunks=st.session_state.chunks)
-                st.session_state.flashcards = flashcards
-                st.toast(f":green[**SUCCESS**]: Created {len(flashcards)} flashcards!")
-            except Exception as e:
-                if "429" in str(e):
-                    st.toast(":red[**LIMIT EXCEEDED**]: Please wait 30s and try again.", icon="🚨")
-                else:
-                    st.error(f"Error: {str(e)}")
+            flashcards = generate_flashcards(
+                llm=llm,
+                chunks=st.session_state.chunks
+            )
+            st.session_state.flashcards = flashcards
+        st.toast(
+            f":green[**SUCCESS**]: Created {len(flashcards)} flashcards!", duration='short')
 
 
 # ---------------- Flashcard UI ----------------
@@ -170,52 +194,60 @@ if st.session_state.flashcards:
 # ---------------- Exam UI ---------------------
 if generate_exam_btn:
     if not st.session_state.chunks:
-        st.toast(":yellow:[**NOTICE**]: Please upload a PDF first")
+        st.toast(
+            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
         with st.spinner("Generating exam questions..."):
-            try:
-                exam_questions = generate_exam_questions(llm=llm, chunks=st.session_state.chunks)
-                st.session_state.exam_questions = exam_questions
-                st.toast(f":green[**SUCCESS**]: Created {len(exam_questions)} exam questions!")
-            except Exception as e:
-                if "429" in str(e):
-                    st.toast(":red[**LIMIT EXCEEDED**]: Please wait 30s.", icon="🚨")
-                else:
-                    st.error(f"Error: {str(e)}")
+            exam_questions = generate_exam_questions(
+                llm=llm,
+                chunks=st.session_state.chunks
+            )
+            st.session_state.exam_questions = exam_questions
+        st.toast(
+            f":green[**SUCCESS**]: Created {len(exam_questions)} exam questions!", duration='short')
 
 if st.session_state.exam_questions:
     render_exam(st.session_state.exam_questions)
 
 # ---------------- Chat Section ----------------
 st.markdown("---")
-st.markdown("## Ask Questions")
 
-question = st.text_input("Ask a question about the document", key="chat_input")
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-if question:
-    if not st.session_state.retriever:
-        st.toast(":yellow:[**NOTICE**]: Please upload a PDF first")
+if prompt := st.chat_input("Ask a question about the document..."):
+    
+    if not st.session_state.pdf_processed:
+        st.toast(":yellow:[**NOTICE**]: Please upload and process a PDF first", duration='short')
     else:
-        with st.spinner("Thinking..."):
-            try:
-                docs = retrieve_with_threshold(st.session_state.vectorstore, question)
+        # 2. Thêm và hiển thị câu hỏi của người dùng
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # 3. Trả lời từ trợ lý AI
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                # Truy xuất tài liệu và tạo ngữ cảnh
+                docs = retrieve_with_threshold(st.session_state.vectorstore, prompt)
                 context = build_context(docs)
 
+                # Gọi LLM để tạo câu trả lời
                 answer = generate_answer(
                     llm=llm,
                     prompt=get_rag_prompt(),
                     context=context,
-                    question=question
+                    question=prompt
                 )
 
-                st.markdown("### 🤖 Answer")
-                st.write(answer)
-
+                # Trích xuất số trang nguồn để minh bạch dữ liệu
                 pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
-                st.caption(f"📚 Sources: pages {pages}")
-            except Exception as e:
-                if "429" in str(e):
-                    st.toast(":red[**LIMIT EXCEEDED**]: Quota exhausted. Wait 25-30s.", icon="🚨")
-                    st.info("Google Gemini Free Tier giới hạn 20 requests/phút. Bạn hãy nghỉ tay chút nhé!")
-                else:
-                    st.error(f"Error: {str(e)}")
+                source_text = f"\n\n*Sources: pages {pages}*"
+                full_response = answer + source_text
+
+                # Hiển thị câu trả lời lên màn hình
+                st.markdown(full_response)
+                
+                # Lưu câu trả lời vào lịch sử để không bị mất khi ứng dụng rerun
+                st.session_state.messages.append({"role": "assistant", "content": full_response})
