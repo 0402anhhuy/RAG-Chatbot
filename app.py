@@ -107,13 +107,14 @@ with st.sidebar:
     with col_ctrl1:
         if st.button("New Chat", use_container_width=True):
             st.session_state.messages = []
-            st.toast("Chat history cleared", duration='short')
+            st.toast(":yellow[**NOTICE**]: Chat history cleared", duration='long')
             st.rerun()
             
     with col_ctrl2:
         if st.button("Reset All", use_container_width=True):
             for key in ["pdf_processed", "last_uploaded_file", "chunks", "vectorstore", "retriever", "flashcards", "exam_questions", "messages"]:
                 st.session_state.pop(key, None)
+            st.toast(":yellow[**NOTICE**]: All data reset", duration='long')
             st.rerun()
 
 
@@ -121,7 +122,7 @@ with st.sidebar:
 if process_pdf_btn:
     if not uploaded_file:
         st.toast(
-            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
+            ":yellow[**NOTICE**]: Please upload a PDF first", duration='long')
     else:
         with st.spinner("Processing PDF..."):
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -145,8 +146,7 @@ if process_pdf_btn:
                 st.session_state.flashcards = []
                 st.session_state.exam_questions = []
 
-                st.toast(
-                    ":green[**SUCCESS**]: PDF processed successfully", duration='short')
+                st.toast(":green[**SUCCESS**]: PDF processed successfully", duration='long')
                 st.rerun()
 
 # ---------------- LLM ----------------
@@ -170,7 +170,7 @@ llm = ChatGroq(
 if generate_flashcard_btn:
     if not st.session_state.chunks:
         st.toast(
-            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
+            ":yellow[**NOTICE**]: Please upload a PDF first", duration='long')
     else:
         with st.spinner("Generating flashcards..."):
             flashcards = generate_flashcards(
@@ -179,7 +179,7 @@ if generate_flashcard_btn:
             )
             st.session_state.flashcards = flashcards
         st.toast(
-            f":green[**SUCCESS**]: Created {len(flashcards)} flashcards!", duration='short')
+            f":green[**SUCCESS**]: Created {len(flashcards)} flashcards!", duration='long')
 
 
 # ---------------- Flashcard UI ----------------
@@ -195,7 +195,7 @@ if st.session_state.flashcards:
 if generate_exam_btn:
     if not st.session_state.chunks:
         st.toast(
-            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
+            ":yellow[**NOTICE**]: Please upload a PDF first", duration='long')
     else:
         with st.spinner("Generating exam questions..."):
             exam_questions = generate_exam_questions(
@@ -204,7 +204,7 @@ if generate_exam_btn:
             )
             st.session_state.exam_questions = exam_questions
         st.toast(
-            f":green[**SUCCESS**]: Created {len(exam_questions)} exam questions!", duration='short')
+            f":green[**SUCCESS**]: Created {len(exam_questions)} exam questions!", duration='long')
 
 if st.session_state.exam_questions:
     render_exam(st.session_state.exam_questions)
@@ -219,7 +219,7 @@ for message in st.session_state.messages:
 if prompt := st.chat_input("Ask a question about the document..."):
     
     if not st.session_state.pdf_processed:
-        st.toast(":yellow:[**NOTICE**]: Please upload and process a PDF first", duration='short')
+        st.toast(":yellow[**NOTICE**]: Please upload and process a PDF first", duration='long')
     else:
         # 2. Thêm và hiển thị câu hỏi của người dùng
         st.session_state.messages.append({"role": "user", "content": prompt})
