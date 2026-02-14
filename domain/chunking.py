@@ -46,8 +46,8 @@ def chunk_documents(documents, mode="rag"):
         chunk_overlap = 200
         min_chunk_length = 350
     else:  # rag
-        chunk_size = 800
-        chunk_overlap = 150
+        chunk_size = 850
+        chunk_overlap = 200
         min_chunk_length = 300
 
     # ---------------- Semantic-first splitter ----------------
