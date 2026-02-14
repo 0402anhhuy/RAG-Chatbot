@@ -246,8 +246,5 @@ if prompt := st.chat_input("Ask a question about the document..."):
                 source_text = f"\n\n*Sources: pages {pages}*"
                 full_response = answer + source_text
 
-                # Hiển thị câu trả lời lên màn hình
                 st.markdown(full_response)
-                
-                # Lưu câu trả lời vào lịch sử để không bị mất khi ứng dụng rerun
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
