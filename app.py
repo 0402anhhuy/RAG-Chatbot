@@ -1,6 +1,7 @@
 import streamlit as st
 import tempfile
 import os
+import time # Thêm thư viện time để xử lý độ trễ nếu cần
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -23,22 +24,16 @@ st.set_page_config(
 # ---------------- Session State ----------------
 if "pdf_processed" not in st.session_state:
     st.session_state.pdf_processed = False
-
 if "last_uploaded_file" not in st.session_state:
     st.session_state.last_uploaded_file = None
-
 if "chunks" not in st.session_state:
     st.session_state.chunks = []
-
 if "vectorstore" not in st.session_state:
     st.session_state.vectorstore = None
-
 if "retriever" not in st.session_state:
     st.session_state.retriever = None
-
 if "flashcards" not in st.session_state:
     st.session_state.flashcards = []
-
 if "exam_questions" not in st.session_state:
     st.session_state.exam_questions = []
 
@@ -55,12 +50,10 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    # --- LOGIC THÔNG MINH VỚI TOAST ---
     if uploaded_file is not None:
         if uploaded_file.name != st.session_state.last_uploaded_file:
             if st.session_state.last_uploaded_file is not None:
-                st.toast(
-                    f":blue[**NOTICE**]: Detected new file: {uploaded_file.name}", duration='long')
+                st.toast(f":blue[**NOTICE**]: Detected new file: {uploaded_file.name}")
             st.session_state.pdf_processed = False
     else:
         st.session_state.pdf_processed = False
@@ -105,60 +98,64 @@ with st.sidebar:
 # ---------------- Load & Index PDF ----------------
 if process_pdf_btn:
     if not uploaded_file:
-        st.toast(
-            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
+        st.toast(":yellow:[**NOTICE**]: Please upload a PDF first")
     else:
         with st.spinner("Processing PDF..."):
-            with tempfile.TemporaryDirectory() as tmpdir:
-                pdf_path = os.path.join(tmpdir, uploaded_file.name)
-                with open(pdf_path, "wb") as f:
-                    f.write(uploaded_file.read())
+            try:
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    pdf_path = os.path.join(tmpdir, uploaded_file.name)
+                    with open(pdf_path, "wb") as f:
+                        f.write(uploaded_file.read())
 
-                documents = load_pdfs_from_dir(tmpdir)
-                chunks = chunk_documents(documents)
+                    documents = load_pdfs_from_dir(tmpdir)
+                    chunks = chunk_documents(documents)
 
-                vectorstore = build_vectorstore(chunks)
-                retriever = get_retriever(vectorstore)
+                    vectorstore = build_vectorstore(chunks)
+                    retriever = get_retriever(vectorstore)
 
-                # CẬP NHẬT STATE
-                st.session_state.chunks = chunks
-                st.session_state.vectorstore = vectorstore
-                st.session_state.retriever = retriever
-                st.session_state.last_uploaded_file = uploaded_file.name
-                st.session_state.pdf_processed = True
+                    st.session_state.chunks = chunks
+                    st.session_state.vectorstore = vectorstore
+                    st.session_state.retriever = retriever
+                    st.session_state.last_uploaded_file = uploaded_file.name
+                    st.session_state.pdf_processed = True
 
-                st.session_state.flashcards = []
-                st.session_state.exam_questions = []
+                    st.session_state.flashcards = []
+                    st.session_state.exam_questions = []
 
-                st.toast(
-                    ":green[**SUCCESS**]: PDF processed successfully", duration='short')
-                st.rerun()
+                    st.toast(":green[**SUCCESS**]: PDF processed successfully")
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Error processing PDF: {str(e)}")
 
 # ---------------- LLM ----------------
+# Cải tiến: Thêm max_retries để tự động xử lý lỗi 429 nhẹ
 CHAT_MODEL = "models/gemini-2.5-flash"
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 
 llm = ChatGoogleGenerativeAI(
     model=CHAT_MODEL,
     google_api_key=GOOGLE_API_KEY,
-    temperature=0.3
+    temperature=0.3,
+    max_retries=3,
+    timeout=60
 )
 
 
 # ---------------- Flashcard Generation ----------------
 if generate_flashcard_btn:
     if not st.session_state.chunks:
-        st.toast(
-            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
+        st.toast(":yellow:[**NOTICE**]: Please upload a PDF first")
     else:
         with st.spinner("Generating flashcards..."):
-            flashcards = generate_flashcards(
-                llm=llm,
-                chunks=st.session_state.chunks
-            )
-            st.session_state.flashcards = flashcards
-        st.toast(
-            f":green[**SUCCESS**]: Created {len(flashcards)} flashcards!", duration='short')
+            try:
+                flashcards = generate_flashcards(llm=llm, chunks=st.session_state.chunks)
+                st.session_state.flashcards = flashcards
+                st.toast(f":green[**SUCCESS**]: Created {len(flashcards)} flashcards!")
+            except Exception as e:
+                if "429" in str(e):
+                    st.toast(":red[**LIMIT EXCEEDED**]: Please wait 30s and try again.", icon="🚨")
+                else:
+                    st.error(f"Error: {str(e)}")
 
 
 # ---------------- Flashcard UI ----------------
@@ -173,17 +170,18 @@ if st.session_state.flashcards:
 # ---------------- Exam UI ---------------------
 if generate_exam_btn:
     if not st.session_state.chunks:
-        st.toast(
-            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
+        st.toast(":yellow:[**NOTICE**]: Please upload a PDF first")
     else:
         with st.spinner("Generating exam questions..."):
-            exam_questions = generate_exam_questions(
-                llm=llm,
-                chunks=st.session_state.chunks
-            )
-            st.session_state.exam_questions = exam_questions
-        st.toast(
-            f":green[**SUCCESS**]: Created {len(exam_questions)} exam questions!", duration='short')
+            try:
+                exam_questions = generate_exam_questions(llm=llm, chunks=st.session_state.chunks)
+                st.session_state.exam_questions = exam_questions
+                st.toast(f":green[**SUCCESS**]: Created {len(exam_questions)} exam questions!")
+            except Exception as e:
+                if "429" in str(e):
+                    st.toast(":red[**LIMIT EXCEEDED**]: Please wait 30s.", icon="🚨")
+                else:
+                    st.error(f"Error: {str(e)}")
 
 if st.session_state.exam_questions:
     render_exam(st.session_state.exam_questions)
@@ -192,27 +190,32 @@ if st.session_state.exam_questions:
 st.markdown("---")
 st.markdown("## Ask Questions")
 
-question = st.text_input("Ask a question about the document")
+question = st.text_input("Ask a question about the document", key="chat_input")
 
 if question:
     if not st.session_state.retriever:
-        st.toast(
-            ":yellow:[**NOTICE**]: Please upload a PDF first", duration='short')
+        st.toast(":yellow:[**NOTICE**]: Please upload a PDF first")
     else:
         with st.spinner("Thinking..."):
-            docs = retrieve_with_threshold(
-                st.session_state.vectorstore, question)
-            context = build_context(docs)
+            try:
+                docs = retrieve_with_threshold(st.session_state.vectorstore, question)
+                context = build_context(docs)
 
-            answer = generate_answer(
-                llm=llm,
-                prompt=get_rag_prompt(),
-                context=context,
-                question=question
-            )
+                answer = generate_answer(
+                    llm=llm,
+                    prompt=get_rag_prompt(),
+                    context=context,
+                    question=question
+                )
 
-        st.markdown("### 🤖 Answer")
-        st.write(answer)
+                st.markdown("### 🤖 Answer")
+                st.write(answer)
 
-        pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
-        st.caption(f"📚 Sources: pages {pages}")
+                pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
+                st.caption(f"📚 Sources: pages {pages}")
+            except Exception as e:
+                if "429" in str(e):
+                    st.toast(":red[**LIMIT EXCEEDED**]: Quota exhausted. Wait 25-30s.", icon="🚨")
+                    st.info("Google Gemini Free Tier giới hạn 20 requests/phút. Bạn hãy nghỉ tay chút nhé!")
+                else:
+                    st.error(f"Error: {str(e)}")
