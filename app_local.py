@@ -8,6 +8,7 @@ from langchain_groq import ChatGroq
 from loaders.pdf_loader import load_pdfs_from_dir
 from domain.chunking import chunk_documents
 from retrieval.retriever import build_vectorstore, get_retriever, retrieve_with_threshold, build_context
+from retrieval.context_compression import compress_context
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
 from generation.flashcard import generate_flashcards
@@ -223,13 +224,28 @@ if prompt := st.chat_input("Ask a question about the document..."):
             with st.spinner("Thinking..."):
                 # Truy xuất tài liệu và tạo ngữ cảnh
                 docs = retrieve_with_threshold(st.session_state.vectorstore, prompt)
-                context = build_context(docs)
+                
+                if not docs:
+                    st.markdown("I don't know.")
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": "I don't know."
+                    })
+                    st.stop()
+
+                structured_context = build_context(docs)
+                
+                compressed_context = compress_context(
+                    llm=llm,
+                    docs=docs,
+                    question=prompt
+                )
 
                 # Gọi LLM để tạo câu trả lời
                 answer = generate_answer(
                     llm=llm,
                     prompt=get_rag_prompt(),
-                    context=context,
+                    context=compressed_context,
                     question=prompt
                 )
 
