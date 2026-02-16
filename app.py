@@ -231,7 +231,7 @@ if prompt := st.chat_input("Ask a question about the document..."):
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 # Truy xuất tài liệu và tạo ngữ cảnh
-                docs = get_retriever(prompt)
+                docs = st.session_state.retriever.invoke(prompt)
                 context = "\n\n".join(d.page_content for d in docs)
 
                 # Gọi LLM để tạo câu trả lời
