@@ -7,13 +7,14 @@ from langchain_groq import ChatGroq
 
 from loaders.pdf_loader import load_pdfs_from_dir
 from domain.chunking import chunk_documents
-from retrieval.retriever import build_vectorstore, get_retriever, retrieve_with_threshold, build_context
+from retrieval.retriever import build_vectorstore, get_retriever
 from retrieval.context_compression import compress_context
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
 from generation.flashcard import generate_flashcards
 from generation.exam import generate_exam_questions
 from ui.exam_ui import render_exam
+from debug.print_utils import print_chunks_table
 from utils.config import CHAT_MODEL, GOOGLE_API_KEY, CHAT_MODEL_GROQ, GROQ_API_KEY
 
 
@@ -65,7 +66,8 @@ with st.sidebar:
     if uploaded_file is not None:
         if uploaded_file.name != st.session_state.last_uploaded_file:
             if st.session_state.last_uploaded_file is not None:
-                st.toast(f":blue[**NOTICE**]: Detected new file: {uploaded_file.name}", duration='long')
+                st.toast(
+                    f":blue[**NOTICE**]: Detected new file: {uploaded_file.name}", duration='long')
             st.session_state.pdf_processed = False
     else:
         st.session_state.pdf_processed = False
@@ -103,13 +105,13 @@ with st.sidebar:
     st.markdown("## Controls")
 
     col_ctrl1, col_ctrl2 = st.columns(2)
-    
+
     with col_ctrl1:
         if st.button("New Chat", use_container_width=True):
             st.session_state.messages = []
             st.toast("Chat history cleared", duration='short')
             st.rerun()
-            
+
     with col_ctrl2:
         if st.button("Reset All", use_container_width=True):
             for key in ["pdf_processed", "last_uploaded_file", "chunks", "vectorstore", "retriever", "flashcards", "exam_questions", "messages"]:
@@ -120,7 +122,8 @@ with st.sidebar:
 # ---------------- Load & Index PDF ----------------
 if process_pdf_btn:
     if not uploaded_file:
-        st.toast(":yellow[**NOTICE**]: Please upload a PDF first", duration='short')
+        st.toast(
+            ":yellow[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
         with st.spinner("Processing PDF..."):
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -130,6 +133,8 @@ if process_pdf_btn:
 
                 documents = load_pdfs_from_dir(tmpdir)
                 chunks = chunk_documents(documents)
+
+                print_chunks_table(chunks)
 
                 vectorstore = build_vectorstore(chunks)
                 retriever = get_retriever(vectorstore)
@@ -144,7 +149,8 @@ if process_pdf_btn:
                 st.session_state.flashcards = []
                 st.session_state.exam_questions = []
 
-                st.toast(":green[**SUCCESS**]: PDF processed successfully", duration='short')
+                st.toast(
+                    ":green[**SUCCESS**]: PDF processed successfully", duration='short')
                 st.rerun()
 
 # ---------------- LLM ----------------
@@ -164,7 +170,8 @@ llm = ChatGroq(
 # ---------------- Flashcard Generation ----------------
 if generate_flashcard_btn:
     if not st.session_state.chunks:
-        st.toast(":yellow[**NOTICE**]: Please upload a PDF first", duration='short')
+        st.toast(
+            ":yellow[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
         with st.spinner("Generating flashcards..."):
             flashcards = generate_flashcards(
@@ -188,7 +195,8 @@ if st.session_state.flashcards:
 # ---------------- Exam UI ---------------------
 if generate_exam_btn:
     if not st.session_state.chunks:
-        st.toast(":yellow[**NOTICE**]: Please upload a PDF first", duration='short')
+        st.toast(
+            ":yellow[**NOTICE**]: Please upload a PDF first", duration='short')
     else:
         with st.spinner("Generating exam questions..."):
             exam_questions = generate_exam_questions(
@@ -210,9 +218,10 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("Ask a question about the document..."):
-    
+
     if not st.session_state.pdf_processed:
-        st.toast(":yellow[**NOTICE**]: Please upload and process a PDF first", duration='short')
+        st.toast(
+            ":yellow[**NOTICE**]: Please upload and process a PDF first", duration='short')
     else:
         # 2. Thêm và hiển thị câu hỏi của người dùng
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -223,39 +232,26 @@ if prompt := st.chat_input("Ask a question about the document..."):
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 # Truy xuất tài liệu và tạo ngữ cảnh
-                docs = retrieve_with_threshold(st.session_state.vectorstore, prompt)
-                
-                if not docs:
-                    st.markdown("I don't know.")
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": "I don't know."
-                    })
-                    st.stop()
+                docs = st.session_state.retriever.invoke(prompt)
+                context = "\n\n".join(d.page_content for d in docs)
 
-                structured_context = build_context(docs)
-                
-                compressed_context = compress_context(
-                    llm=llm,
-                    docs=docs,
-                    question=prompt
-                )
 
                 # Gọi LLM để tạo câu trả lời
                 answer = generate_answer(
                     llm=llm,
                     prompt=get_rag_prompt(),
-                    context=compressed_context,
+                    context=context,
                     question=prompt
                 )
 
-                # Trích xuất số trang nguồn để minh bạch dữ liệu
-                pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
-                source_text = f"\n\n*Sources: pages {pages}*"
-                full_response = answer + source_text
+        # Trích xuất số trang nguồn để minh bạch dữ liệu
+        pages = sorted(set(d.metadata.get("page", "N/A") for d in docs))
+        source_text = f"\n\n*Sources: pages {pages}*"
+        full_response = answer + source_text
 
-                # Hiển thị câu trả lời lên màn hình
-                st.markdown(full_response)
-                
-                # Lưu câu trả lời vào lịch sử để không bị mất khi ứng dụng rerun
-                st.session_state.messages.append({"role": "assistant", "content": full_response})
+        # Hiển thị câu trả lời lên màn hình
+        st.markdown(full_response)
+
+        # Lưu câu trả lời vào lịch sử để không bị mất khi ứng dụng rerun
+        st.session_state.messages.append(
+            {"role": "assistant", "content": full_response})
