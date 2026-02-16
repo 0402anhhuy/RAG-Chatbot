@@ -7,7 +7,7 @@ from langchain_groq import ChatGroq
 
 from loaders.pdf_loader import load_pdfs_from_dir
 from domain.chunking import chunk_documents
-from retrieval.retriever import build_vectorstore, get_retriever, retrieve_with_threshold, build_context
+from retrieval.retriever import build_vectorstore, get_retriever
 from retrieval.context_compression import compress_context
 from generation.prompt import get_rag_prompt
 from generation.answer import generate_answer
