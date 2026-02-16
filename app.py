@@ -231,32 +231,14 @@ if prompt := st.chat_input("Ask a question about the document..."):
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 # Truy xuất tài liệu và tạo ngữ cảnh
-                docs = retrieve_with_threshold(st.session_state.vectorstore, prompt)
-                
-                if not docs:
-                    st.markdown("I don't know.")
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": "I don't know."
-                    })
-                    st.stop()
-
-                structured_context = build_context(docs)
-
-                compressed_context = compress_context(
-                    llm=llm,
-                    docs=docs,
-                    question=prompt
-                )
-
-                if compressed_context.strip() == "":
-                    compressed_context = structured_context
+                docs = get_retriever(prompt)
+                context = "\n\n".join(d.page_content for d in docs)
 
                 # Gọi LLM để tạo câu trả lời
                 answer = generate_answer(
                     llm=llm,
                     prompt=get_rag_prompt(),
-                    context=compressed_context,
+                    context=context,
                     question=prompt
                 )
 
