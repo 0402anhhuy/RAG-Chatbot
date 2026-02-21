@@ -4,4 +4,4 @@ __pycache__/
 *.pyo
 *.pyd
 .env
-data/pdfs/
+debug/
