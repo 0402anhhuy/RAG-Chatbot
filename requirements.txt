@@ -1,28 +1,30 @@
-# Core LangChain
+# ================= Core LangChain =================
 langchain>=0.2.6
 langchain-community>=0.2.6
 langchain-huggingface>=0.0.3
 
-# Vector Store
-faiss-cpu>=1.8.0
+# ================= Vector Store =================
+faiss-cpu>=1.13.2
 
-# Embeddings
+# ================= Hybrid Retriever =================
+rank-bm25>=0.2.2
+
+# ================= Embeddings =================
 sentence-transformers>=2.6.1
-torch>=2.1.0
+torch>=2.9.0
 
-# Google Gemini
+# ================= Google Gemini / Groq =================
 langchain-google-genai>=1.0.5
 langchain-groq>=0.0.3
-google-genai>=0.3.0
-google-generativeai>=0.7.0
+google-generativeai>=0.7.2
 
-# Document loaders (PIN VERSION)
-pypdf>=4.0.0
-unstructured==0.18.18
+# ================= Document Loaders =================
+pypdf>=4.2.0
+unstructured>=0.18.18
 
-# Utils
+# ================= Utils =================
 python-dotenv>=1.0.1
-tqdm>=4.66.0
+tqdm>=4.66.4
 
-# Web App
-streamlit>=1.25.0
+# ================= Web App =================
+streamlit>=1.32.2
