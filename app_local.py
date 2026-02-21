@@ -15,6 +15,7 @@ from generation.flashcard import generate_flashcards
 from generation.exam import generate_exam_questions
 from ui.exam_ui import render_exam
 from debug.print_utils import print_chunks_table
+from retrieval.retriever import get_retriever
 from utils.config import CHAT_MODEL, GOOGLE_API_KEY, CHAT_MODEL_GROQ, GROQ_API_KEY
 
 
