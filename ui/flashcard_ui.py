@@ -4,10 +4,6 @@ import streamlit as st
 def render_flashcards(flashcards):
     st.markdown("### Flashcards")
 
-    if not flashcards:
-        st.info("No flashcards to display.")
-        return
-
     for i, card in enumerate(flashcards):
         st.markdown(f"{card['question']}")
 
