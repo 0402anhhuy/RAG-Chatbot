@@ -6,39 +6,57 @@ from generation.prompt_exam import get_exam_prompt
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAIError
 
 
-# ---------------- Validation ----------------
+"""
+---------------- Validation ----------------
+Kiểm tra cấu trúc câu hỏi được JSON trả về có hợp lệ không:
+- Phải có đúng 4 lựa chọn A → D (Options cũng là Dict)
+- Không được trùng nội dung lựa chọn
+- Chỉ có 1 đáp án đúng
+"""
 def _is_valid_question(q: Dict) -> bool:
     """
-    Validate a single exam question structure
+    Cấu trúc của q (câu hỏi) trong Dict:
+    {
+        "question": "Câu hỏi",
+        "options": {
+            "A": "Lựa chọn A",
+            "B": "Lựa chọn B",
+            "C": "Lựa chọn C",
+            "D": "Lựa chọn D"
+        },
+        "correct_answer": "A"
+    }
     """
     if not isinstance(q, dict):
         return False
 
+    # Kiểm tra có đủ keys theo cấu trúc câu hỏi
     if "question" not in q or "options" not in q or "correct_answer" not in q:
         return False
 
     options = q["options"]
 
-    # Must be exactly A–D
+    # Có đúng 4 lựa chọn A → D
     if set(options.keys()) != {"A", "B", "C", "D"}:
         return False
 
-    # No duplicated option content
+    # Không có đáp án trùng lặp
     if len(set(options.values())) != 4:
         return False
 
-    # Correct answer must be one of A–D
+    # Đáp án đúng thuộc A → D
     if q["correct_answer"] not in {"A", "B", "C", "D"}:
         return False
 
     return True
 
 
-# ---------------- Shuffle options safely ----------------
+"""
+---------------- Shuffle options ----------------
+Trộn thứ tự các đáp án sau khi câu hỏi đã hợp lệ
+"""
 def _shuffle_options(q: Dict) -> Dict:
-    """
-    Shuffle answer options while keeping correct answer mapping
-    """
+    # Tạo một list các cặp (key, value) từ options → truyền vào random.shuffle() để sắp xếp ngẫu nhiên
     options_items = list(q["options"].items())
     random.shuffle(options_items)
 
@@ -47,7 +65,9 @@ def _shuffle_options(q: Dict) -> Dict:
     new_options = {}
     new_correct = None
 
+    # Cú pháp enumerate(...) trả ra cặp (idx, item(key, value))
     for idx, (_, value) in enumerate(options_items):
+        # Tạo lại key mới dựa trên idx (0 → A, 1 → B, ...) (ord("A") → mã ASCII của "A" (65))
         key = chr(ord("A") + idx)
         new_options[key] = value
         if value == correct_value:
@@ -58,27 +78,27 @@ def _shuffle_options(q: Dict) -> Dict:
     return q
 
 
-# ---------------- Main API ----------------
-def generate_exam_questions(
+"""
+---------------- Main API ----------------
+- Hàm generate_exam_questions() được gọi từ app.py để tạo exam từ toàn bộ document
+    Args:
+        llm: Mô hình LLM
+        chunks: Toàn bộ nội dung sau khi chunk (List[Document])
+        max_questions: số lượng câu hỏi
+        max_retries: số lần thử lại nếu LLM trả về lỗi hoặc JSON không hợp lệ
+
+    Returns:
+        List of validated exam questions
+"""
+def generate_exam_questions( 
     llm,
     chunks,
     *,
     max_questions: int = 10,
-    max_retries: int = 2,
+    max_retries: int = 2
 ) -> List[Dict]:
-    """
-    Generate multiple-choice exam questions from the entire document
-
-    Args:
-        llm: ChatGoogleGenerativeAI
-        chunks: list of Document
-        max_questions: desired number of questions
-        max_retries: retry LLM if JSON is invalid
-
-    Returns:
-        List of validated exam questions
-    """
-    # Merge all content
+    
+    # Gộp nội dung từ tất cả chunks thành một string lớn để đưa vào prompt
     context = "\n\n".join(
         f"[Page {c.metadata.get('page', 'N/A')}]\n{c.page_content}"
         for c in chunks
@@ -96,6 +116,7 @@ def generate_exam_questions(
             )
 
             raw_text = response.content.strip()
+
 
             try:
                 parsed = json.loads(raw_text)
