@@ -2,7 +2,7 @@ import json
 import random
 from typing import List, Dict
 
-from generation.prompt_exam import get_exam_prompt
+from prompt.prompt_exam import get_exam_prompt
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAIError
 
 
@@ -91,8 +91,8 @@ def _shuffle_options(q: Dict) -> Dict:
         List of validated exam questions
 """
 def generate_exam_questions( 
-    llm,
-    chunks,
+    llm: any,
+    chunks: List[Dict],
     *,
     max_questions: int = 10,
     max_retries: int = 2
