@@ -1,21 +1,18 @@
-# generation/flashcard.py
-
 import json
 import re
 from typing import List, Dict
 
-from generation.prompt_flashcard import get_flashcard_prompt
+from prompt.prompt_flashcard import get_flashcard_prompt
 
-
+"""
+---------------- Extract JSON ----------------
+LLM có thể trả về JSON được bao quanh bởi markdown
+"""
 def _extract_json(text: str) -> str | None:
-    """
-    Extract JSON array from LLM output safely.
-    """
-    # Remove markdown fences
+    # Loại bỏ markdown code nếu có
     text = text.strip()
     text = re.sub(r"```json|```", "", text, flags=re.IGNORECASE).strip()
 
-    # Try to extract JSON array
     match = re.search(r"\[\s*{.*}\s*\]", text, re.DOTALL)
     if match:
         return match.group(0)
@@ -23,15 +20,23 @@ def _extract_json(text: str) -> str | None:
     return None
 
 
-def generate_flashcards(llm, chunks, max_chunks: int = 20) -> List[Dict]:
-    """
-    Generate flashcards from the whole document content.
-    """
+"""
+---------------- Main API ----------------
+- Hàm generate_flashcards() được gọi từ app.py để tạo flashcard từ toàn bộ document
+    Args:
+        llm: Mô hình LLM
+        chunks: Toàn bộ nội dung sau khi chunk (List[Dict])
+        max_chunks: số lượng chunk tối đa để đưa vào prompt (giới hạn context)
+
+    Returns:
+        List of validated flashcards
+"""
+def generate_flashcards(llm: any, chunks: List[Dict], max_chunks: int = 20) -> List[Dict]:
     prompt = get_flashcard_prompt()
 
-    # Limit chunks to avoid context overflow
     selected_chunks = chunks[:max_chunks]
 
+    # Gộp nội dung từ các chunk đã chọn thành một string lớn để đưa vào prompt
     context = "\n\n".join(
         f"(Page {c.metadata.get('page', 'N/A')}) {c.page_content}"
         for c in selected_chunks
@@ -44,6 +49,7 @@ def generate_flashcards(llm, chunks, max_chunks: int = 20) -> List[Dict]:
     raw_output = response.content
 
     json_text = _extract_json(raw_output)
+
     if not json_text:
         raise ValueError(
             "LLM did not return valid JSON for flashcards.\n\n"
@@ -58,7 +64,7 @@ def generate_flashcards(llm, chunks, max_chunks: int = 20) -> List[Dict]:
             f"Extracted JSON:\n{json_text}"
         ) from e
 
-    # Validate structure
+    # Kiểm tra cấu trúc các flashcard có đủ question, answer, page
     valid_cards = []
     for card in flashcards:
         if all(k in card for k in ("question", "answer", "page")):
