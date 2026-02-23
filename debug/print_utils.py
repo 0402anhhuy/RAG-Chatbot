@@ -1,7 +1,7 @@
 from tabulate import tabulate
 
 
-def print_chunks_table(chunks: list, max_len=120):
+def print_chunks_table(chunks: list, max_len=300):
     table = []
 
     for i, doc in enumerate(chunks):
