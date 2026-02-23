@@ -2,11 +2,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from copy import deepcopy
 
 
-def _merge_small_chunks(chunks, min_length=300):
-    """
-    Gộp các chunk quá ngắn vào chunk trước đó
-    để giữ trọn vẹn concept / ý nghĩa.
-    """
+def _merge_small_chunks(chunks: list, min_length=300):
     merged = []
     buffer = None
 
@@ -27,16 +23,14 @@ def _merge_small_chunks(chunks, min_length=300):
 
     return merged
 
-
-def chunk_documents(documents, mode="rag"):
-    """
-    mode:
-      - rag       : dùng cho chat hỏi đáp
-      - flashcard : sinh flashcard
-      - exam      : sinh câu hỏi thi
-    """
-
-    # ---------------- Chunk config theo use case ----------------
+"""
+---------------- Main API ----------------
+- Hàm chunk_documents() được gọi để chia nhỏ document thành các chunk
+    Args:
+        documents: list các Document sau khi load (List[Document])
+        mode: "rag" | "flashcard" | "exam"
+"""
+def chunk_documents(documents: list, mode="rag"):
     if mode == "flashcard":
         chunk_size = 400
         chunk_overlap = 80
@@ -45,34 +39,41 @@ def chunk_documents(documents, mode="rag"):
         chunk_size = 1000
         chunk_overlap = 200
         min_chunk_length = 350
-    else:  # rag
+    else:
         chunk_size = 850
         chunk_overlap = 200
         min_chunk_length = 300
 
-    # ---------------- Semantic-first splitter ----------------
+    # Tạo công cụ chia nhỏ văn bản → splitter (Dùng RecursiveCharacterTextSplitter)
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         separators=[
-            "\n\n",  # đoạn
-            "\n",    # dòng
-            ". ",    # câu
+            "\n\n",  # Đoạn
+            "\n",    # Dòng
+            ". ",    # Câu
             "; ",
             ", ",
             " "
         ]
     )
 
+    # Chia nhỏ document thành các chunk vụn → List[Document]
     raw_chunks = splitter.split_documents(documents)
 
-    # ---------------- Merge chunk vụn ----------------
+    # Merge các chunk quá ngắn vào chunk trước đó → List[Document]
     merged_chunks = _merge_small_chunks(
-        raw_chunks,
+        chunks=raw_chunks,
         min_length=min_chunk_length
     )
 
-    # ---------------- Metadata enrichment ----------------
+    """
+    - Duyệt từng chunk trong merged_chunks (enumerate):
+        - idx: index của chunk (0, 1, 2, ...)
+        - chunk: [Document] sau khi đã chia nhỏ
+            - page_content: nội dung văn bản của chunk
+            - metadata: dict chứa thông tin metadata gốc
+    """
     final_chunks = []
     for idx, chunk in enumerate(merged_chunks):
         meta = chunk.metadata or {}
