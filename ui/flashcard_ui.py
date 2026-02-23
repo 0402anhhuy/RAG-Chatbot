@@ -1,10 +1,12 @@
 import streamlit as st
 
+from typing import Dict, List
 
-def render_flashcards(flashcards):
+
+def render_flashcards(flashcards: List[Dict]):
     st.markdown("### Flashcards")
 
-    for i, card in enumerate(flashcards):
+    for _, card in enumerate(flashcards):
         st.markdown(f"{card['question']}")
 
         with st.expander("Show answer"):
