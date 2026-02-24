@@ -25,7 +25,7 @@ def _merge_small_chunks(chunks: list, min_length=300):
 
 """
 ---------------- Main API ----------------
-- Hàm chunk_documents() được gọi để chia nhỏ document thành các chunk
+- Hàm chunk_documents() được gọi để chia nhỏ document thành các chunk → List[Document]
     Args:
         documents: list các Document sau khi load (List[Document])
         mode: "rag" | "flashcard" | "exam"
