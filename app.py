@@ -10,8 +10,9 @@ from domain.chunking import chunk_documents
 from generation.answer import generate_answer
 from generation.exam import generate_exam_questions
 from generation.flashcard import generate_flashcards
-from generation.prompt import get_rag_prompt
+from prompt.prompt_chat import get_chat_prompt
 from loaders.pdf_loader import load_pdfs_from_dir
+from retrieval.context_compression import compress_context
 from retrieval.retriever import build_vectorstore, get_retriever
 from ui.exam_ui import render_exam
 from ui.flashcard_ui import render_flashcards
@@ -24,29 +25,33 @@ st.set_page_config(
     layout="wide"
 )
 
+# Chiều cao cố định cho mỗi panel (Sources, Conversation, Studio)
 PANEL_HEIGHT_PX = 600
 
 st.markdown(
-        """
-        <style>
-            html, body {
-                height: 100%;
-                overflow: hidden;
-            }
-            div[data-testid="stAppViewContainer"],
-            section.main {
-                height: 100vh;
-                overflow: hidden;
-            }
-            div.block-container {
-                padding-top: 1rem;
-                padding-bottom: 1rem;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
+    """
+    <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        div[data-testid="stAppViewContainer"],
+        section.main {
+            height: 100vh;
+            overflow: hidden;
+        }
+            
+        div.block-container {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
+# Cài đặt các trạng thái mặc định cho session state
 DEFAULT_SESSION_STATE = {
     "pdf_processed": False,
     "last_uploaded_file": None,
@@ -58,28 +63,22 @@ DEFAULT_SESSION_STATE = {
     "messages": [],
     "chat_last_message_count": 0,
     "chat_pending_prompt": None,
-    "conversation_mode": "chat",  # chat | flashcards | exam
+    "conversation_mode": "chat",
 }
 
-# Trạng thái mặc định
-
-
+# Cài đặt trạng thái mặc định
 def _ensure_session_state() -> None:
     for key, default_value in DEFAULT_SESSION_STATE.items():
         if key not in st.session_state:
             st.session_state[key] = default_value
 
 # Hàm reset toàn bộ trạng thái - nút "Reset All"
-
-
 def _reset_all() -> None:
     for key in list(DEFAULT_SESSION_STATE.keys()):
         st.session_state.pop(key, None)
     st.rerun()
 
 # Hàm xóa lịch sử chat - nút "New Chat"
-
-
 def _clear_chat() -> None:
     st.session_state.messages = []
     st.toast("Chat history cleared", duration="short")
@@ -94,20 +93,10 @@ st.title("RAG PDF Study App")
 sources_col, chat_col, studio_col = st.columns([1.15, 2.4, 1.15], gap="small")
 
 
-# ---------------- Sources Panel (Nguồn) ----------------
+# ---------------- Sources Panel ----------------
 with sources_col:
     with st.container(border=True, height=PANEL_HEIGHT_PX):
         st.markdown("### Sources")
-        # st.button("＋ Add document", use_container_width=True, key="src_add_source")
-
-        # st.text_input(
-        #     "Tìm nguồn mới trên web",
-        #     placeholder="Tìm nguồn mới trên web",
-        #     label_visibility="collapsed",
-        #     disabled=True,
-        #     key="src_web_search_disabled",
-        # )
-
         uploaded_file = st.file_uploader(
             "Upload source",
             type=["pdf"],
@@ -115,7 +104,6 @@ with sources_col:
             key="src_pdf_uploader",
         )
 
-        # --- LOGIC THÔNG MINH VỚI TOAST ---
         if uploaded_file is not None:
             if uploaded_file.name != st.session_state.last_uploaded_file:
                 if st.session_state.last_uploaded_file is not None:
@@ -167,8 +155,6 @@ if process_pdf_btn:
                 documents = load_pdfs_from_dir(tmpdir)
                 chunks = chunk_documents(documents)
 
-                print_chunks_table(chunks)
-
                 vectorstore = build_vectorstore(chunks)
                 retriever = get_retriever(vectorstore)
 
@@ -187,12 +173,6 @@ if process_pdf_btn:
                 st.rerun()
 
 # ---------------- LLM ----------------
-# llm = ChatGoogleGenerativeAI(
-#     model=CHAT_MODEL,
-#     google_api_key=GOOGLE_API_KEY,
-#     temperature=0.3
-# )
-
 CHAT_MODEL_GROQ = "llama-3.3-70b-versatile"
 GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 
@@ -203,7 +183,7 @@ llm = ChatGroq(
 )
 
 
-# ---------------- Chat Panel (Cuộc trò chuyện) ----------------
+# ---------------- Chat Panel ----------------
 with chat_col:
     with st.container(border=True, height=PANEL_HEIGHT_PX):
         mode = st.session_state.get("conversation_mode", "chat")
@@ -220,14 +200,13 @@ with chat_col:
 
             if mode == "flashcards":
                 if not st.session_state.flashcards:
-                    st.info(
-                        "No flashcards yet. Click ‘Flashcards’ in Studio to generate.")
+                    st.toast(":yellow[**NOTICE**]: No flashcards to display")
                 else:
                     render_flashcards(st.session_state.flashcards)
 
             if mode == "exam":
                 if not st.session_state.exam_questions:
-                    st.info("No exam yet. Click ‘Exam’ in Studio to generate.")
+                    st.toast(":yellow[**NOTICE**]: No exam yet")
                 else:
                     render_exam(st.session_state.exam_questions)
 
@@ -235,35 +214,32 @@ with chat_col:
             st.markdown("### Conversation")
 
             if not st.session_state.pdf_processed:
-                st.toast(
-                    ":yellow[**NOTICE**]: Please upload a PDF and click Process PDF", duration="infinite")
+                st.toast(":yellow[**NOTICE**]: Please upload a PDF and click Process PDF", duration="infinite")
 
-            # If a prompt was submitted in the previous run, generate the answer first.
             pending = st.session_state.get("chat_pending_prompt")
             if pending:
                 if not st.session_state.pdf_processed:
-                    st.toast(
-                        ":yellow[**NOTICE**]: Please upload and process a PDF first", duration="long")
+                    st.toast(":yellow[**NOTICE**]: Please upload and process a PDF first", duration="long")
                     st.session_state.chat_pending_prompt = None
                 else:
                     with st.spinner("Thinking..."):
                         docs = st.session_state.retriever.invoke(pending)
-                        context = "\n\n".join(d.page_content for d in docs)
+                        raw_context = "\n\n".join(d.page_content for d in docs)
+                        compressed = compress_context(llm=llm, docs=docs, question=pending)
+                        context = compressed if compressed.strip() else raw_context
 
                         answer = generate_answer(
                             llm=llm,
-                            prompt=get_rag_prompt(),
+                            prompt=get_chat_prompt(),
                             context=context,
                             question=pending,
                         )
 
-                        pages = sorted({d.metadata.get("page", "N/A")
-                                       for d in docs})
+                        pages = sorted({d.metadata.get("page", "N/A") for d in docs})
                         source_text = f"\n\n*Sources: pages {pages}*"
                         full_response = answer + source_text
 
-                    st.session_state.messages.append(
-                        {"role": "assistant", "content": full_response})
+                    st.session_state.messages.append({"role": "assistant", "content": full_response})
                     st.session_state.chat_pending_prompt = None
 
             for message in st.session_state.messages:
@@ -308,7 +284,7 @@ with chat_col:
                     st.rerun()
 
 
-# ---------------- Studio Panel (Flashcards / Exam) ----------------
+# ---------------- Studio Panel ----------------
 with studio_col:
     with st.container(border=True, height=PANEL_HEIGHT_PX):
         st.markdown("### Studio")
@@ -316,8 +292,6 @@ with studio_col:
         left, right = st.columns(2)
 
         with left:
-            st.button("Mind map", use_container_width=True,
-                      disabled=True, key="studio_mindmap")
             generate_flashcard_btn = st.button(
                 "Flashcards",
                 use_container_width=True,
@@ -332,8 +306,6 @@ with studio_col:
                 disabled=not st.session_state.pdf_processed,
                 key="studio_exam",
             )
-            st.button("Data report", use_container_width=True,
-                      disabled=True, key="studio_data_report")
 
         if generate_flashcard_btn:
             if not st.session_state.chunks:
@@ -367,5 +339,5 @@ with studio_col:
 
         st.markdown("---")
         st.markdown("### History conversations")
-        with st.container(border=True, height=270):
+        with st.container(border=True, height=324):
             st.info("Coming soon")
