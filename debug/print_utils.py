@@ -1,7 +1,8 @@
 from tabulate import tabulate
+from langchain_core.documents import Document
 
 
-def print_chunks_table(chunks: list, max_len=300):
+def print_chunks_table(chunks: list[Document], max_len=300):
     table = []
 
     for i, doc in enumerate(chunks):
