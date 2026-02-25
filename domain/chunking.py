@@ -1,8 +1,9 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 from copy import deepcopy
 
 
-def _merge_small_chunks(chunks: list, min_length=300):
+def _merge_small_chunks(chunks: list[Document], min_length=300) -> list[Document]:
     merged = []
     buffer = None
 
@@ -30,7 +31,7 @@ def _merge_small_chunks(chunks: list, min_length=300):
         documents: list các Document sau khi load (List[Document])
         mode: "rag" | "flashcard" | "exam"
 """
-def chunk_documents(documents: list, mode="rag"):
+def chunk_documents(documents: list[Document], mode="rag") -> list[Document]:
     if mode == "flashcard":
         chunk_size = 400
         chunk_overlap = 80
