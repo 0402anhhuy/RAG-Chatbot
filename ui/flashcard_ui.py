@@ -3,7 +3,7 @@ import streamlit as st
 from typing import Dict, List
 
 
-def render_flashcards(flashcards: List[Dict]):
+def render_flashcards(flashcards: List[Dict]) -> None:
     st.markdown("### Flashcards")
 
     for _, card in enumerate(flashcards):
