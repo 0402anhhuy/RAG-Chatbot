@@ -1,7 +1,6 @@
-from typing import List
+from typing import Any, List
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 compression_prompt = ChatPromptTemplate.from_template(
@@ -25,7 +24,7 @@ compression_prompt = ChatPromptTemplate.from_template(
 
 
 def compress_context(
-    llm: ChatGoogleGenerativeAI,
+    llm: Any,
     docs: List[Document],
     question: str
 ) -> str:
@@ -40,7 +39,7 @@ def compress_context(
             )
         )
 
-        content = response.content.strip()
+        content = getattr(response, "content", str(response)).strip()
 
         if content != "NONE":
             compressed_blocks.append(content)
