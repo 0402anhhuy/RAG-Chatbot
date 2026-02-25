@@ -1,7 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 
-def get_chat_prompt():
+def get_chat_prompt() -> ChatPromptTemplate:
     return ChatPromptTemplate.from_template(
         """
         You are a helpful AI assistant.
