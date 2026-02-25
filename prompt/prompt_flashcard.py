@@ -1,4 +1,4 @@
-def get_flashcard_prompt():
+def get_flashcard_prompt() -> str:
     return """
 You are a senior teaching assistant and curriculum designer.
 
