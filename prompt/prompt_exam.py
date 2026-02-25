@@ -1,4 +1,4 @@
-def get_exam_prompt():
+def get_exam_prompt() -> str:
     return """
 You are an expert exam creator.
 
