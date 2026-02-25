@@ -19,7 +19,7 @@ questions = [
     }
 ]
 """
-def render_exam(questions: List[Dict]):
+def render_exam(questions: List[Dict]) -> None:
     st.markdown("### Exam")
 
     score = 0
