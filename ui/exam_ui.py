@@ -20,8 +20,6 @@ questions = [
 ]
 """
 def render_exam(questions: List[Dict]) -> None:
-    st.markdown("### Exam")
-
     score = 0
     user_answers = {}
 
