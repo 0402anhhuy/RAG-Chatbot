@@ -1,27 +1,6 @@
 from typing import Any, List
 from langchain_core.documents import Document
-from langchain_core.prompts import ChatPromptTemplate
-
-
-compression_prompt = ChatPromptTemplate.from_template(
-    """
-    You are a context filtering assistant.
-
-    Your task:
-    Extract ONLY the information from the text that is relevant to the question.
-    - Keep important facts.
-    - Remove unrelated details.
-    - Do NOT summarize generally.
-    - If nothing is relevant, return exactly: NONE
-
-    Text:
-    {text}
-
-    Question:
-    {question}
-    """
-)
-
+from prompt.prompt_compression import compress_context
 
 def compress_context(
     llm: Any,
@@ -31,9 +10,11 @@ def compress_context(
 
     compressed_blocks = []
 
+    context = compress_context()
+
     for doc in docs:
         response = llm.invoke(
-            compression_prompt.format(
+            context.format(
                 text=doc.page_content,
                 question=question
             )
