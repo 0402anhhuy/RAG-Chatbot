@@ -1,6 +1,6 @@
 from typing import Any, List
 from langchain_core.documents import Document
-from prompt.prompt_compression import compress_context
+from prompt.prompt_compression import compression_context
 
 def compress_context(
     llm: Any,
@@ -10,7 +10,7 @@ def compress_context(
 
     compressed_blocks = []
 
-    context = compress_context()
+    context = compression_context()
 
     for doc in docs:
         response = llm.invoke(
