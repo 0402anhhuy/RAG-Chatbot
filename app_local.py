@@ -1,5 +1,6 @@
 import os
 import tempfile
+from datetime import datetime, timezone
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -28,7 +29,7 @@ st.set_page_config(
 # Chiều cao cố định cho mỗi panel (Sources, Conversation, Studio)
 PANEL_HEIGHT_PX = 600
 
-st.markdown(
+st.markdown(body=
     """
     <style>
         html, body {
@@ -61,6 +62,10 @@ DEFAULT_SESSION_STATE = {
     "flashcards": [],
     "exam_questions": [],
     "messages": [],
+    "chat_history": [],
+    "chat_counter": 1,
+    "active_chat_id": 1,
+    "viewing_history_chat_id": None,
     "chat_last_message_count": 0,
     "chat_pending_prompt": None,
     "conversation_mode": "chat",
@@ -72,17 +77,77 @@ def _ensure_session_state() -> None:
         if key not in st.session_state:
             st.session_state[key] = default_value
 
+
+def _make_chat_title(messages) -> str:
+    for m in messages:
+        if m.get("role") == "user":
+            content = str(m.get("content", "")).strip()
+            if content:
+                content = " ".join(content.split())
+                return content[:40] + ("…" if len(content) > 40 else "")
+    return "New chat"
+
+
+def _update_history_chat(chat_id: int, messages) -> None:
+    history = st.session_state.get("chat_history", [])
+    for chat in history:
+        if int(chat.get("id", -1)) == int(chat_id):
+            chat["messages"] = [dict(m) for m in list(messages)]
+            return
+
 # Hàm reset toàn bộ trạng thái - nút "Reset All"
 def _reset_all() -> None:
     for key in list(DEFAULT_SESSION_STATE.keys()):
         st.session_state.pop(key, None)
-    st.rerun()
+    # Streamlit will rerun automatically after button callbacks.
 
 # Hàm xóa lịch sử chat - nút "New Chat"
 def _clear_chat() -> None:
+    # Lưu chat hiện tại vào lịch sử, rồi tạo chat mới
+    current_messages = list(st.session_state.get("messages", []))
+    viewing_id = st.session_state.get("viewing_history_chat_id")
+
+    # Nếu đang xem lại 1 chat trong history: update lại đúng chat đó (không append mới)
+    if current_messages and viewing_id is not None:
+        _update_history_chat(int(viewing_id), current_messages)
+
+    # Nếu đang là chat mới (chưa thuộc history): archive thành 1 record mới
+    if current_messages and viewing_id is None:
+        st.session_state.chat_history.append(
+            {
+                "id": int(st.session_state.get("active_chat_id", 1)),
+                "title": _make_chat_title(current_messages),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "messages": [dict(m) for m in current_messages],
+            }
+        )
+
+    st.session_state.chat_counter = int(st.session_state.get("chat_counter", 1)) + 1
+    st.session_state.active_chat_id = st.session_state.chat_counter
+    st.session_state.viewing_history_chat_id = None
     st.session_state.messages = []
-    st.toast("Chat history cleared", duration="short")
-    st.rerun()
+    st.session_state.chat_pending_prompt = None
+    st.session_state.chat_last_message_count = 0
+    st.session_state.conversation_mode = "chat"
+    st.toast("Started a new chat", duration="short")
+
+
+def _load_chat_from_history(chat_id: int) -> None:
+    # Persist any edits to the currently opened historical chat before switching
+    current_viewing = st.session_state.get("viewing_history_chat_id")
+    if current_viewing is not None:
+        _update_history_chat(int(current_viewing), st.session_state.get("messages", []))
+
+    history = st.session_state.get("chat_history", [])
+    for chat in history:
+        if int(chat.get("id", -1)) == int(chat_id):
+            archived = chat.get("messages") or []
+            st.session_state.messages = [dict(m) for m in archived]
+            st.session_state.chat_pending_prompt = None
+            st.session_state.chat_last_message_count = 0
+            st.session_state.conversation_mode = "chat"
+            st.session_state.viewing_history_chat_id = int(chat_id)
+            st.session_state.active_chat_id = int(chat_id)
 
 
 _ensure_session_state()
@@ -90,7 +155,7 @@ _ensure_session_state()
 
 st.title("RAG PDF Study App")
 
-sources_col, chat_col, studio_col = st.columns([1.15, 2.4, 1.15], gap="small")
+sources_col, chat_col, studio_col = st.columns(spec=[1.15, 2.4, 1.15], gap="small")
 
 
 # ---------------- Sources Panel ----------------
@@ -98,7 +163,7 @@ with sources_col:
     with st.container(border=True, height=PANEL_HEIGHT_PX):
         st.markdown("### Sources")
         uploaded_file = st.file_uploader(
-            "Upload source",
+            label="Upload source",
             type=["pdf"],
             label_visibility="collapsed",
             key="src_pdf_uploader",
@@ -108,7 +173,7 @@ with sources_col:
             if uploaded_file.name != st.session_state.last_uploaded_file:
                 if st.session_state.last_uploaded_file is not None:
                     st.toast(
-                        f":blue[**INFO**]: Detected new file: {uploaded_file.name}",
+                        body=f":blue[**INFO**]: Detected new file: {uploaded_file.name}",
                         duration="long",
                     )
                 st.session_state.pdf_processed = False
@@ -117,7 +182,7 @@ with sources_col:
             st.session_state.last_uploaded_file = None
 
         process_pdf_btn = st.button(
-            "Process PDF",
+            label="Process PDF",
             use_container_width=True,
             disabled=(uploaded_file is None or st.session_state.pdf_processed),
             key="src_process_pdf",
@@ -130,13 +195,13 @@ with sources_col:
         else:
             st.caption("Saved sources will appear here")
 
-        with st.expander("Controls", expanded=False):
+        with st.expander(label="Controls", expanded=False):
             ctrl1, ctrl2 = st.columns(2)
             with ctrl1:
-                st.button("New Chat", use_container_width=True,
+                st.button(label="New Chat", use_container_width=True,
                           on_click=_clear_chat, key="src_new_chat")
             with ctrl2:
-                st.button("Reset All", use_container_width=True,
+                st.button(label="Reset All", use_container_width=True,
                           on_click=_reset_all, key="src_reset_all")
 
 
@@ -144,7 +209,9 @@ with sources_col:
 if process_pdf_btn:
     if not uploaded_file:
         st.toast(
-            ":yellow[**NOTICE**]: Please upload a PDF first", duration="short")
+            body=":yellow[**NOTICE**]: Please upload a PDF first",
+            duration="short"
+        )
     else:
         with st.spinner("Processing PDF..."):
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -169,7 +236,9 @@ if process_pdf_btn:
                 st.session_state.conversation_mode = "chat"
 
                 st.toast(
-                    ":green[**SUCCESS**]: PDF processed successfully", duration="long")
+                    body=":green[**SUCCESS**]: PDF processed successfully",
+                    duration="long"
+                )
                 st.rerun()
 
 # ---------------- LLM ----------------
@@ -187,36 +256,49 @@ with chat_col:
 
         if mode in ("flashcards", "exam"):
             title_col, close_col = st.columns(
-                [0.92, 0.08], vertical_alignment="center")
-            with title_col:
-                st.markdown("### Conversation")
+                spec=[0.92, 0.08],
+                vertical_alignment="center"
+            )
             with close_col:
-                if st.button("✕", use_container_width=True, key="conv_close"):
+                if st.button(label="✕", use_container_width=True, key="conv_close"):
                     st.session_state.conversation_mode = "chat"
                     st.rerun()
 
             if mode == "flashcards":
                 if not st.session_state.flashcards:
-                    st.toast(":yellow[**NOTICE**]: No flashcards to display")
+                    st.toast(
+                        body=":yellow[**NOTICE**]: No flashcards to display",
+                        duration="short"
+                    )
                 else:
-                    render_flashcards(st.session_state.flashcards)
+                    with title_col:
+                        st.markdown("### Flashcards")
+                    render_flashcards(flashcards=st.session_state.flashcards)
 
             if mode == "exam":
                 if not st.session_state.exam_questions:
-                    st.toast(":yellow[**NOTICE**]: No exam yet")
+                    st.toast(
+                        body=":yellow[**NOTICE**]: No exam yet",
+                        duration="short"
+                    )
                 else:
-                    render_exam(st.session_state.exam_questions)
+                    with title_col:
+                        st.markdown("### Exam")
+                    render_exam(exam_questions=st.session_state.exam_questions)
 
         else:
             st.markdown("### Conversation")
 
             if not st.session_state.pdf_processed:
-                st.toast(":yellow[**NOTICE**]: Please upload a PDF and click Process PDF", duration="infinite")
+                st.caption("Upload a PDF and click 'Process PDF' to start chatting.")
 
             pending = st.session_state.get("chat_pending_prompt")
             if pending:
                 if not st.session_state.pdf_processed:
-                    st.toast(":yellow[**NOTICE**]: Please upload and process a PDF first", duration="long")
+                    st.toast(
+                        body=":yellow[**NOTICE**]: Please upload and process a PDF first", 
+                        duration="long"
+                    )
                     st.session_state.chat_pending_prompt = None
                 else:
                     with st.spinner("Thinking..."):
@@ -239,17 +321,26 @@ with chat_col:
                     st.session_state.messages.append({"role": "assistant", "content": full_response})
                     st.session_state.chat_pending_prompt = None
 
+                    if st.session_state.get("viewing_history_chat_id") is not None:
+                        _update_history_chat(
+                            int(st.session_state.viewing_history_chat_id),
+                            st.session_state.messages,
+                        )
+
             for message in st.session_state.messages:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
 
             # Anchor + autoscroll: after any new messages, scroll to bottom.
             st.markdown(
-                "<div id='chat-bottom' style='height: 1px;'></div>", unsafe_allow_html=True)
+                body="<div id='chat-bottom' style='height: 1px;'></div>", 
+                unsafe_allow_html=True
+            )
+
             current_count = len(st.session_state.messages)
             if current_count != st.session_state.chat_last_message_count:
                 st.session_state.chat_last_message_count = current_count
-                components.html(
+                components.html(html=
                     """
                     <script>
                     const scrollToBottom = () => {
@@ -268,15 +359,24 @@ with chat_col:
                 if st.session_state.pdf_processed
                 else "Upload a document to get started"
             )
-            prompt = st.chat_input(chat_placeholder, key="chat_input")
+            prompt = st.chat_input(placeholder=chat_placeholder, key="chat_input")
 
             if prompt:
                 if not st.session_state.pdf_processed:
                     st.toast(
-                        ":yellow[**NOTICE**]: Please upload and process a PDF first", duration="long")
+                        body=":yellow[**NOTICE**]: Please upload and process a PDF first",
+                        duration="long"
+                    )
                 else:
                     st.session_state.messages.append(
                         {"role": "user", "content": prompt})
+
+                    if st.session_state.get("viewing_history_chat_id") is not None:
+                        _update_history_chat(
+                            int(st.session_state.viewing_history_chat_id),
+                            st.session_state.messages,
+                        )
+
                     st.session_state.chat_pending_prompt = prompt
                     st.rerun()
 
@@ -290,7 +390,7 @@ with studio_col:
 
         with left:
             generate_flashcard_btn = st.button(
-                "Flashcards",
+                label="Flashcards",
                 use_container_width=True,
                 disabled=not st.session_state.pdf_processed,
                 key="studio_flashcards",
@@ -298,7 +398,7 @@ with studio_col:
 
         with right:
             generate_exam_btn = st.button(
-                "Exam",
+                label="Exam",
                 use_container_width=True,
                 disabled=not st.session_state.pdf_processed,
                 key="studio_exam",
@@ -307,7 +407,9 @@ with studio_col:
         if generate_flashcard_btn:
             if not st.session_state.chunks:
                 st.toast(
-                    ":yellow[**NOTICE**]: Please upload a PDF first", duration="long")
+                    body=":yellow[**NOTICE**]: Please upload a PDF first", 
+                    duration="long"
+                )
             else:
                 if not st.session_state.flashcards:
                     with st.spinner("Generating flashcards..."):
@@ -315,14 +417,18 @@ with studio_col:
                             llm=llm, chunks=st.session_state.chunks)
                         st.session_state.flashcards = flashcards
                 st.toast(
-                    f":green[**SUCCESS**]: Created {len(st.session_state.flashcards)} flashcards", duration="long")
+                    body=f":green[**SUCCESS**]: Created {len(st.session_state.flashcards)} flashcards", 
+                    duration="long"
+                )
                 st.session_state.conversation_mode = "flashcards"
                 st.rerun()
 
         if generate_exam_btn:
             if not st.session_state.chunks:
                 st.toast(
-                    ":yellow[**NOTICE**]: Please upload a PDF first", duration="long")
+                    body=":yellow[**NOTICE**]: Please upload a PDF first", 
+                    duration="long"
+                )
             else:
                 if not st.session_state.exam_questions:
                     with st.spinner("Generating exam questions..."):
@@ -330,11 +436,42 @@ with studio_col:
                             llm=llm, chunks=st.session_state.chunks)
                         st.session_state.exam_questions = exam_questions
                 st.toast(
-                    f":green[**SUCCESS**]: Created {len(st.session_state.exam_questions)} exam questions", duration="long")
+                    body=f":green[**SUCCESS**]: Created {len(st.session_state.exam_questions)} exam questions", 
+                    duration="long"
+                )
                 st.session_state.conversation_mode = "exam"
                 st.rerun()
 
         st.markdown("---")
         st.markdown("### History conversations")
         with st.container(border=True, height=324):
-            st.info("Coming soon")
+            history = st.session_state.get("chat_history", [])
+            if not history:
+                st.caption("No saved conversations yet")
+            else:
+                # Show newest first
+                for chat in reversed(history):
+                    title = str(chat.get("title") or f"Chat {chat.get('id', '')}").strip()
+                    created_at = str(chat.get("created_at") or "").strip()
+                    messages = chat.get("messages") or []
+
+                    timestamp_label = created_at
+                    if created_at:
+                        try:
+                            dt = datetime.fromisoformat(created_at)
+                            timestamp_label = dt.astimezone().strftime("%Y-%m-%d %H:%M")
+                        except Exception:
+                            timestamp_label = created_at
+
+                    label = (
+                        f"{title} • {timestamp_label} • {len(messages)} msgs"
+                        if timestamp_label
+                        else f"{title} • {len(messages)} msgs"
+                    )
+                    st.button(
+                        label,
+                        key=f"history_open_{chat.get('id', '')}",
+                        use_container_width=True,
+                        on_click=_load_chat_from_history,
+                        args=(int(chat.get("id", -1)),),
+                    )
