@@ -94,7 +94,7 @@ def generate_exam_questions(
     llm: any,
     chunks: List[Dict],
     *,
-    max_questions: int = 10,
+    max_questions: int = 25,
     max_retries: int = 2
 ) -> List[Dict]:
     
