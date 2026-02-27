@@ -19,7 +19,7 @@ questions = [
     }
 ]
 """
-def render_exam(questions: List[Dict]) -> None:
+def render_exam(exam_questions: List[Dict]) -> None:
     score = 0
     user_answers = {}
 
@@ -28,7 +28,7 @@ def render_exam(questions: List[Dict]) -> None:
     - i: index của câu hỏi (0, 1, 2, ...)
     - q: dictionary chứa thông tin câu hỏi (question, options, correct_answer, page)
     """
-    for i, q in enumerate(questions):
+    for i, q in enumerate(exam_questions):
         st.markdown(f"### Q{i + 1}. {q['question']}")
 
         # Tạo dict các lựa chọn từ q["options"] → options = {"A": "Berlin", "B": "Madrid", "C": "Paris", "D": "Rome"}
@@ -46,15 +46,15 @@ def render_exam(questions: List[Dict]) -> None:
         st.markdown("---")
 
     if st.button("Submit Exam"):
-        for i, q in enumerate(questions):
+        for i, q in enumerate(exam_questions):
             if user_answers.get(i) == "":
                 continue
             if user_answers.get(i) == q["correct_answer"]:
                 score += 1
 
-        st.success(f"Your score: {score} / {len(questions)}")
+        st.success(f"Your score: {score} / {len(exam_questions)}")
 
         with st.expander("Review Answers"):
-            for i, q in enumerate(questions):
+            for i, q in enumerate(exam_questions):
                 st.markdown(
                     f"**Q{i + 1}: {q['question']} - Correct answer: {q['correct_answer']}**")
