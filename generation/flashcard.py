@@ -26,12 +26,19 @@ def _extract_json(text: str) -> str | None:
     Args:
         llm: Mô hình LLM
         chunks: Toàn bộ nội dung sau khi chunk (List[Dict])
+        max_flashcards: số lượng flashcard tối đa cần trả về
         max_chunks: số lượng chunk tối đa để đưa vào prompt (giới hạn context)
 
     Returns:
         List of validated flashcards
 """
-def generate_flashcards(llm: any, chunks: List[Dict], max_chunks: int = 20) -> List[Dict]:
+def generate_flashcards(
+    llm: any,
+    chunks: List[Dict],
+    *,
+    max_flashcards: int = 20,
+    max_chunks: int = 20,
+) -> List[Dict]:
     prompt = get_flashcard_prompt()
 
     selected_chunks = chunks[:max_chunks]
@@ -42,9 +49,10 @@ def generate_flashcards(llm: any, chunks: List[Dict], max_chunks: int = 20) -> L
         for c in selected_chunks
     )
 
-    response = llm.invoke(
-        prompt.format(context=context)
-    )
+    response = llm.invoke(prompt.format(
+        context=context, 
+        max_flashcards=int(max_flashcards)
+    ))
 
     raw_output = response.content
 
