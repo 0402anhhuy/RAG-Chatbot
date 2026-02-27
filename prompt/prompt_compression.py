@@ -1,7 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 
-def compress_context() -> ChatPromptTemplate:
+def compression_context() -> ChatPromptTemplate:
     return ChatPromptTemplate.from_template(
         """
         You are a context filtering assistant.
