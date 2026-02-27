@@ -31,11 +31,11 @@ def _merge_small_chunks(chunks: list[Document], min_length=300) -> list[Document
         documents: list các Document sau khi load (List[Document])
         mode: "rag" | "flashcard" | "exam"
 """
-def chunk_documents(documents: list[Document], mode="rag") -> list[Document]:
+def chunk_documents(documents: list[Document], mode="chat") -> list[Document]:
     if mode == "flashcard":
-        chunk_size = 400
-        chunk_overlap = 80
-        min_chunk_length = 200
+        chunk_size = 700
+        chunk_overlap = 150
+        min_chunk_length = 250
     elif mode == "exam":
         chunk_size = 1000
         chunk_overlap = 200
