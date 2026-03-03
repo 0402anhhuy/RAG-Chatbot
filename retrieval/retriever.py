@@ -31,7 +31,7 @@ def build_vectorstore(chunks: list[Document]) -> FAISS:
             vectorstore: FAISS vector store đã xây dựng
             k: số lượng chunk gần nhất cần truy xuất (mặc định: TOP_K)
 """
-def get_retriever(vectorstore: FAISS, k=TOP_K) -> FAISS.Retriever:
+def get_retriever(vectorstore: FAISS, k=TOP_K) -> FAISS.as_retriever:
     return vectorstore.as_retriever(
         search_kwargs={"k": k}
     )
