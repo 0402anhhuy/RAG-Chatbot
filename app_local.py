@@ -9,11 +9,11 @@ from langchain_groq import ChatGroq
 from debug.print_utils import print_chunks_table
 from domain.chunking import chunk_documents
 from generation.answer import generate_answer
+from generation.context_compression import compress_context
 from generation.exam import generate_exam_questions
 from generation.flashcard import generate_flashcards
 from prompt.prompt_chat import get_chat_prompt
 from loaders.pdf_loader import load_pdfs_from_dir
-from retrieval.context_compression import compress_context
 from retrieval.retriever import build_vectorstore, get_retriever
 from ui.exam_ui import render_exam
 from ui.flashcard_ui import render_flashcards
@@ -52,7 +52,7 @@ st.markdown(body=
     unsafe_allow_html=True,
 )
 
-# Cài đặt các trạng thái mặc định cho session state
+# Khởi tạo các trạng thái mặc định cho session state
 DEFAULT_SESSION_STATE = {
     "pdf_processed": False,
     "last_uploaded_file": None,
@@ -99,7 +99,6 @@ def _update_history_chat(chat_id: int, messages) -> None:
 def _reset_all() -> None:
     for key in list(DEFAULT_SESSION_STATE.keys()):
         st.session_state.pop(key, None)
-    # Streamlit will rerun automatically after button callbacks.
 
 # Hàm xóa lịch sử chat - nút "New Chat"
 def _clear_chat() -> None:
@@ -129,7 +128,7 @@ def _clear_chat() -> None:
     st.session_state.chat_pending_prompt = None
     st.session_state.chat_last_message_count = 0
     st.session_state.conversation_mode = "chat"
-    st.toast("Started a new chat", duration="short")
+    st.toast(body=":blue[**INFO**]: Started a new chat", duration="short")
 
 
 def _load_chat_from_history(chat_id: int) -> None:
@@ -198,11 +197,15 @@ with sources_col:
         with st.expander(label="Controls", expanded=False):
             ctrl1, ctrl2 = st.columns(2)
             with ctrl1:
-                st.button(label="New Chat", use_container_width=True,
-                          on_click=_clear_chat, key="src_new_chat")
+                st.button(
+                    label="New Chat", use_container_width=True,
+                    on_click=_clear_chat, key="src_new_chat"
+                )
             with ctrl2:
-                st.button(label="Reset All", use_container_width=True,
-                          on_click=_reset_all, key="src_reset_all")
+                st.button(
+                    label="Reset All", use_container_width=True,
+                    on_click=_reset_all, key="src_reset_all"
+                )
 
 
 # ---------------- Load & Index PDF ----------------
@@ -290,7 +293,10 @@ with chat_col:
             st.markdown("### Conversation")
 
             if not st.session_state.pdf_processed:
-                st.caption("Upload a PDF and click 'Process PDF' to start chatting.")
+                st.toast(
+                    body=":yellow[**NOTICE**]: Upload a PDF and click 'Process PDF' to start chatting",
+                    duration="infinite"
+                )
 
             pending = st.session_state.get("chat_pending_prompt")
             if pending:
