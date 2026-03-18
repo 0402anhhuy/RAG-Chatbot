@@ -2,7 +2,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 
-from utils.config import TOP_K
+from utils.config import TOP_K, EMBEDDING_MODEL
 
 
 """
@@ -13,7 +13,7 @@ from utils.config import TOP_K
 """
 def build_vectorstore(chunks: list[Document]) -> FAISS:
     embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+        model_name=EMBEDDING_MODEL
     )
 
     vectorstore = FAISS.from_documents(
