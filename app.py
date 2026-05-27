@@ -254,7 +254,6 @@ llm = ChatGroq(
     temperature=0.3
 )
 
-
 # ---------------- Chat Panel ----------------
 with chat_col:
     with st.container(border=True, height=PANEL_HEIGHT_PX):
