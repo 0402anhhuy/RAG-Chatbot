@@ -6,15 +6,16 @@ import streamlit as st
 import streamlit.components.v1 as components
 from langchain_groq import ChatGroq
 
-from debug.print_utils import print_chunks_table
 from domain.chunking import chunk_documents
 from generation.answer import generate_answer
 from generation.context_compression import compress_context
 from generation.exam import generate_exam_questions
 from generation.flashcard import generate_flashcards
+from generation.history_aware import rephrase_question
 from prompt.prompt_chat import get_chat_prompt
 from loaders.pdf_loader import load_pdfs_from_dir
 from retrieval.retriever import build_vectorstore, get_retriever
+from retrieval.hybrid_retriever import build_hybrid_search
 from ui.exam_ui import render_exam
 from ui.flashcard_ui import render_flashcards
 from utils.config import CHAT_MODEL_GROQ, GROQ_API_KEY
@@ -130,7 +131,6 @@ def _clear_chat() -> None:
     st.session_state.conversation_mode = "chat"
     st.toast(body=":blue[**INFO**]: Started a new chat", duration="short")
 
-
 def _load_chat_from_history(chat_id: int) -> None:
     # Persist any edits to the currently opened historical chat before switching
     current_viewing = st.session_state.get("viewing_history_chat_id")
@@ -223,10 +223,10 @@ if process_pdf_btn:
                     f.write(uploaded_file.read())
 
                 documents = load_pdfs_from_dir(tmpdir)
-                chunks = chunk_documents(documents)
+                chunks = chunk_documents(documents, strategy="semantic")
 
                 vectorstore = build_vectorstore(chunks)
-                retriever = get_retriever(vectorstore)
+                retriever = build_hybrid_search(vectorstore=vectorstore, documents=chunks)
 
                 st.session_state.chunks = chunks
                 st.session_state.vectorstore = vectorstore
@@ -311,16 +311,22 @@ with chat_col:
                     st.session_state.chat_pending_prompt = None
                 else:
                     with st.spinner("Thinking..."):
-                        docs = st.session_state.retriever.invoke(pending)
+                        # --- Multi-turn Conversation: Rephrase question ---
+                        # st.session_state.messages có chứa user prompt mới nhất ở cuối cùng,
+                        # nên ta truyền vào history là tất cả các tin nhắn trước đó ([:-1])
+                        history_for_rephrase = st.session_state.messages[:-1]
+                        standalone_q = rephrase_question(llm=llm, question=pending, history=history_for_rephrase)
+                        
+                        docs = st.session_state.retriever.invoke(standalone_q)
                         raw_context = "\n\n".join(d.page_content for d in docs)
-                        compressed = compress_context(llm=llm, docs=docs, question=pending)
+                        compressed = compress_context(llm=llm, docs=docs, question=standalone_q)
                         context = compressed if compressed.strip() else raw_context
 
                         answer = generate_answer(
                             llm=llm,
                             prompt=get_chat_prompt(),
                             context=context,
-                            question=pending,
+                            question=standalone_q,
                         )
 
                         pages = sorted({d.metadata.get("page", "N/A") for d in docs})
