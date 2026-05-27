@@ -12,10 +12,10 @@ langchain-google-genai>=2.0.0
 google-generativeai>=0.7.2
 
 # ================= Embeddings =================
-sentence-transformers==3.0.1
-transformers==5.0.0rc3
-torch==2.8.0
-accelerate==0.33.0
+sentence-transformers>=3.0.0
+transformers>=4.34.0
+torch>=2.0.0
+accelerate>=0.30.0
 
 # ================= Vector Store =================
 faiss-cpu==1.8.0.post1
