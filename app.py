@@ -226,7 +226,7 @@ if process_pdf_btn:
                 chunks = chunk_documents(documents, mode="chat", strategy="recursive")
 
                 vectorstore = build_vectorstore(chunks)
-                retriever = build_hybrid_search(vectorstore=vectorstore, documents=chunks)
+                retriever = get_retriever(vectorstore=vectorstore)
 
                 st.session_state.chunks = chunks
                 st.session_state.vectorstore = vectorstore
