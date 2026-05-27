@@ -223,7 +223,7 @@ if process_pdf_btn:
                     f.write(uploaded_file.read())
 
                 documents = load_pdfs_from_dir(tmpdir)
-                chunks = chunk_documents(documents, strategy="semantic")
+                chunks = chunk_documents(documents, mode="chat", strategy="recursive")
 
                 vectorstore = build_vectorstore(chunks)
                 retriever = build_hybrid_search(vectorstore=vectorstore, documents=chunks)
