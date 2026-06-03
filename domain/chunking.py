@@ -1,6 +1,5 @@
 from langchain_core.documents import Document
 
-from domain.semantic_chunking import semantic_chunk_documents
 from domain.recursive_chunking import recursive_chunk_documents
 
 """
@@ -10,9 +9,8 @@ from domain.recursive_chunking import recursive_chunk_documents
         documents: list các Document sau khi load (List[Document])
         mode: "rag" | "flashcard" | "exam"
 """
-def chunk_documents(documents: list[Document], mode="chat", strategy="recursize") -> list[Document]:
+def chunk_documents(documents: list[Document], mode="chat", strategy="recursive") -> list[Document]:
     if strategy == "semantic":
-        return semantic_chunk_documents(documents=documents)
-    else:
-        return recursive_chunk_documents(documents=documents, mode=mode)
+        print("Warning: 'semantic' strategy is no longer supported because langchain-experimental was removed. Falling back to 'recursive' strategy.")
+    return recursive_chunk_documents(documents=documents, mode=mode)
     
