@@ -18,7 +18,7 @@ from retrieval.retriever import build_vectorstore, get_retriever
 from retrieval.hybrid_retriever import build_hybrid_search
 from ui.exam_ui import render_exam
 from ui.flashcard_ui import render_flashcards
-from utils.config import CHAT_MODEL_GROQ, GROQ_API_KEY
+# from utils.config import CHAT_MODEL_GROQ, GROQ_API_KEY
 
 
 # ---------------- Page Config ----------------
