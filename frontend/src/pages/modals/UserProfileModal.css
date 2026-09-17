@@ -1,0 +1,441 @@
+/* Background Scrim */
+.profile-modal-scrim {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeInModal 0.16s ease-out;
+}
+
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal Frame */
+.profile-modal-container {
+    width: min(100%, 560px);
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow:
+        0 20px 40px -8px rgba(15, 23, 42, 0.14),
+        0 8px 16px -4px rgba(15, 23, 42, 0.06);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: scaleInModal 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleInModal {
+    from {
+        transform: scale(0.96) translateY(8px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Header */
+.profile-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+.header-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 7px;
+    background-color: #e0f2fe;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.header-text-block h2 {
+    font-size: 0.96rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 2px;
+}
+
+.header-text-block p {
+    font-size: 0.74rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.close-action-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.close-action-btn:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+/* Scrollable Body */
+.profile-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(85vh - 120px);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Identity Card */
+.identity-hero-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+}
+
+.user-avatar-large {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    background-color: #e0f2fe;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.identity-narrative {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.name-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.name-status-row h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+}
+
+.verified-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #059669;
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.identity-email {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.platform-role-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background-color: #e2e8f0;
+    color: #334155;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+/* 2-Column Meta Tiles */
+.profile-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.meta-field-tile {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meta-tile-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.meta-tile-value strong {
+    font-size: 0.82rem;
+    color: #0f172a;
+}
+
+.meta-tile-value code,
+.meta-tile-value-copy code {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #0f172a;
+    background-color: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.meta-tile-value-copy {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.copy-mini-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+}
+
+.copy-mini-btn:hover {
+    color: #0f172a;
+    background-color: #f1f5f9;
+}
+
+/* Sections */
+.modal-section-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.section-small-title {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.06em;
+}
+
+/* Hub Cards Grid */
+.assigned-hubs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.hub-entitlement-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.hub-card-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hub-type-glyph {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hub-type-glyph.dev {
+    background-color: #e0f2fe;
+    color: #0284c7;
+}
+
+.hub-type-glyph.edu {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.hub-entitlement-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.hub-entitlement-meta strong {
+    font-size: 0.8rem;
+    color: #0f172a;
+}
+
+.hub-entitlement-meta small {
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.entitlement-badge.enabled {
+    font-size: 0.65rem;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Quota Metrics Container */
+.quota-metrics-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.quota-card-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.quota-meta-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quota-label-unit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: #0f172a;
+}
+
+.quota-numeric-counter {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-family: monospace;
+}
+
+.quota-bar-track {
+    width: 100%;
+    height: 6px;
+    background-color: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.quota-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+}
+
+.quota-bar-fill.amber {
+    background-color: #f59e0b;
+}
+.quota-bar-fill.blue {
+    background-color: #0284c7;
+}
+
+/* Modal Footer */
+.profile-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-top: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+.footer-status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.status-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+}
+
+.btn-manage-account-action {
+    padding: 7px 18px;
+    background-color: #0284c7;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-manage-account-action:hover {
+    background-color: #0369a1;
+}
+
+/* Responsive */
+@media (max-width: 540px) {
+    .profile-details-grid,
+    .assigned-hubs-grid {
+        grid-template-columns: 1fr;
+    }
+}
