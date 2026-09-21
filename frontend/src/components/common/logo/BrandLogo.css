@@ -1,0 +1,75 @@
+.prism-brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* 3 sọc Prism */
+.brand-mark-stripes {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 18px;
+}
+
+.brand-mark-stripes i {
+    width: 3px;
+    height: 15px;
+    display: block;
+    border-radius: 2px;
+    transform: skewX(-20deg);
+}
+
+/* Bộ màu mới: Violet - Cyan - Mint (thoát hoàn toàn vibe FPT) */
+.brand-mark-stripes i:nth-child(1) {
+    background: #f43f5e;
+}
+
+.brand-mark-stripes i:nth-child(2) {
+    height: 20px;
+    background: #2563eb;
+}
+
+.brand-mark-stripes i:nth-child(3) {
+    background: #6366f1;
+}
+
+/* Chữ đi kèm logo */
+.brand-title-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+/* Biến thể kích thước (sm, md, lg) */
+.prism-brand-logo.sm .brand-mark-stripes {
+    height: 14px;
+}
+.prism-brand-logo.sm .brand-mark-stripes i {
+    width: 2.5px;
+    height: 11px;
+}
+.prism-brand-logo.sm .brand-mark-stripes i:nth-child(2) {
+    height: 14px;
+}
+.prism-brand-logo.sm .brand-title-text {
+    font-size: 12px;
+}
+
+.prism-brand-logo.lg .brand-mark-stripes {
+    height: 24px;
+}
+.prism-brand-logo.lg .brand-mark-stripes i {
+    width: 4px;
+    height: 18px;
+}
+.prism-brand-logo.lg .brand-mark-stripes i:nth-child(2) {
+    height: 24px;
+}
+.prism-brand-logo.lg .brand-title-text {
+    font-size: 18px;
+}
