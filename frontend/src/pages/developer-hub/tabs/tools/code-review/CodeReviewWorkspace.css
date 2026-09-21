@@ -1,0 +1,796 @@
+/* ROOT WORKSPACE CHUẨN VS CODE LIGHT THEME */
+.vscode-editor-root {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #334155;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* 1. SIDEBAR EXPLORER */
+.vscode-sidebar {
+    width: 240px;
+    background-color: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100%;
+}
+
+.vscode-sidebar-titlebar {
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px 0 6px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.btn-return-hub {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+}
+
+.btn-return-hub:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.titlebar-heading {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.06em;
+}
+
+.sidebar-action-dots {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.vscode-explorer-body {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.explorer-repo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.repo-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: 0.03em;
+}
+
+.repo-quick-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+}
+
+.repo-quick-icons svg {
+    cursor: pointer;
+}
+
+.repo-quick-icons svg:hover {
+    color: #0f172a;
+}
+
+/* Tree Nodes */
+.vscode-tree-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 8px;
+}
+
+.tree-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    font-size: 0.76rem;
+    color: #475569;
+    cursor: pointer;
+}
+
+.tree-row:hover {
+    background-color: #f1f5f9;
+}
+
+.tree-row.selected {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.node-folder-icon {
+    color: #d97706;
+}
+
+.file-glyph.css {
+    color: #0284c7;
+}
+.file-glyph.jsx {
+    color: #06b6d4;
+}
+
+.node-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.git-status-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding-right: 8px;
+    font-family: monospace;
+}
+
+.git-status-badge.U {
+    color: #10b981;
+}
+.git-status-badge.M {
+    color: #f59e0b;
+}
+
+/* 2. MAIN EDITOR AREA */
+.vscode-main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: #ffffff;
+    min-width: 320px;
+}
+
+/* Tabs Bar */
+.vscode-tabs-bar {
+    height: 35px;
+    background-color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.tabs-scroller-track {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    overflow-x: auto;
+}
+
+.editor-tab-item {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border-right: 1px solid #e2e8f0;
+    font-size: 0.74rem;
+    color: #64748b;
+    background-color: #f1f5f9;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.editor-tab-item.active {
+    background-color: #ffffff;
+    color: #0f172a;
+    font-weight: 600;
+    border-top: 2px solid #0284c7;
+}
+
+.tab-git-tag {
+    font-size: 0.64rem;
+    font-weight: 700;
+}
+
+.tab-git-tag.U {
+    color: #10b981;
+}
+.tab-git-tag.M {
+    color: #f59e0b;
+}
+
+.tab-close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 3px;
+    display: flex;
+}
+
+.tab-close-btn:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.tabs-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-right: 10px;
+    position: relative;
+}
+
+.action-glyph {
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.action-glyph:hover {
+    color: #0f172a;
+    background-color: #e2e8f0;
+}
+
+.action-btn-glyph {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.action-btn-glyph:hover,
+.action-btn-glyph.active {
+    color: #0f172a;
+    background-color: #e2e8f0;
+}
+
+/* DROPDOWN MENU 3 CHẤM (THEO ẢNH 1 - CHUYỂN SANG THEME SÁNG) */
+.editor-dropdown-context-menu {
+    position: absolute;
+    top: 36px;
+    right: 8px;
+    width: 220px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    padding: 4px 0;
+    z-index: 100;
+}
+
+.menu-action-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 14px;
+    font-size: 0.76rem;
+    color: #334155;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.menu-action-item:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.menu-action-item kbd {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    font-family: monospace;
+}
+
+.menu-action-item.checked {
+    position: relative;
+    padding-left: 28px;
+}
+
+.check-mark {
+    position: absolute;
+    left: 10px;
+    font-size: 0.74rem;
+    color: #0284c7;
+    font-weight: 700;
+}
+
+.menu-divider-line {
+    height: 1px;
+    background-color: #f1f5f9;
+    margin: 4px 0;
+}
+
+/* Breadcrumbs */
+.vscode-breadcrumbs-bar {
+    height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    font-size: 0.72rem;
+    color: #64748b;
+    border-bottom: 1px solid #f8fafc;
+    background-color: #ffffff;
+}
+
+.vscode-breadcrumbs-bar .sep {
+    color: #cbd5e1;
+    font-size: 0.65rem;
+}
+
+.crumb-file-icon {
+    color: #0284c7;
+}
+
+/* Code Editor Canvas */
+.vscode-editor-canvas {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.code-text-scroller {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.55;
+}
+
+.code-gutter-row {
+    display: flex;
+    align-items: center;
+    height: 20px;
+    padding-left: 6px;
+}
+
+.code-gutter-row.active-line-highlight {
+    background-color: #f8fafc;
+}
+
+.gutter-num {
+    width: 44px;
+    text-align: right;
+    padding-right: 18px;
+    color: #94a3b8;
+    user-select: none;
+    font-size: 0.72rem;
+}
+
+.code-line-prose {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: pre;
+    color: #1e293b;
+}
+
+.inline-color-chip {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    display: inline-block;
+}
+
+.code-syntax.comment-text {
+    color: #64748b;
+    font-style: italic;
+}
+
+.vscode-minimap-rail {
+    width: 50px;
+    background-color: #fafbfc;
+    border-left: 1px solid #f1f5f9;
+    position: relative;
+    overflow: hidden;
+}
+
+.minimap-viewport-slider {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background-color: rgba(100, 116, 139, 0.08);
+}
+
+.minimap-lines-sim {
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.minimap-pixel-line {
+    height: 2px;
+    background-color: #cbd5e1;
+    border-radius: 1px;
+    width: 75%;
+}
+
+/* Status Bar */
+.vscode-statusbar {
+    height: 22px;
+    background-color: #0f172a;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    font-size: 0.68rem;
+}
+
+.statusbar-left-cluster,
+.statusbar-right-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.status-item.quota-alert-badge {
+    background-color: #ef4444;
+    color: #ffffff;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+/* 3. COPILOT / AGENT CHAT PANEL (THEO ẢNH 2 - LIGHT THEME TOÀN DIỆN) */
+.agent-chat-sidepanel {
+    width: 360px;
+    background-color: #ffffff;
+    border-left: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100%;
+}
+
+.agent-panel-header {
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.header-badge-pill span {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #0f172a;
+    background-color: #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.header-controls-cluster {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #64748b;
+}
+
+.agent-header-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 3px;
+    display: grid;
+    place-items: center;
+}
+
+.agent-header-btn:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.control-divider {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    margin: 0 2px;
+}
+
+/* Sessions Section */
+.agent-sessions-section {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sessions-title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.sessions-title-bar strong {
+    font-size: 0.76rem;
+    color: #0f172a;
+}
+
+.sessions-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+}
+
+.tool-icon {
+    cursor: pointer;
+}
+
+.tool-icon:hover {
+    color: #0f172a;
+}
+
+.sessions-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.session-history-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.session-history-item:hover {
+    background-color: #f8fafc;
+}
+
+.session-lead-col {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.session-status-glyph.error {
+    color: #ef4444;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.session-clean-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #94a3b8;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.session-titles-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.session-title-text {
+    font-size: 0.78rem;
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.session-metrics-line {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.diff-green-red {
+    color: #10b981;
+}
+
+.text-failed {
+    color: #ef4444;
+}
+
+.session-time-text {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.sessions-more-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding: 6px 8px;
+    font-size: 0.74rem;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.more-count-pill {
+    font-size: 0.68rem;
+    background-color: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #475569;
+}
+
+/* Composer Dock */
+.agent-composer-dock {
+    padding: 12px;
+    border-top: 1px solid #f1f5f9;
+    background-color: #ffffff;
+}
+
+.composer-surface-card {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.15s ease;
+}
+
+.composer-surface-card:focus-within {
+    border-color: #0284c7;
+    background-color: #ffffff;
+}
+
+.context-attachment-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    color: #475569;
+    width: fit-content;
+}
+
+.plus-glyph {
+    color: #94a3b8;
+}
+.css-file-glyph {
+    color: #0284c7;
+}
+
+.composer-textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.78rem;
+    color: #0f172a;
+    resize: none;
+    font-family: inherit;
+}
+
+.composer-footer-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 4px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.toolbar-left-tools {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tool-pill-action {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 3px 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: #475569;
+    cursor: pointer;
+}
+
+.tool-pill-action:hover {
+    background-color: #f1f5f9;
+}
+
+.tool-pill-action.labeled span {
+    font-weight: 500;
+}
+
+.toolbar-right-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tool-glyph-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.tool-send-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background-color: #0f172a;
+    color: #ffffff;
+    border: none;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+.tool-send-btn:disabled {
+    background-color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.composer-env-footer {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 4px 0;
+    font-size: 0.68rem;
+    color: #64748b;
+}
+
+.env-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
