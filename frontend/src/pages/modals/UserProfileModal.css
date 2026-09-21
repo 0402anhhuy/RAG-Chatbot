@@ -430,6 +430,11 @@
 
 .btn-manage-account-action:hover {
     background-color: #0369a1;
+    transform: translateY(-1px);
+}
+
+.btn-manage-account-action:active {
+    transform: translateY(0);
 }
 
 /* Responsive */
