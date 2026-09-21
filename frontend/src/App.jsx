@@ -17,6 +17,7 @@ import {
 } from "./pages/workspace/WorkspacePages";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import DeveloperHub from "./pages/developer-hub/DeveloperHub";
 import "./App.css";
 
 function App() {
@@ -32,6 +33,8 @@ function App() {
 
                 {/* 3. Trang chủ mặc định: Chuyển hướng về /overview */}
                 <Route path="/" element={<Navigate to="/overview" replace />} />
+
+                <Route path="/developer-hub" element={<DeveloperHub />} />
 
                 {/* 4. Không gian làm việc chi tiết (Có Sidebar của Layout) */}
                 <Route element={<Layout />}>
