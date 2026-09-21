@@ -1,0 +1,33 @@
+# Git and CI/CD
+.git
+.gitignore
+.github
+*.md
+LICENSE
+
+# Python cache & virtual environment
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+env
+
+# Local environment & secrets (Prevent sensitive keys from leaking into images)
+.env
+*.env
+.env.*
+!.env.example
+
+# Temporary files & evaluation outputs
+eval_questions.json
+hallucination_evaluation_results.json
+*.png
+*.log
+
+# IDE & Editor files
+.vscode
+.idea
+*.swp
+*.swo

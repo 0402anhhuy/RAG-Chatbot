@@ -1,0 +1,61 @@
+services:
+  spring-backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: rag-chatbot-spring
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/knowledge_hub
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      RAG_FASTAPI_URL: http://rag-fastapi:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rag-fastapi:
+        condition: service_started
+
+  rag-fastapi:
+    build:
+      context: .
+      dockerfile: rag_fastapi/Dockerfile
+    container_name: rag-chatbot-rag
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data/uploads:/app/data/uploads
+      - ./data/vector_store:/app/data/vector_store
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: rag-chatbot-postgres
+    environment:
+      POSTGRES_DB: knowledge_hub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d knowledge_hub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  legacy-streamlit:
+    profiles: ["legacy"]
+    build:
+      context: .
+      dockerfile: legacy/Dockerfile
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
