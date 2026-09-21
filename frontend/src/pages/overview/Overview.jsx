@@ -8,6 +8,7 @@ import {
     Clock,
     Code2,
     Database,
+    ExternalLink,
     FileCode2,
     FileText,
     GraduationCap,
@@ -30,8 +31,9 @@ import {
     X,
     Zap,
 } from "lucide-react";
-import "./Overview.css";
+import BrandLogo from "../../components/common/logo/BrandLogo";
 import UserProfileModal from "../modals/UserProfileModal";
+import "./Overview.css";
 
 const HUBS_CONFIG = [
     {
@@ -40,6 +42,7 @@ const HUBS_CONFIG = [
         badge: "ENGINEERING",
         tagline: "Code inspection, architecture modeling, and static security auditing.",
         accentColor: "#0284c7",
+        hubRoute: "/developer-hub", // Route dẫn sang giao diện quản lý chi tiết của Dev Hub
         metrics: { repositories: 14, issuesFound: 3, coverage: "94%" },
         tools: [
             {
@@ -83,6 +86,7 @@ const HUBS_CONFIG = [
         badge: "EDUCATION",
         tagline: "Interactive coding tutoring, rubric evaluation, and exam generation.",
         accentColor: "#059669",
+        hubRoute: "/chat?hub=edu",
         metrics: { courses: 6, quizzesTaken: 48, mastery: "89%" },
         tools: [
             {
@@ -204,7 +208,7 @@ const Overview = () => {
     const userMenuRef = useRef(null);
 
     // Modal Quick Action states
-    const [activeModal, setActiveModal] = useState(null); // "snippet" | "profile_details" | null
+    const [activeModal, setActiveModal] = useState(null);
     const [quickSnippetText, setQuickSnippetText] = useState("");
     const fileInputRef = useRef(null);
 
@@ -269,16 +273,14 @@ const Overview = () => {
         <div className="overview-page-wrapper">
             {/* Topbar */}
             <header className="overview-navbar">
+                {/* DÙNG COMPONENT BRAND LOGO CHUNG TẠI ĐÂY */}
                 <div className="navbar-brand-unit">
-                    <div className="prism-stripe-mark">
-                        <span className="stripe-amber" />
-                        <span className="stripe-blue" />
-                        <span className="stripe-emerald" />
-                    </div>
-                    <div className="brand-copy-unit">
-                        <span className="brand-name">Prism Studio</span>
-                        <span className="brand-env-tag">AI Engineering & Learning Hub</span>
-                    </div>
+                    <BrandLogo
+                        size="md"
+                        title="Prism Studio"
+                        onClick={() => navigate("/overview")}
+                    />
+                    <span className="brand-env-tag">AI Engineering & Learning Hub</span>
                 </div>
 
                 <div className="navbar-search-slot">
@@ -315,10 +317,8 @@ const Overview = () => {
                         </div>
                     </button>
 
-                    {/* USER POPOVER MODAL */}
                     {isUserMenuOpen && (
                         <div className="user-dropdown-popover">
-                            {/* Section 1: User Identity Card */}
                             <div className="popover-identity-header">
                                 <div className="popover-avatar-large">
                                     {(session.name || "HU").slice(0, 2).toUpperCase()}
@@ -336,7 +336,6 @@ const Overview = () => {
                                 </div>
                             </div>
 
-                            {/* Section 2: Workspace Meta Stats */}
                             <div className="popover-workspace-card">
                                 <div className="popover-meta-row">
                                     <span>Tenant ID</span>
@@ -348,9 +347,7 @@ const Overview = () => {
                                 </div>
                             </div>
 
-                            {/* Section 3: Action Menu Items */}
                             <div className="popover-actions-menu">
-                                {/* Trong menu popover user của Overview.jsx */}
                                 <button
                                     type="button"
                                     className="popover-menu-item"
@@ -387,7 +384,6 @@ const Overview = () => {
                                 </button>
                             </div>
 
-                            {/* Section 4: Destructive Log Out */}
                             <div className="popover-footer-boundary">
                                 <button
                                     type="button"
@@ -402,6 +398,7 @@ const Overview = () => {
                     )}
                 </div>
             </header>
+
             {/* Main Content Area */}
             <main className="overview-body-scroller">
                 <div className="overview-content-bounds">
@@ -543,17 +540,32 @@ const Overview = () => {
                                         </div>
                                         <p className="hub-tagline-text">{hub.tagline}</p>
                                     </div>
-                                    <div className="hub-header-meta">
-                                        {hub.id === "dev" ? (
-                                            <span>
-                                                {hub.metrics.repositories} Repos ·{" "}
-                                                {hub.metrics.coverage} Audit Score
-                                            </span>
-                                        ) : (
-                                            <span>
-                                                {hub.metrics.courses} Syllabi ·{" "}
-                                                {hub.metrics.mastery} Overall Score
-                                            </span>
+
+                                    {/* KHỐI NÚT ACTION MỚI DẪN TỚI DEVELOPER HUB */}
+                                    <div className="hub-header-actions-block">
+                                        <div className="hub-header-meta">
+                                            {hub.id === "dev" ? (
+                                                <span>
+                                                    {hub.metrics.repositories} Repos ·{" "}
+                                                    {hub.metrics.coverage} Audit Score
+                                                </span>
+                                            ) : (
+                                                <span>
+                                                    {hub.metrics.courses} Syllabi ·{" "}
+                                                    {hub.metrics.mastery} Overall Score
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {hub.hubRoute && (
+                                            <button
+                                                type="button"
+                                                className="btn-open-hub-launcher"
+                                                onClick={() => navigate(hub.hubRoute)}
+                                            >
+                                                <span>Open {hub.name}</span>
+                                                <ExternalLink size={13} />
+                                            </button>
                                         )}
                                     </div>
                                 </div>
@@ -702,6 +714,7 @@ const Overview = () => {
                     </div>
                 </div>
             </main>
+
             {/* MODAL: QUICK SNIPPET AUDIT */}
             {activeModal === "snippet" && (
                 <div className="modal-backdrop-scrim" onClick={() => setActiveModal(null)}>
@@ -753,6 +766,7 @@ const Overview = () => {
                     </div>
                 </div>
             )}
+
             {/* COMMAND PALETTE MODAL (Cmd+K) */}
             {isCmdOpen && (
                 <div className="cmd-backdrop-curtain" onClick={() => setIsCmdOpen(false)}>
@@ -783,6 +797,20 @@ const Overview = () => {
                                 <span>Source Code Review</span>
                                 <span className="cmd-subtext-note">
                                     Static Inspection & Vulnerability Detection
+                                </span>
+                            </button>
+                            <button
+                                type="button"
+                                className="cmd-option-btn"
+                                onClick={() => {
+                                    navigate("/developer-hub");
+                                    setIsCmdOpen(false);
+                                }}
+                            >
+                                <Terminal size={16} color="#0284c7" />
+                                <span>Developer Hub Workspace</span>
+                                <span className="cmd-subtext-note">
+                                    Projects, Sandboxes & Task Manager
                                 </span>
                             </button>
                             <button
@@ -845,6 +873,8 @@ const Overview = () => {
                     </div>
                 </div>
             )}
+
+            {/* Modal thông tin User Snapshot */}
             <UserProfileModal
                 isOpen={activeModal === "profile_details"}
                 onClose={() => setActiveModal(null)}
