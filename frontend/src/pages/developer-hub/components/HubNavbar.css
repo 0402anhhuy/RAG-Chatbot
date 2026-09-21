@@ -1,0 +1,85 @@
+.vibe-navbar {
+    height: 48px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    flex-shrink: 0;
+}
+
+.navbar-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.crumb-root {
+    color: #64748b;
+}
+.crumb-separator {
+    color: #cbd5e1;
+}
+.crumb-hub {
+    color: #475569;
+}
+.crumb-current {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.navbar-controls-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.navbar-metric-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    color: #475569;
+    background-color: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 5px;
+}
+
+.navbar-keybind-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.key-shortcut-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background-color: #f8fafc;
+}
+
+.btn-primary-action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background-color: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-primary-action:hover {
+    background-color: #1e293b;
+}
