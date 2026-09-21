@@ -1,0 +1,89 @@
+.tools-matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.dev-tool-surface-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.dev-tool-surface-card:hover {
+    border-color: #0284c7;
+    box-shadow: 0 4px 20px rgba(2, 132, 199, 0.08);
+}
+
+.tool-card-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.tool-glyph-frame {
+    width: 36px;
+    height: 36px;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+}
+
+.tool-category-badge {
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.tool-card-narrative h3 {
+    font-size: 0.94rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 6px;
+}
+
+.tool-card-narrative p {
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.45;
+    margin: 0 0 16px;
+}
+
+.tool-card-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #f8fafc;
+    padding-top: 10px;
+    margin-top: auto;
+}
+
+.tool-health-meta {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+
+.tool-launch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: #0284c7;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}

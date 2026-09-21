@@ -1,0 +1,132 @@
+.tab-body-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.tab-header-banner h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 2px;
+}
+
+.tab-header-banner span {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.filter-controls-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 22px;
+}
+
+.filter-search-box {
+    flex: 1;
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #94a3b8;
+}
+
+.filter-search-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    color: #0f172a;
+    font-size: 0.8rem;
+}
+
+.filter-dropdown-select {
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    font-size: 0.78rem;
+    color: #475569;
+    outline: none;
+    cursor: pointer;
+}
+
+.projects-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 16px;
+}
+
+.project-surface-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.card-project-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #0f172a;
+}
+
+.folder-icon {
+    color: #64748b;
+}
+.star-icon {
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.status-idle-pill {
+    font-size: 0.68rem;
+    color: #64748b;
+    background-color: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.project-type-label {
+    font-size: 0.74rem;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.project-sub-meta {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-bottom: 14px;
+}
+
+.btn-open-project {
+    width: 100%;
+    padding: 7px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-open-project:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}

@@ -1,0 +1,37 @@
+.sandbox-empty-box {
+    background-color: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 54px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    margin-top: 18px;
+}
+
+.sandbox-empty-box strong {
+    color: #0f172a;
+    font-size: 0.96rem;
+}
+
+.sandbox-empty-box p {
+    margin: 0 0 12px;
+    font-size: 0.8rem;
+}
+
+.btn-start-sandbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background-color: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}

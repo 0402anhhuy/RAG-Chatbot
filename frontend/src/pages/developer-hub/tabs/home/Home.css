@@ -1,0 +1,241 @@
+.home-resume-hero {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.resume-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.resume-icon-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #ecfdf5;
+    color: #10b981;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.resume-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #10b981;
+    letter-spacing: 0.08em;
+}
+
+.resume-copy h3 {
+    margin: 2px 0 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.resume-copy p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.btn-continue-work {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background-color: #10b981;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-continue-work:hover {
+    background-color: #059669;
+}
+
+/* KPI Cards */
+.home-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.kpi-metric-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.kpi-label {
+    font-size: 0.74rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kpi-icon-muted {
+    color: #94a3b8;
+}
+
+.kpi-value {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+}
+
+.kpi-sub-note {
+    font-size: 0.68rem;
+    color: #94a3b8;
+}
+
+/* 3 Streams */
+.home-three-stream-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.stream-column-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: 280px;
+}
+
+.stream-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.stream-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+    color: #0f172a;
+}
+
+.stream-badge-latest {
+    font-size: 0.6rem;
+    font-weight: 700;
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.btn-text-link {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.74rem;
+    cursor: pointer;
+}
+
+.btn-text-link:hover {
+    color: #0284c7;
+}
+
+.stream-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stream-convo-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.stream-convo-item:hover {
+    background-color: #f8fafc;
+}
+
+.convo-bullet {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #0284c7;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.convo-meta-wrap {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.convo-title-line {
+    font-size: 0.78rem;
+    color: #0f172a;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.convo-sub-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.stream-empty-fill {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 1120px) {
+    .home-kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .home-three-stream-grid {
+        grid-template-columns: 1fr;
+    }
+}
