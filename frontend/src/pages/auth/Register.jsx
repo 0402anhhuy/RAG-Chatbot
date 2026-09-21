@@ -13,9 +13,11 @@ import {
     Sparkles,
     User,
     UserPlus,
+    Bot,
 } from "lucide-react";
 import { authApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
+import BrandLogo from "../../components/common/logo/BrandLogo";
 import {
     validatePhone,
     validateEmail,
@@ -154,15 +156,7 @@ const Register = () => {
         <div className="auth-screen">
             {/* Left Column Showcase Viewport */}
             <div className="auth-showcase">
-                <div className="auth-brand">
-                    <span className="brand-mark">
-                        <i />
-                        <i />
-                        <i />
-                    </span>
-                    <strong>Prism Studio</strong>
-                </div>
-
+                <BrandLogo size="md" title="Prism Studio" onClick={() => navigate("/overview")} />
                 <div className="showcase-copy">
                     <p className="auth-eyebrow">DEVELOPER ONBOARDING</p>
                     <h1>
@@ -208,22 +202,9 @@ const Register = () => {
             {/* Right Column Registration Form Panel */}
             <div className="auth-panel">
                 <div className="auth-panel-inner animate-fade-in">
-                    <div className="mobile-auth-brand">
-                        <span className="brand-mark">
-                            <i />
-                            <i />
-                            <i />
-                        </span>
-                        <strong>Prism Studio</strong>
-                    </div>
-
                     <div className="auth-header">
                         <div className="logo-icon-auth">
-                            <span className="brand-mark">
-                                <i />
-                                <i />
-                                <i />
-                            </span>
+                            <Bot size={24} />
                         </div>
                         <p className="auth-eyebrow">GET STARTED</p>
                         <h2>Create your developer account</h2>
