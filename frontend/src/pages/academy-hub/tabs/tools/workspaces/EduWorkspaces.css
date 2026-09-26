@@ -1,0 +1,559 @@
+.edu-workspace-root {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+.workspace-header-bar {
+    height: 44px;
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    flex-shrink: 0;
+}
+
+.btn-back-hub {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-back-hub:hover {
+    color: #0f172a;
+}
+
+.workspace-meta-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.badge-socratic {
+    font-size: 0.65rem;
+    font-weight: 700;
+    background-color: #ecfdf5;
+    color: #059669;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.badge-socratic.amber {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+.badge-socratic.blue {
+    background-color: #e0f2fe;
+    color: #0284c7;
+}
+.badge-socratic.purple {
+    background-color: #f3e8ff;
+    color: #7c3aed;
+}
+
+.module-crumb {
+    font-size: 0.74rem;
+    color: #94a3b8;
+}
+
+/* Double Pane Layout */
+.workspace-double-pane {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    overflow: hidden;
+}
+
+.workspace-canvas-panel {
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-tab-title,
+.submission-toolbar {
+    height: 36px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 0.78rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.code-editor-block {
+    flex: 1;
+    margin: 0;
+    padding: 16px;
+    background-color: #fafbfc;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: #1e293b;
+    overflow: auto;
+}
+
+/* Socratic Side Agent */
+.workspace-side-agent {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+}
+
+.agent-title-bar {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+.agent-title-lead {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+}
+
+.tutor-mode-tag {
+    font-size: 0.68rem;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.agent-conversation-flow {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-bubble-row {
+    display: flex;
+}
+
+.chat-bubble-row.assistant {
+    justify-content: flex-start;
+}
+.chat-bubble-row.user {
+    justify-content: flex-end;
+}
+
+.chat-bubble-content {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.assistant .chat-bubble-content {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.user .chat-bubble-content {
+    background-color: #059669;
+    color: #ffffff;
+}
+
+.agent-composer-box {
+    border-top: 1px solid #e2e8f0;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.quick-hints-row {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #b45309;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+}
+
+.input-with-send {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+.input-with-send input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.78rem;
+}
+
+.btn-send-agent {
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+.btn-send-agent:disabled {
+    background-color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+/* Exam Prep Workspace */
+.workspace-config-sidebar {
+    padding: 18px;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.workspace-config-sidebar h3 {
+    margin: 0;
+    font-size: 0.96rem;
+    color: #0f172a;
+}
+
+.config-form-unit {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.config-form-unit label {
+    font-size: 0.74rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.config-form-unit select,
+.config-form-unit input[type="text"] {
+    padding: 7px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.78rem;
+}
+
+.difficulty-pills {
+    display: flex;
+    gap: 6px;
+}
+
+.pill-btn {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 5px;
+    font-size: 0.74rem;
+    cursor: pointer;
+}
+
+.pill-btn.active {
+    background-color: #ecfdf5;
+    border-color: #059669;
+    color: #059669;
+    font-weight: 600;
+}
+
+.btn-primary-generate {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.workspace-preview-canvas {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.quiz-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.quiz-preview-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+}
+.source-indexed-tag {
+    font-size: 0.72rem;
+    color: #059669;
+    background: #ecfdf5;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.generated-question-item {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.q-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #64748b;
+}
+.q-text {
+    font-size: 0.86rem;
+    color: #0f172a;
+    margin: 6px 0 14px;
+    font-weight: 500;
+}
+
+.q-choices-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.choice-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+.choice-row.correct-preview {
+    border-color: #059669;
+    background-color: #f0fdf4;
+}
+
+/* Rubric Grader */
+.btn-trigger-grade {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #0284c7;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 0.74rem;
+    cursor: pointer;
+}
+
+.workspace-rubric-card {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.rubric-summary-score {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.score-ring {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid #a7f3d0;
+}
+
+.rubric-summary-score h4 {
+    margin: 0 0 4px;
+    font-size: 0.95rem;
+}
+.rubric-summary-score p {
+    margin: 0;
+    font-size: 0.76rem;
+    color: #64748b;
+}
+
+.rubric-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 7px;
+    border: 1px solid #e2e8f0;
+}
+.check-item.passed {
+    border-color: #a7f3d0;
+    background-color: #f0fdf4;
+    color: #065f46;
+}
+.check-item.warning {
+    border-color: #fed7aa;
+    background-color: #fffbeb;
+    color: #9a3412;
+}
+.check-item strong {
+    display: block;
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+}
+.check-item small {
+    font-size: 0.72rem;
+}
+
+/* Courseware RAG */
+.workspace-rag-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.rag-search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 8px 14px;
+    background-color: #ffffff;
+}
+
+.rag-search-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.85rem;
+}
+
+.btn-vector-query {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #7c3aed;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rag-results-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.rag-citation-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #ffffff;
+}
+.citation-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.citation-source {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: #0f172a;
+}
+.citation-page {
+    font-size: 0.7rem;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.citation-score {
+    font-size: 0.72rem;
+    color: #059669;
+    font-weight: 600;
+}
+.citation-snippet {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #334155;
+    line-height: 1.45;
+    font-style: italic;
+}
+.citation-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 4px;
+}
+.btn-cite-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    color: #475569;
+    cursor: pointer;
+}

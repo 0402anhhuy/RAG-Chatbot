@@ -42,7 +42,7 @@ const HUBS_CONFIG = [
         badge: "ENGINEERING",
         tagline: "Code inspection, architecture modeling, and static security auditing.",
         accentColor: "#0284c7",
-        hubRoute: "/developer-hub", // Route dẫn sang giao diện quản lý chi tiết của Dev Hub
+        hubRoute: "/developer-hub",
         metrics: { repositories: 14, issuesFound: 3, coverage: "94%" },
         tools: [
             {
@@ -86,7 +86,7 @@ const HUBS_CONFIG = [
         badge: "EDUCATION",
         tagline: "Interactive coding tutoring, rubric evaluation, and exam generation.",
         accentColor: "#059669",
-        hubRoute: "/chat?hub=edu",
+        hubRoute: "/academy-hub", // Đã chuyển hướng sang trang Academy Hub mới
         metrics: { courses: 6, quizzesTaken: 48, mastery: "89%" },
         tools: [
             {
@@ -273,7 +273,6 @@ const Overview = () => {
         <div className="overview-page-wrapper">
             {/* Topbar */}
             <header className="overview-navbar">
-                {/* DÙNG COMPONENT BRAND LOGO CHUNG TẠI ĐÂY */}
                 <div className="navbar-brand-unit">
                     <BrandLogo
                         size="md"
@@ -541,7 +540,7 @@ const Overview = () => {
                                         <p className="hub-tagline-text">{hub.tagline}</p>
                                     </div>
 
-                                    {/* KHỐI NÚT ACTION MỚI DẪN TỚI DEVELOPER HUB */}
+                                    {/* NÚT ACTION CHUYỂN TỚI WORKSPACE CỦA HUB TƯƠNG ỨNG */}
                                     <div className="hub-header-actions-block">
                                         <div className="hub-header-meta">
                                             {hub.id === "dev" ? (
@@ -784,6 +783,36 @@ const Overview = () => {
                         </div>
 
                         <div className="cmd-results-scroller">
+                            <div className="cmd-category-tag">Hub Workspaces</div>
+                            <button
+                                type="button"
+                                className="cmd-option-btn"
+                                onClick={() => {
+                                    navigate("/developer-hub");
+                                    setIsCmdOpen(false);
+                                }}
+                            >
+                                <Terminal size={16} color="#0284c7" />
+                                <span>Developer Hub Workspace</span>
+                                <span className="cmd-subtext-note">
+                                    Engineering Sandboxes, Projects & Code Audits
+                                </span>
+                            </button>
+                            <button
+                                type="button"
+                                className="cmd-option-btn"
+                                onClick={() => {
+                                    navigate("/academy-hub");
+                                    setIsCmdOpen(false);
+                                }}
+                            >
+                                <GraduationCap size={16} color="#059669" />
+                                <span>Academy Hub Workspace</span>
+                                <span className="cmd-subtext-note">
+                                    Courseware RAG, Socratic Tutoring & Quizzes
+                                </span>
+                            </button>
+
                             <div className="cmd-category-tag">Developer Hub Tools</div>
                             <button
                                 type="button"
@@ -797,20 +826,6 @@ const Overview = () => {
                                 <span>Source Code Review</span>
                                 <span className="cmd-subtext-note">
                                     Static Inspection & Vulnerability Detection
-                                </span>
-                            </button>
-                            <button
-                                type="button"
-                                className="cmd-option-btn"
-                                onClick={() => {
-                                    navigate("/developer-hub");
-                                    setIsCmdOpen(false);
-                                }}
-                            >
-                                <Terminal size={16} color="#0284c7" />
-                                <span>Developer Hub Workspace</span>
-                                <span className="cmd-subtext-note">
-                                    Projects, Sandboxes & Task Manager
                                 </span>
                             </button>
                             <button

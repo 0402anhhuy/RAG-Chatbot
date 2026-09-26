@@ -1,0 +1,514 @@
+.quizzes-tab-bounds {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 1. Header Banner */
+.quizzes-header-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quizzes-lead-title h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 4px;
+}
+
+.quizzes-lead-title span {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.btn-create-quiz {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-create-quiz:hover {
+    background-color: #047857;
+}
+
+/* 2. Quick Metrics Row */
+.quizzes-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.stat-pill-box {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.stat-val {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.stat-val.green {
+    color: #059669;
+}
+
+.stat-val.blue {
+    color: #0284c7;
+}
+
+/* 3. Controls Row (Search & Filters) */
+.quizzes-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.search-quiz-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 12px;
+    flex: 1;
+    max-width: 360px;
+}
+
+.search-quiz-input .search-icon {
+    color: #94a3b8;
+}
+
+.search-quiz-input input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.78rem;
+    color: #0f172a;
+    width: 100%;
+}
+
+.filters-cluster {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-btn {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    font-size: 0.74rem;
+    color: #64748b;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.filter-btn:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+.filter-btn.active {
+    background-color: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+    font-weight: 600;
+}
+
+/* 4. Split Layout Grid */
+.quizzes-layout-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+/* Cột danh sách đề */
+.quizzes-cards-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quiz-entry-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.quiz-entry-card:hover {
+    border-color: #cbd5e1;
+    background-color: #fafbfc;
+}
+
+.quiz-entry-card.selected {
+    border-color: #059669;
+    background-color: #f0fdf4;
+    box-shadow: 0 2px 10px rgba(5, 150, 105, 0.08);
+}
+
+.quiz-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.course-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.difficulty-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.difficulty-badge.easy {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.difficulty-badge.medium {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.difficulty-badge.hard {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+.quiz-name {
+    font-size: 0.86rem;
+    color: #0f172a;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.quiz-meta-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.quiz-meta-info span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.quiz-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.last-attempt {
+    font-size: 0.68rem;
+    color: #94a3b8;
+}
+
+.quiz-score-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.quiz-status-tag {
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+/* Cột Xem trước bài thi & Interactive Sample */
+.quiz-preview-panel {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.preview-top-banner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.preview-course-sub {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.preview-heading h3 {
+    margin: 4px 0 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.btn-start-drill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease;
+}
+
+.btn-start-drill:hover {
+    background-color: #047857;
+}
+
+/* Surface Câu hỏi mẫu */
+.sample-question-surface {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.question-index-tag {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.04em;
+}
+
+.source-rag-ref {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.question-body-text {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+/* Tùy chọn đáp án */
+.options-selection-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.option-answer-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 7px;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.option-answer-btn:hover {
+    border-color: #cbd5e1;
+    background-color: #ffffff;
+}
+
+.option-letter {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    display: grid;
+    place-items: center;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #475569;
+    flex-shrink: 0;
+}
+
+.option-text {
+    flex: 1;
+    font-size: 0.8rem;
+    color: #334155;
+}
+
+/* Các trạng thái khi chọn / kiểm tra */
+.option-answer-btn.selected-choice {
+    border-color: #0284c7;
+    background-color: #e0f2fe;
+}
+
+.option-answer-btn.selected-choice .option-letter {
+    background-color: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+}
+
+.option-answer-btn.correct-choice {
+    border-color: #059669;
+    background-color: #ecfdf5;
+}
+
+.option-answer-btn.correct-choice .option-letter {
+    background-color: #059669;
+    color: #ffffff;
+    border-color: #059669;
+}
+
+.option-answer-btn.wrong-choice {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.option-answer-btn.wrong-choice .option-letter {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+.state-icon.green {
+    color: #059669;
+}
+
+.state-icon.red {
+    color: #ef4444;
+}
+
+/* Nút kiểm tra & Giải thích */
+.question-action-bar {
+    padding-top: 10px;
+}
+
+.btn-check-answer {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    background-color: #0f172a;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-check-answer:disabled {
+    background-color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.btn-check-answer:not(:disabled):hover {
+    background-color: #1e293b;
+}
+
+.explanation-reveal-box {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.explanation-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #065f46;
+}
+
+.explanation-reveal-box p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #166534;
+    line-height: 1.45;
+}
+
+.btn-retry-sample {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: #059669;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 4px;
+}
+
+.btn-retry-sample:hover {
+    text-decoration: underline;
+}

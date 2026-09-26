@@ -6,18 +6,10 @@ import {
 } from "react-router-dom";
 import Layout from "./components/Layout";
 import Overview from "./pages/overview/Overview";
-import UserChat from "./pages/chat/UserChat";
-import {
-    Dashboard,
-    Activity,
-    Integrations,
-    Team,
-    Settings,
-    Help,
-} from "./pages/workspace/WorkspacePages";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import DeveloperHub from "./pages/developer-hub/DeveloperHub";
+import AcademyHub from "./pages/academy-hub/AcademyHub";
 import "./App.css";
 
 function App() {
@@ -35,17 +27,16 @@ function App() {
                 <Route path="/" element={<Navigate to="/overview" replace />} />
 
                 <Route path="/developer-hub" element={<DeveloperHub />} />
+                <Route path="/academy-hub" element={<AcademyHub />} />
 
                 {/* 4. Không gian làm việc chi tiết (Có Sidebar của Layout) */}
                 <Route element={<Layout />}>
-                    <Route path="chat" element={<UserChat />} />
-                    <Route path="canvas" element={<UserChat />} />
-                    <Route path="admin" element={<Dashboard />} />
+                    {/* <Route path="admin" element={<Dashboard />} />
                     <Route path="activity" element={<Activity />} />
                     <Route path="integrations" element={<Integrations />} />
                     <Route path="team" element={<Team />} />
                     <Route path="settings" element={<Settings />} />
-                    <Route path="help" element={<Help />} />
+                    <Route path="help" element={<Help />} /> */}
                 </Route>
 
                 {/* Fallback cho route không tồn tại */}

@@ -1,0 +1,305 @@
+.edu-home-bounds {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 1. Hero Resume Study Banner */
+.edu-resume-hero {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.resume-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.edu-resume-hero .resume-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 9px;
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.edu-resume-hero .resume-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #059669;
+    letter-spacing: 0.08em;
+}
+
+.edu-resume-hero .resume-copy h3 {
+    margin: 3px 0 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.edu-resume-hero .resume-copy p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.btn-continue-edu {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.btn-continue-edu:hover {
+    background-color: #047857;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+/* 2. KPI Metrics Grid */
+.edu-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.edu-kpi-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.edu-kpi-card .kpi-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.edu-kpi-card .kpi-label {
+    font-size: 0.74rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.edu-kpi-card .kpi-icon-muted {
+    color: #94a3b8;
+}
+
+.edu-kpi-card .kpi-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+}
+
+.edu-kpi-card .kpi-sub-note {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+/* 3. Split Sections: Courses & AI Drills */
+.edu-split-sections {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 18px;
+}
+
+.courses-progress-card,
+.ai-recs-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.section-title-row strong {
+    font-size: 0.88rem;
+    color: #0f172a;
+}
+
+.btn-text-link {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.btn-text-link:hover {
+    color: #059669;
+}
+
+/* Course Items */
+.course-progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.course-progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    background-color: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 7px;
+}
+
+.course-meta-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.course-title-unit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.course-title-unit code {
+    font-size: 0.7rem;
+    font-weight: 700;
+    background-color: #ecfdf5;
+    color: #059669;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.course-title-unit strong {
+    font-size: 0.82rem;
+    color: #1e293b;
+}
+
+.progress-percent {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.progress-bar-track {
+    width: 100%;
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #059669;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.course-next-row small {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+/* AI Recommendation Action Boxes */
+.ai-rec-intro {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 0 0 14px;
+}
+
+.drill-action-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.drill-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #fcfdfe;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        transform 0.12s ease;
+}
+
+.drill-box:hover {
+    border-color: #059669;
+    background-color: #f0fdf4;
+    transform: translateY(-1px);
+}
+
+.drill-box strong {
+    display: block;
+    font-size: 0.82rem;
+    color: #0f172a;
+    margin-bottom: 2px;
+}
+
+.drill-box small {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+    .edu-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .edu-split-sections {
+        grid-template-columns: 1fr;
+    }
+    .edu-resume-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .btn-continue-edu {
+        width: 100%;
+        justify-content: center;
+    }
+}

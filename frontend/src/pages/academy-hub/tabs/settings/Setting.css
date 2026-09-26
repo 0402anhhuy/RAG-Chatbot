@@ -1,0 +1,314 @@
+.edu-settings-bounds {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* 1. Header Banner */
+.edu-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 4px;
+}
+
+.edu-settings-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 4px;
+}
+
+.edu-settings-header span {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.btn-save-settings {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.btn-save-settings:hover {
+    background-color: #047857;
+}
+
+.btn-save-settings.saved {
+    background-color: #0f172a;
+}
+
+/* 2. Split Settings Grid */
+.edu-settings-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+/* Left Sub-nav Column */
+.settings-nav-column {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.12s ease;
+}
+
+.settings-nav-item:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+.settings-nav-item.active {
+    background-color: #ecfdf5;
+    color: #059669;
+    font-weight: 600;
+}
+
+/* Right Content Panel */
+.settings-content-panel {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 24px;
+}
+
+.settings-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.section-narrative-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+}
+
+.section-narrative-header h3 {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.section-narrative-header p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+/* Form Fields Grid */
+.form-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.input-field-unit {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-field-unit.full-width {
+    grid-column: 1 / -1;
+}
+
+.input-field-unit label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.input-field-unit input,
+.select-dropdown-unit select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #0f172a;
+    background-color: #ffffff;
+    outline: none;
+    transition: border-color 0.15s ease;
+    font-family: inherit;
+}
+
+.input-field-unit input:focus,
+.select-dropdown-unit select:focus {
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+/* Setting Card Blocks */
+.setting-card-block {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.block-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.options-radio-cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-card-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: border-color 0.12s ease;
+}
+
+.radio-card-choice input[type="radio"] {
+    margin-top: 3px;
+    accent-color: #059669;
+}
+
+.radio-card-choice strong {
+    display: block;
+    font-size: 0.8rem;
+    color: #0f172a;
+    margin-bottom: 2px;
+}
+
+.radio-card-choice p {
+    margin: 0;
+    font-size: 0.74rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.radio-card-choice.selected {
+    border-color: #059669;
+    background-color: #ecfdf5;
+}
+
+.setting-card-block.toggle-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.setting-card-block.toggle-row strong {
+    font-size: 0.8rem;
+    color: #0f172a;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.setting-card-block.toggle-row p {
+    margin: 0;
+    font-size: 0.74rem;
+    color: #64748b;
+}
+
+.setting-checkbox-toggle {
+    width: 18px;
+    height: 18px;
+    accent-color: #059669;
+    cursor: pointer;
+}
+
+/* Range Sliders */
+.range-field-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.range-field-header label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.range-metric-chip {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.slider-range-input {
+    width: 100%;
+    accent-color: #059669;
+    cursor: pointer;
+}
+
+.range-subtext {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.security-notice-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.75rem;
+    color: #065f46;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .edu-settings-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-fields-grid {
+        grid-template-columns: 1fr;
+    }
+}

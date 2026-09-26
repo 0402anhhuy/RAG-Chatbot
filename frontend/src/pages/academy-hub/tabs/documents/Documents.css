@@ -1,0 +1,571 @@
+.documents-tab-bounds {
+    max-width: 1280px;
+    height: calc(100vh - 80px);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* 1. Header Banner */
+.documents-header-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.documents-header-banner h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 4px;
+}
+
+.documents-header-banner span {
+    font-size: 0.8rem;
+    color: #ffffff;
+}
+
+.btn-upload-document {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-upload-document:hover {
+    background-color: #047857;
+}
+
+/* 2. Split Screen Container */
+.documents-split-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 16px;
+    overflow: hidden;
+}
+
+/* Cột trái: Document List */
+.documents-sidebar-list {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.docs-search-bar {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.docs-search-bar .search-glyph {
+    color: #94a3b8;
+}
+
+.docs-search-bar input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.78rem;
+    color: #0f172a;
+    width: 100%;
+}
+
+.docs-type-filters {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    overflow-x: auto;
+}
+
+.type-pill {
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    font-size: 0.68rem;
+    color: #64748b;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.type-pill:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+.type-pill.active {
+    background-color: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #059669;
+    font-weight: 600;
+}
+
+.docs-scroll-track {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.doc-item-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.doc-item-entry:hover {
+    background-color: #f8fafc;
+}
+
+.doc-item-entry.selected {
+    background-color: #f0fdf4;
+    border-color: #a7f3d0;
+}
+
+.doc-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.file-type-icon.pdf {
+    color: #ef4444;
+}
+.file-type-icon.docx {
+    color: #0284c7;
+}
+.file-type-icon.xlsx {
+    color: #10b981;
+}
+.file-type-icon.pptx {
+    color: #f97316;
+}
+.file-type-icon.md {
+    color: #8b5cf6;
+}
+
+.doc-meta-column {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.doc-title-text {
+    font-size: 0.8rem;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doc-sub-details {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: #64748b;
+}
+
+.doc-course-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.doc-chunks-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: #059669;
+}
+
+.doc-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+    flex-shrink: 0;
+}
+
+.docs-sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid #f1f5f9;
+    background-color: #fafbfc;
+}
+
+.storage-meter-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.storage-progress-rail {
+    height: 4px;
+    background-color: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.storage-fill {
+    height: 100%;
+    background-color: #059669;
+}
+
+/* Cột phải: Document Preview Canvas */
+.documents-preview-canvas {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.preview-top-toolbar {
+    height: 46px;
+    padding: 0 16px;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.preview-file-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.preview-file-identity strong {
+    display: block;
+    font-size: 0.84rem;
+    color: #0f172a;
+}
+
+.preview-file-identity small {
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.preview-controls-cluster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 2px 6px;
+}
+
+.zoom-percentage {
+    font-size: 0.7rem;
+    color: #475569;
+    min-width: 38px;
+    text-align: center;
+}
+
+.btn-toolbar-glyph {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 3px;
+    display: grid;
+    place-items: center;
+}
+
+.btn-toolbar-glyph:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.toolbar-divider {
+    width: 1px;
+    height: 18px;
+    background-color: #e2e8f0;
+}
+
+.btn-ai-query-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #059669;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-ai-query-file:hover {
+    background-color: #d1fae5;
+}
+
+/* Paper Viewport */
+.preview-scroll-viewport {
+    flex: 1;
+    overflow: auto;
+    background-color: #f1f5f9;
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.preview-paper-sheet {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 720px;
+    min-height: 800px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+    border-radius: 4px;
+    padding: 40px;
+    box-sizing: border-box;
+    transition: transform 0.15s ease;
+}
+
+/* 1. PDF Style */
+.pdf-viewer-mock {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.pdf-page-indicator {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-align: right;
+    letter-spacing: 0.05em;
+}
+
+.pdf-viewer-mock h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: #0f172a;
+}
+
+.pdf-paragraph-text {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #334155;
+}
+
+.pdf-formula-highlight {
+    background-color: #f8fafc;
+    border-left: 3px solid #059669;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 0.8rem;
+    color: #0f172a;
+}
+
+.rag-reference-stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: #059669;
+    background-color: #ecfdf5;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-top: 14px;
+}
+
+/* 2. Word Style */
+.word-viewer-mock {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-family: "Calibri", "Segoe UI", sans-serif;
+}
+
+.word-document-header h2 {
+    margin: 0 0 4px;
+    font-size: 1.25rem;
+    color: #0284c7;
+}
+
+.doc-author {
+    font-size: 0.76rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+.word-text-line {
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: #1e293b;
+    margin: 0 0 10px;
+}
+
+/* 3. Excel Spreadsheet Style */
+.excel-viewer-mock {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.excel-sheet-tab-bar {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.sheet-tab.active {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #059669;
+    border-bottom: 2px solid #059669;
+}
+
+.excel-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #cbd5e1;
+}
+
+.excel-grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+    font-family: monospace;
+}
+
+.excel-grid-table th,
+.excel-grid-table td {
+    border: 1px solid #e2e8f0;
+    padding: 6px 10px;
+    text-align: left;
+}
+
+.excel-grid-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+}
+
+.row-num-cell {
+    background-color: #f8fafc;
+    color: #94a3b8;
+    text-align: center;
+    width: 24px;
+}
+
+/* 4. PPT Slide Style */
+.pptx-viewer-mock {
+    display: flex;
+    flex-direction: column;
+}
+
+.slide-frame-container {
+    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    padding: 24px;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+}
+
+.slide-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #ea580c;
+    letter-spacing: 0.06em;
+}
+
+.slide-top-header h4 {
+    margin: 6px 0 16px;
+    font-size: 1.1rem;
+    color: #7c2d12;
+}
+
+.slide-bullet-points {
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #431407;
+}
+
+/* 5. Markdown Style */
+.markdown-viewer-mock pre {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 16px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: #1e293b;
+    white-space: pre-wrap;
+}
+
+.no-document-selected {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #94a3b8;
+    font-size: 0.84rem;
+}

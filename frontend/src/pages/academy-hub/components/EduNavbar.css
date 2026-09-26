@@ -1,0 +1,94 @@
+.edu-navbar {
+    height: 48px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+/* Breadcrumb Navigation */
+.edu-navbar .navbar-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.edu-navbar .crumb-root {
+    color: #64748b;
+}
+
+.edu-navbar .crumb-separator {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+}
+
+.edu-navbar .crumb-hub {
+    color: #059669;
+    font-weight: 500;
+}
+
+.edu-navbar .crumb-current {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Controls Cluster bên phải */
+.edu-navbar .navbar-controls-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Metric Chips */
+.edu-navbar .navbar-metric-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: #334155;
+    background-color: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Chip đếm chuỗi ngày học Streak (Tone màu Cam/Hổ phách) */
+.edu-navbar .navbar-metric-chip.streak-chip {
+    background-color: #fffbeb;
+    border-color: #fde68a;
+    color: #b45309;
+    font-weight: 600;
+}
+
+/* Nút hành động chính Upload Courseware */
+.edu-navbar .btn-primary-edu {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.edu-navbar .btn-primary-edu:hover {
+    background-color: #047857;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+.edu-navbar .btn-primary-edu:active {
+    background-color: #065f46;
+}
