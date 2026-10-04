@@ -20,6 +20,7 @@ const AcademyHub = () => {
     const [activeTab, setActiveTab] = useState("home");
     const [activeSubTool, setActiveSubTool] = useState(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [conversationRequest, setConversationRequest] = useState(null);
 
     const session = JSON.parse(
         localStorage.getItem("rag_session") ||
@@ -38,17 +39,27 @@ const AcademyHub = () => {
         setIsSidebarCollapsed(false);
     };
 
+    const handleAskTutor = (document) => {
+        setConversationRequest({ document, id: Date.now() });
+        setActiveSubTool(null);
+        setIsSidebarCollapsed(false);
+        setActiveTab("conversations");
+    };
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        if (tab !== "conversations") setConversationRequest(null);
+        if (tab !== "tools") {
+            setActiveSubTool(null);
+            setIsSidebarCollapsed(false);
+        }
+    };
+
     return (
         <div className="vibe-edu-layout">
             <EduSidebar
                 activeTab={activeTab}
-                onTabChange={(tab) => {
-                    setActiveTab(tab);
-                    if (tab !== "tools") {
-                        setActiveSubTool(null);
-                        setIsSidebarCollapsed(false);
-                    }
-                }}
+                onTabChange={handleTabChange}
                 session={session}
                 isCollapsed={isSidebarCollapsed}
                 onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
@@ -80,13 +91,16 @@ const AcademyHub = () => {
                         <Documents 
                             workspaceId={currentWorkspaceId} 
                             onLaunchTool={handleLaunchTool} 
+                            onAskTutor={handleAskTutor}
                         />
                     )}
 
                     {activeTab === "conversations" && (
                         <Conversation 
+                            key={conversationRequest?.id || "default-conversation"}
                             workspaceId={currentWorkspaceId} 
                             onLaunchTool={handleLaunchTool} 
+                            initialDocument={conversationRequest?.document || null}
                         />
                     )}
 

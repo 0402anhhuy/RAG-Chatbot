@@ -25,6 +25,11 @@
 
 .documents-header-banner span {
     font-size: 0.8rem;
+    color: #64748b;
+}
+
+.documents-header-button span {
+    font-size: 0.8rem;
     color: #ffffff;
 }
 
@@ -458,8 +463,10 @@
 }
 
 .preview-top-toolbar {
-    height: 46px;
-    padding: 0 16px;
+    min-height: 46px;
+    height: auto;
+    padding: 7px 16px;
+    box-sizing: border-box;
     border-bottom: 1px solid #e2e8f0;
     background-color: #f8fafc;
     display: flex;
@@ -472,23 +479,41 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.preview-file-identity > div {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .preview-file-identity strong {
     display: block;
+    max-width: 100%;
     font-size: 0.84rem;
     color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .preview-file-identity small {
+    display: block;
     font-size: 0.7rem;
     color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .preview-controls-cluster {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .zoom-controls {
@@ -545,6 +570,10 @@
     transition: background-color 0.12s ease;
 }
 
+.btn-ai-query-file span {
+    white-space: nowrap;
+}
+
 .btn-ai-query-file:hover {
     background-color: #d1fae5;
 }
@@ -552,8 +581,8 @@
 .document-insights-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: flex-start;
+    gap: 8px;
     padding: 7px 14px;
     border-bottom: 1px solid #e2e8f0;
     background-color: #ffffff;
@@ -591,7 +620,9 @@
 .document-ai-actions {
     position: relative;
     flex-shrink: 0;
-    gap: 5px;
+    display: inline-flex;
+    gap: 4px;
+    margin-left: auto;
 }
 
 .markdown-view-toggle {
@@ -609,7 +640,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 5px 7px;
+    padding: 5px 10px;
     color: #64748b;
     background: transparent;
     border: none;
@@ -630,7 +661,7 @@
 
 .document-ai-actions button {
     gap: 4px;
-    padding: 5px 7px;
+    padding: 5px 10px;
     color: #475569;
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -652,7 +683,7 @@
 .document-more-trigger {
     display: grid;
     place-items: center;
-    width: 28px;
+    width: 34px;
     height: 28px;
     padding: 0;
     color: #475569;
@@ -1210,9 +1241,10 @@
     display: flex;
     align-items: center;
     gap: 7px;
-    flex: 1;
+    flex: 1 1 auto;
     width: 100%;
-    max-width: 260px;
+    max-width: none;
+    min-width: 120px;
     padding: 6px 9px;
     color: #94a3b8;
     background-color: #ffffff;
@@ -1333,6 +1365,248 @@
 .btn-trash-doc:hover {
     color: #ef4444;
     background-color: #fee2e2;
+}
+
+/* --- Menu nổi AI khi bôi đen văn bản (Selection Context Menu) --- */
+.selection-ai-floating-menu {
+    position: fixed;
+    z-index: 1000;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    padding: 4px 6px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: fadeInMenu 0.15s ease-out;
+}
+
+@keyframes fadeInMenu {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 6px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.selection-ai-floating-menu button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    background: transparent;
+    border: none;
+    color: #f8fafc;
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.12s ease;
+}
+
+.selection-ai-floating-menu button:hover {
+    background-color: #1e293b;
+    color: #38bdf8;
+}
+
+/* --- Bộ chuyển màu nền bảo vệ mắt --- */
+.theme-toggle-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.btn-theme-glyph {
+    border: none;
+    background: transparent;
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: #64748b;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+
+.btn-theme-glyph.active {
+    background-color: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.btn-theme-glyph.sepia.active {
+    background-color: #fbf0d9;
+    color: #78350f;
+}
+
+.btn-theme-glyph.dark.active {
+    background-color: #0f172a;
+    color: #38bdf8;
+}
+
+/* Các theme nền đọc sách cho Viewport */
+.documents-preview-canvas.theme-sepia .preview-scroll-viewport {
+    background-color: #f4ecd8 !important;
+}
+
+.documents-preview-canvas.theme-sepia .preview-paper-sheet,
+.documents-preview-canvas.theme-sepia .markdown-rendered-paper,
+.documents-preview-canvas.theme-sepia .docx {
+    background-color: #fbf0d9 !important;
+    color: #451a03 !important;
+}
+
+.documents-preview-canvas.theme-dark .preview-scroll-viewport {
+    background-color: #1e293b !important;
+}
+
+.documents-preview-canvas.theme-dark .preview-paper-sheet,
+.documents-preview-canvas.theme-dark .markdown-rendered-paper,
+.documents-preview-canvas.theme-dark .docx {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+}
+
+/* --- Trạng thái hoàn thành bài học --- */
+.btn-mark-completed {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    color: #475569;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.learning-status-pill-group {
+    flex-shrink: 0;
+}
+
+.btn-mark-completed:hover {
+    background-color: #f8fafc;
+    border-color: #059669;
+    color: #059669;
+}
+
+.btn-mark-completed.completed {
+    background-color: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #059669;
+}
+
+.doc-ready-status.completed {
+    color: #059669;
+    font-weight: 600;
+}
+
+.doc-ready-status.ready {
+    color: #64748b;
+}
+
+/* --- Workspace chính chứa tài liệu & Ngăn ghi chú --- */
+.preview-main-workspace {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+.document-notes-drawer {
+    width: 280px;
+    background-color: #ffffff;
+    border-left: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    animation: slideNoteIn 0.2s ease-out;
+}
+
+@keyframes slideNoteIn {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.notes-drawer-header {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.notes-title-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #059669;
+}
+
+.notes-drawer-header button {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.notes-drawer-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 10px;
+}
+
+.notes-drawer-body textarea {
+    flex: 1;
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.78rem;
+    font-family: inherit;
+    line-height: 1.5;
+    outline: none;
+    resize: none;
+    box-sizing: border-box;
+}
+
+.notes-drawer-body textarea:focus {
+    border-color: #059669;
+}
+
+.btn-save-note {
+    padding: 7px;
+    border: none;
+    background-color: #059669;
+    color: #ffffff;
+    border-radius: 5px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-save-note:hover {
+    background-color: #047857;
 }
 
 @media (max-width: 1180px) {

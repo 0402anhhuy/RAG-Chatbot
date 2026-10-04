@@ -41,16 +41,36 @@ const STUDIO_TOOLS = [
     { id: "datatable", label: "Bảng dữ liệu", icon: FileSpreadsheet, color: "teal" },
 ];
 
-const Conversation = ({ onLaunchTool }) => {
-    const [sources, setSources] = useState(MOCK_NOTEBOOK_SOURCES);
+const Conversation = ({ onLaunchTool, initialDocument = null }) => {
+    const initialSource = initialDocument
+        ? {
+              id: `document-${initialDocument.id}`,
+              name: initialDocument.title || initialDocument.filename || "Tài liệu",
+              type: (initialDocument.type || initialDocument.fileType || "txt")
+                  .toLowerCase()
+                  .replace(/^\./, ""),
+              checked: true,
+              size: initialDocument.size || initialDocument.fileSizeFormatted || "Không rõ dung lượng",
+          }
+        : null;
+    const [sources, setSources] = useState(() =>
+        initialSource ? [initialSource] : MOCK_NOTEBOOK_SOURCES,
+    );
     const [isAllSelected, setIsAllSelected] = useState(true);
     const [messages, setMessages] = useState([
-        {
-            id: "msg-1",
-            sender: "ai",
-            text: "Các tài liệu trên cung cấp một danh sách tổng hợp các cụm động từ và từ vựng chuyên ngành. Tôi đã phân tích nội dung và sẵn sàng giải thích chi tiết, đặt câu hỏi kiểm tra hoặc hỗ trợ bạn tạo thẻ ghi nhớ từ các nguồn này.",
-            timestamp: "30 thg 1, 2026",
-        },
+        initialDocument
+            ? {
+                  id: "msg-1",
+                  sender: "ai",
+                  text: `Tôi đã tạo một conversation mới và thêm tài liệu "${initialSource.name}" vào nguồn. Bạn có thể đặt câu hỏi về tài liệu này ngay bây giờ.`,
+                  timestamp: "Vừa xong",
+              }
+            : {
+                  id: "msg-1",
+                  sender: "ai",
+                  text: "Các tài liệu trên cung cấp một danh sách tổng hợp các cụm động từ và từ vựng chuyên ngành. Tôi đã phân tích nội dung và sẵn sàng giải thích chi tiết, đặt câu hỏi kiểm tra hoặc hỗ trợ bạn tạo thẻ ghi nhớ từ các nguồn này.",
+                  timestamp: "30 thg 1, 2026",
+              },
     ]);
     const [inputText, setInputText] = useState("");
     const [notes, setNotes] = useState([

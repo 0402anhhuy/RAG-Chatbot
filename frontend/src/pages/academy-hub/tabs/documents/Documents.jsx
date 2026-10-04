@@ -26,6 +26,13 @@ import {
     CheckCircle2,
     Star,
     X,
+    Sun,
+    Moon,
+    Coffee,
+    CheckCircle,
+    StickyNote,
+    MessageSquareQuote,
+    HelpCircle,
 } from "lucide-react";
 import { renderAsync } from "docx-preview";
 import * as XLSX from "xlsx";
@@ -33,7 +40,12 @@ import JSZip from "jszip";
 import { documentApi } from "../../../../api/documents";
 import "./Documents.css";
 
-const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLaunchTool }) => {
+const Documents = ({
+    workspaceId = "00000000-0000-0000-0000-000000000001",
+    onLaunchTool,
+    onAskTutor,
+}) => {
+    // --- STATE HIỆN TẠI (GIỮ NGUYÊN) ---
     const [documents, setDocuments] = useState([]);
     const [selectedDoc, setSelectedDoc] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -45,7 +57,7 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
     const [loadingPreview, setLoadingPreview] = useState(false);
     const [loadingDocx, setLoadingDocx] = useState(false);
 
-    // State dành cho Excel và PowerPoint Preview
+    // Office Previews (Excel & PPTX)
     const [spreadsheetSheets, setSpreadsheetSheets] = useState([]);
     const [activeSpreadsheetSheet, setActiveSpreadsheetSheet] = useState("");
     const [presentationSlides, setPresentationSlides] = useState([]);
@@ -65,6 +77,17 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
     const [actionNotice, setActionNotice] = useState("");
     const [markdownViewMode, setMarkdownViewMode] = useState("preview");
     const [isDocumentToolsOpen, setIsDocumentToolsOpen] = useState(false);
+
+    // --- STATE MỚI BỔ SUNG CHO NGƯỜI HỌC ---
+    const [completedDocIds, setCompletedDocIds] = useState(new Set());
+    const [readingTheme, setReadingTheme] = useState("light"); // 'light' | 'sepia' | 'dark'
+    const [isNotesOpen, setIsNotesOpen] = useState(false);
+    const [documentNotes, setDocumentNotes] = useState({});
+    const [currentNoteText, setCurrentNoteText] = useState("");
+
+    // Selection floating menu
+    const [selectedText, setSelectedText] = useState("");
+    const [selectionCoord, setSelectionCoord] = useState(null);
 
     const fileUploadRef = useRef(null);
     const docxContainerRef = useRef(null);
@@ -99,6 +122,31 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
     useEffect(() => {
         fetchDocuments();
     }, [fetchDocuments]);
+
+    // Đồng bộ ghi chú khi đổi tài liệu
+    useEffect(() => {
+        if (selectedDoc) {
+            setCurrentNoteText(documentNotes[selectedDoc.id] || "");
+        }
+    }, [selectedDoc, documentNotes]);
+
+    // Xử lý menu nổi khi bôi đen văn bản trong tài liệu
+    const handleMouseUpSelection = () => {
+        const selection = window.getSelection();
+        const text = selection?.toString()?.trim();
+        if (text && text.length > 3) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            setSelectedText(text);
+            setSelectionCoord({
+                top: Math.max(12, rect.top - 46),
+                left: Math.max(12, rect.left + rect.width / 2),
+            });
+        } else {
+            setSelectionCoord(null);
+            setSelectedText("");
+        }
+    };
 
     useEffect(() => {
         if (!isDocumentToolsOpen) return undefined;
@@ -203,7 +251,7 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
                         return {
                             name,
-                            rows: rows.slice(0, 200), // Lấy tối đa 200 dòng đầu tiên để tối ưu hiệu năng
+                            rows: rows.slice(0, 200),
                         };
                     });
 
@@ -239,7 +287,6 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                         path.match(/^ppt\/slides\/slide\d+\.xml$/i),
                     );
 
-                    // Sắp xếp thứ tự slide theo số
                     slideFiles.sort((a, b) => {
                         const numA = parseInt(a.match(/slide(\d+)\.xml/i)[1], 10);
                         const numB = parseInt(b.match(/slide(\d+)\.xml/i)[1], 10);
@@ -256,7 +303,6 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                             const parser = new DOMParser();
                             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
-                            // Trích xuất văn bản từ thẻ a:p (paragraph) và a:t (text)
                             const paragraphs = Array.from(xmlDoc.getElementsByTagName("a:p"));
                             const extractedText = paragraphs
                                 .map((p) => {
@@ -305,12 +351,6 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
     };
 
     const availableCourses = [...new Set(documents.map((doc) => doc.courseCode).filter(Boolean))];
-
-    const getDocumentStatus = (doc) => {
-        const status = (doc.status || "ready").toLowerCase();
-        return ["ready", "processing", "failed"].includes(status) ? status : "ready";
-    };
-
     const getDocumentTitle = (doc) => doc.title || doc.filename || "Untitled document";
 
     const filteredDocs = documents
@@ -321,10 +361,9 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                 title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 course.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCourse = courseFilter === "all" || course === courseFilter;
-            const matchesStatus = statusFilter === "all" || getDocumentStatus(doc) === statusFilter;
             const matchesFavorite =
                 !isAdvancedFiltersOpen || !favoriteIds.size || favoriteIds.has(doc.id);
-            return matchesQuery && matchesCourse && matchesStatus && matchesFavorite;
+            return matchesQuery && matchesCourse && matchesFavorite;
         })
         .sort((first, second) => {
             if (sortBy === "name")
@@ -374,6 +413,49 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
         });
     };
 
+    const handleToggleCompleted = (docId) => {
+        const id = docId || selectedDoc?.id;
+        if (!id) return;
+        setCompletedDocIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+                showActionNotice("Đã chuyển về trạng thái đang học.");
+            } else {
+                next.add(id);
+                showActionNotice("Tuyệt vời! Đã hoàn thành bài học.");
+            }
+            return next;
+        });
+    };
+
+    const handleSaveNote = () => {
+        if (!selectedDoc) return;
+        setDocumentNotes((prev) => ({
+            ...prev,
+            [selectedDoc.id]: currentNoteText,
+        }));
+        showActionNotice("Đã lưu ghi chú học tập.");
+    };
+
+    const handleSelectionAction = (actionType) => {
+        if (!selectedText) return;
+        if (actionType === "ask") {
+            if (onAskTutor) {
+                onAskTutor(selectedDoc, selectedText);
+            } else {
+                onLaunchTool?.("tutor");
+            }
+        } else if (actionType === "quiz") {
+            showActionNotice("Đang tạo câu hỏi trắc nghiệm từ đoạn đã chọn...");
+            onLaunchTool?.("exam_prep");
+        } else if (actionType === "explain") {
+            showActionNotice("AI Tutor đang chuẩn bị lời giải thích cho khái niệm này.");
+            onLaunchTool?.("tutor");
+        }
+        setSelectionCoord(null);
+    };
+
     const handleFilesUpload = async (fileList) => {
         const files = Array.from(fileList || []);
         if (!files.length) return;
@@ -386,7 +468,7 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
             await fetchDocuments();
             const uploadedDoc = responses[0]?.document || responses[0];
             if (uploadedDoc) setSelectedDoc(uploadedDoc);
-            showActionNotice(`${files.length} tài liệu đã được đưa vào hàng đợi vector hóa.`);
+            showActionNotice(`Đã thêm ${files.length} tài liệu học tập.`);
         } catch (err) {
             alert("Upload failed: " + (err.message || "Server error"));
         } finally {
@@ -407,19 +489,30 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
 
     const handleDeleteDocument = async (id, e) => {
         e?.stopPropagation();
-        if (!window.confirm("Are you sure you want to delete this document?")) return;
+        if (!window.confirm("Bạn có chắc chắn muốn xóa tài liệu này?")) return;
 
         try {
             await documentApi.delete(id);
             await fetchDocuments();
+            showActionNotice("Đã xóa tài liệu.");
         } catch (err) {
             alert("Delete failed: " + err.message);
         }
     };
 
+    const handleBulkMarkCompleted = () => {
+        setCompletedDocIds((prev) => {
+            const next = new Set(prev);
+            selectedIds.forEach((id) => next.add(id));
+            return next;
+        });
+        showActionNotice(`Đã đánh dấu hoàn thành ${selectedIds.size} tài liệu.`);
+        setSelectedIds(new Set());
+    };
+
     const handleBulkDelete = async () => {
         if (!selectedIds.size) return;
-        if (!window.confirm(`Delete ${selectedIds.size} selected document(s)?`)) return;
+        if (!window.confirm(`Xóa ${selectedIds.size} tài liệu đã chọn?`)) return;
 
         try {
             await Promise.all([...selectedIds].map((id) => documentApi.delete(id)));
@@ -433,12 +526,21 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
 
     const handleDocumentAction = (action) => {
         const labels = {
-            summarize: "Tóm tắt AI sẽ dùng tài liệu đang mở làm context.",
+            summarize: "AI Tutor đang tóm tắt các điểm trọng tâm của tài liệu.",
             flashcards: "Flashcard sẽ được tạo từ các khái niệm quan trọng trong tài liệu.",
             quiz: "Quiz luyện tập sẽ được tạo từ tài liệu đang mở.",
         };
         showActionNotice(labels[action]);
         if (action === "quiz" && onLaunchTool) onLaunchTool("exam_prep");
+    };
+
+    const handleAskTutor = () => {
+        if (!selectedDoc) return;
+        if (onAskTutor) {
+            onAskTutor(selectedDoc);
+            return;
+        }
+        onLaunchTool?.("tutor");
     };
 
     const renderSearchableText = (text) => {
@@ -533,6 +635,7 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
 
     const currentExt = (selectedDoc?.type || selectedDoc?.fileType || "").toLowerCase();
     const shouldCompactDocumentTools = true;
+    const isCurrentDocCompleted = selectedDoc && completedDocIds.has(selectedDoc.id);
 
     // Sheet đang mở và Slide đang mở
     const activeSheet =
@@ -552,7 +655,7 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
             {isDragging && (
                 <div className="document-drop-overlay">
                     <UploadCloud size={34} />
-                    <strong>Thả tài liệu để bắt đầu upload</strong>
+                    <strong>Thả giáo trình hoặc tài liệu để tải lên</strong>
                     <span>PDF, DOCX, XLSX, PPTX, MD hoặc TXT</span>
                 </div>
             )}
@@ -560,6 +663,24 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
             {actionNotice && (
                 <div className="document-action-notice">
                     <Check size={14} /> {actionNotice}
+                </div>
+            )}
+
+            {/* Menu nổi tương tác thông minh khi người học bôi đen văn bản */}
+            {selectionCoord && (
+                <div
+                    className="selection-ai-floating-menu"
+                    style={{ top: `${selectionCoord.top}px`, left: `${selectionCoord.left}px` }}
+                >
+                    <button type="button" onClick={() => handleSelectionAction("explain")}>
+                        <Sparkles size={12} /> Giải thích
+                    </button>
+                    <button type="button" onClick={() => handleSelectionAction("quiz")}>
+                        <HelpCircle size={12} /> Tạo Quiz
+                    </button>
+                    <button type="button" onClick={() => handleSelectionAction("ask")}>
+                        <MessageSquareQuote size={12} /> Hỏi AI Tutor
+                    </button>
                 </div>
             )}
 
@@ -571,7 +692,7 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                         View course handouts, lecture notes, and study guides with your AI Tutor
                     </span>
                 </div>
-                <div className="banner-actions-group">
+                <div className="banner-actions-group documents-header-button">
                     <button
                         type="button"
                         className="btn-upload-document"
@@ -653,15 +774,6 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                                     </option>
                                 ))}
                             </select>
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                            >
-                                <option value="all">All statuses</option>
-                                <option value="ready">Ready</option>
-                                <option value="processing">Processing</option>
-                                <option value="failed">Failed</option>
-                            </select>
                             <span className="filter-help-text">
                                 <Star size={12} /> Favorites are highlighted
                             </span>
@@ -671,13 +783,8 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                     {selectedIds.size > 0 && (
                         <div className="bulk-actions-bar">
                             <span>{selectedIds.size} tài liệu</span>
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    showActionNotice("Đã đưa tài liệu vào hàng đợi re-index.")
-                                }
-                            >
-                                <Sparkles size={12} /> Re-index
+                            <button type="button" onClick={handleBulkMarkCompleted}>
+                                <CheckCircle size={12} /> Đã học xong
                             </button>
                             <button type="button" onClick={handleBulkDelete}>
                                 <Trash2 size={12} /> Delete
@@ -722,6 +829,7 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                                 const docType = doc.type || doc.fileType;
                                 const docTitle = doc.title || doc.filename;
                                 const docSize = doc.size || doc.fileSizeFormatted;
+                                const isCompleted = completedDocIds.has(doc.id);
 
                                 return (
                                     <div
@@ -752,12 +860,15 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                                                 </span>
                                                 <span>{docSize}</span>
                                                 <span>•</span>
-                                                <span
-                                                    className={`doc-ready-status status-${getDocumentStatus(doc)}`}
-                                                >
-                                                    <CheckCircle2 size={11} />{" "}
-                                                    {getDocumentStatus(doc)}
-                                                </span>
+                                                {isCompleted ? (
+                                                    <span className="doc-ready-status completed">
+                                                        <CheckCircle2 size={11} /> Đã học
+                                                    </span>
+                                                ) : (
+                                                    <span className="doc-ready-status ready">
+                                                        Sẵn sàng học
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <button
@@ -798,7 +909,7 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                 </div>
 
                 {/* CỘT PHẢI: XEM TRƯỚC TÀI LIỆU */}
-                <div className="documents-preview-canvas">
+                <div className={`documents-preview-canvas theme-${readingTheme}`}>
                     {selectedDoc ? (
                         <>
                             <div className="preview-top-toolbar">
@@ -816,6 +927,39 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                                 </div>
 
                                 <div className="preview-controls-cluster">
+                                    {/* Bộ chuyển màu nền bảo vệ mắt */}
+                                    <div
+                                        className="theme-toggle-cluster"
+                                        title="Chế độ màu nền đọc sách"
+                                    >
+                                        <button
+                                            type="button"
+                                            className={`btn-theme-glyph ${readingTheme === "light" ? "active" : ""}`}
+                                            onClick={() => setReadingTheme("light")}
+                                            title="Nền sáng"
+                                        >
+                                            <Sun size={13} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`btn-theme-glyph sepia ${readingTheme === "sepia" ? "active" : ""}`}
+                                            onClick={() => setReadingTheme("sepia")}
+                                            title="Nền giấy ngà (Chống mỏi mắt)"
+                                        >
+                                            <Coffee size={13} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`btn-theme-glyph dark ${readingTheme === "dark" ? "active" : ""}`}
+                                            onClick={() => setReadingTheme("dark")}
+                                            title="Nền tối dịu mắt"
+                                        >
+                                            <Moon size={13} />
+                                        </button>
+                                    </div>
+
+                                    <div className="toolbar-divider" />
+
                                     <div className="zoom-controls">
                                         <button
                                             type="button"
@@ -842,10 +986,20 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
 
                                     <div className="toolbar-divider" />
 
+                                    {/* Mở sổ ghi chú nhanh */}
+                                    <button
+                                        type="button"
+                                        className={`btn-toolbar-glyph ${isNotesOpen ? "active" : ""}`}
+                                        onClick={() => setIsNotesOpen((prev) => !prev)}
+                                        title="Ghi chú bài học này"
+                                    >
+                                        <StickyNote size={14} />
+                                    </button>
+
                                     <button
                                         type="button"
                                         className="btn-ai-query-file"
-                                        onClick={() => onLaunchTool && onLaunchTool("tutor")}
+                                        onClick={handleAskTutor}
                                         title="Chat with Tutor using this document"
                                     >
                                         <Sparkles size={13} />
@@ -873,11 +1027,21 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                             </div>
 
                             <div className="document-insights-bar">
-                                <div className="document-index-summary">
-                                    <span className="indexed-dot" />
-                                    <span>Ready for AI study</span>
-                                    <small>{selectedDoc.chunks || 0} chunks indexed</small>
+                                <div className="learning-status-pill-group">
+                                    <button
+                                        type="button"
+                                        className={`btn-mark-completed ${isCurrentDocCompleted ? "completed" : ""}`}
+                                        onClick={() => handleToggleCompleted(selectedDoc.id)}
+                                    >
+                                        <CheckCircle2 size={13} />
+                                        <span>
+                                            {isCurrentDocCompleted
+                                                ? "Đã hoàn thành bài học"
+                                                : "Đánh dấu đã học"}
+                                        </span>
+                                    </button>
                                 </div>
+
                                 <div className="content-search-bar">
                                     <Search size={13} />
                                     <input
@@ -924,423 +1088,455 @@ const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLau
                                     </div>
                                 )}
                                 <div className="document-ai-actions">
-                                    {!shouldCompactDocumentTools && (
-                                        <>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDocumentAction("summarize")}
-                                            >
-                                                <Sparkles size={12} /> Summarize
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDocumentAction("flashcards")}
-                                            >
-                                                <BookOpen size={12} /> Flashcards
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDocumentAction("quiz")}
-                                            >
-                                                <FolderOpen size={12} /> Create quiz
-                                            </button>
-                                        </>
-                                    )}
-                                    {shouldCompactDocumentTools && (
-                                        <div ref={documentToolsMenuRef} className="document-tools-menu-wrap">
-                                            <button
-                                                type="button"
-                                                className={`document-more-trigger ${isDocumentToolsOpen ? "active" : ""}`}
-                                                title="More document tools"
-                                                aria-expanded={isDocumentToolsOpen}
-                                                onClick={() =>
-                                                    setIsDocumentToolsOpen((previous) => !previous)
-                                                }
-                                            >
-                                                <MoreHorizontal size={15} />
-                                            </button>
-                                            {isDocumentToolsOpen && (
-                                                <div className="document-tools-menu">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            handleDocumentAction("summarize");
-                                                            setIsDocumentToolsOpen(false);
-                                                        }}
-                                                    >
-                                                        <Sparkles size={13} /> Summarize
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            handleDocumentAction("flashcards");
-                                                            setIsDocumentToolsOpen(false);
-                                                        }}
-                                                    >
-                                                        <BookOpen size={13} /> Flashcards
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            handleDocumentAction("quiz");
-                                                            setIsDocumentToolsOpen(false);
-                                                        }}
-                                                    >
-                                                        <FolderOpen size={13} /> Create quiz
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            showActionNotice(
-                                                                "Đã sao chép citation của tài liệu.",
-                                                            );
-                                                            setIsDocumentToolsOpen(false);
-                                                        }}
-                                                    >
-                                                        <Check size={13} /> Copy citation
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                    <div
+                                        ref={documentToolsMenuRef}
+                                        className="document-tools-menu-wrap"
+                                    >
+                                        <button
+                                            type="button"
+                                            className={`document-more-trigger ${isDocumentToolsOpen ? "active" : ""}`}
+                                            title="More document tools"
+                                            aria-expanded={isDocumentToolsOpen}
+                                            onClick={() =>
+                                                setIsDocumentToolsOpen((previous) => !previous)
+                                            }
+                                        >
+                                            <MoreHorizontal size={15} />
+                                        </button>
+                                        {isDocumentToolsOpen && (
+                                            <div className="document-tools-menu">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handleDocumentAction("summarize");
+                                                        setIsDocumentToolsOpen(false);
+                                                    }}
+                                                >
+                                                    <Sparkles size={13} /> Tóm tắt bài học
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handleDocumentAction("flashcards");
+                                                        setIsDocumentToolsOpen(false);
+                                                    }}
+                                                >
+                                                    <BookOpen size={13} /> Tạo Flashcards
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handleDocumentAction("quiz");
+                                                        setIsDocumentToolsOpen(false);
+                                                    }}
+                                                >
+                                                    <FolderOpen size={13} /> Tạo đề luyện thi
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        showActionNotice(
+                                                            "Đã sao chép trích dẫn tài liệu.",
+                                                        );
+                                                        setIsDocumentToolsOpen(false);
+                                                    }}
+                                                >
+                                                    <Check size={13} /> Sao chép trích dẫn
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
+                            {/* Viewport chính và Ngăn ghi chú bài học */}
                             <div
-                                className={`preview-scroll-viewport ${currentExt === "pdf" ? "pdf-mode" : ""}`}
+                                className="preview-main-workspace"
+                                onMouseUp={handleMouseUpSelection}
                             >
-                                {/* 1. PDF VIEWER */}
-                                {currentExt === "pdf" && (
-                                    <div className="pdf-iframe-container">
-                                        <iframe
-                                            src={documentApi.getPreviewUrl(selectedDoc.id)}
-                                            title={selectedDoc.filename || selectedDoc.title}
-                                            className="pdf-iframe-view"
-                                        />
-                                    </div>
-                                )}
+                                <div
+                                    className={`preview-scroll-viewport ${currentExt === "pdf" ? "pdf-mode" : ""}`}
+                                >
+                                    {/* 1. PDF VIEWER */}
+                                    {currentExt === "pdf" && (
+                                        <div className="pdf-iframe-container">
+                                            <iframe
+                                                src={documentApi.getPreviewUrl(selectedDoc.id)}
+                                                title={selectedDoc.filename || selectedDoc.title}
+                                                className="pdf-iframe-view"
+                                            />
+                                        </div>
+                                    )}
 
-                                {/* 2. WORD VIEWER (.docx / .doc) */}
-                                {(currentExt === "docx" || currentExt === "doc") && (
-                                    <div
-                                        className="docx-outer-wrapper"
-                                        style={{
-                                            transform: `scale(${zoomLevel / 100})`,
-                                            transformOrigin: "top center",
-                                        }}
-                                    >
-                                        {loadingDocx && (
-                                            <div className="docs-loading-placeholder">
-                                                <Loader2 size={24} className="spin-animate" />
-                                                <span>Opening Word document...</span>
-                                            </div>
-                                        )}
+                                    {/* 2. WORD VIEWER (.docx / .doc) */}
+                                    {(currentExt === "docx" || currentExt === "doc") && (
                                         <div
-                                            ref={docxContainerRef}
-                                            className="docx-render-container"
-                                            style={{ display: loadingDocx ? "none" : "block" }}
-                                        />
-                                    </div>
-                                )}
-
-                                {/* 3. MARKDOWN / TXT VIEWER */}
-                                {["md", "txt"].includes(currentExt) && (
-                                    <div
-                                        className="preview-paper-sheet"
-                                        style={{
-                                            transform: `scale(${zoomLevel / 100})`,
-                                            transformOrigin: "top center",
-                                        }}
-                                    >
-                                        <div
-                                            className={`markdown-viewer-mock ${markdownViewMode === "code" ? "markdown-code-mode" : "markdown-preview-mode"}`}
+                                            className="docx-outer-wrapper"
+                                            style={{
+                                                transform: `scale(${zoomLevel / 100})`,
+                                                transformOrigin: "top center",
+                                            }}
                                         >
-                                            {loadingPreview ? (
+                                            {loadingDocx && (
                                                 <div className="docs-loading-placeholder">
-                                                    <Loader2 size={20} className="spin-animate" />
-                                                    <span>Loading text notes...</span>
+                                                    <Loader2 size={24} className="spin-animate" />
+                                                    <span>Opening Word document...</span>
                                                 </div>
-                                            ) : markdownViewMode === "code" ? (
-                                                <pre className="md-code-raw markdown-source-editor">
-                                                    <code>
-                                                        {renderMarkdownCode(
+                                            )}
+                                            <div
+                                                ref={docxContainerRef}
+                                                className="docx-render-container"
+                                                style={{ display: loadingDocx ? "none" : "block" }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* 3. MARKDOWN / TXT VIEWER */}
+                                    {["md", "txt"].includes(currentExt) && (
+                                        <div
+                                            className="preview-paper-sheet"
+                                            style={{
+                                                transform: `scale(${zoomLevel / 100})`,
+                                                transformOrigin: "top center",
+                                            }}
+                                        >
+                                            <div
+                                                className={`markdown-viewer-mock ${markdownViewMode === "code" ? "markdown-code-mode" : "markdown-preview-mode"}`}
+                                            >
+                                                {loadingPreview ? (
+                                                    <div className="docs-loading-placeholder">
+                                                        <Loader2
+                                                            size={20}
+                                                            className="spin-animate"
+                                                        />
+                                                        <span>Loading text notes...</span>
+                                                    </div>
+                                                ) : markdownViewMode === "code" ? (
+                                                    <pre className="md-code-raw markdown-source-editor">
+                                                        <code>
+                                                            {renderMarkdownCode(
+                                                                previewContent ||
+                                                                    "Empty file content",
+                                                            )}
+                                                        </code>
+                                                    </pre>
+                                                ) : (
+                                                    <article className="markdown-rendered-paper">
+                                                        {renderMarkdownPreview(
                                                             previewContent || "Empty file content",
                                                         )}
-                                                    </code>
-                                                </pre>
-                                            ) : (
-                                                <article className="markdown-rendered-paper">
-                                                    {renderMarkdownPreview(
-                                                        previewContent || "Empty file content",
-                                                    )}
-                                                </article>
-                                            )}
+                                                    </article>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
 
-                                {/* 4. EXCEL / CSV PREVIEW */}
-                                {["xls", "xlsx", "csv"].includes(currentExt) && (
-                                    <div className="office-preview-shell">
-                                        {loadingOfficePreview ? (
-                                            <div className="docs-loading-placeholder">
-                                                <Loader2 size={24} className="spin-animate" />
-                                                <span>Opening spreadsheet...</span>
-                                            </div>
-                                        ) : officePreviewError ? (
-                                            <div className="office-preview-empty">
-                                                <FileSpreadsheet size={30} />
-                                                <strong>Spreadsheet preview unavailable</strong>
-                                                <span>{officePreviewError}</span>
-                                            </div>
-                                        ) : (
-                                            <div className="spreadsheet-preview">
-                                                <div className="office-preview-heading">
-                                                    <div>
-                                                        <span className="office-preview-kicker">
-                                                            <Table2 size={13} /> Spreadsheet preview
-                                                        </span>
-                                                        <strong>
-                                                            {spreadsheetSheets.length} sheet
-                                                            {spreadsheetSheets.length === 1
-                                                                ? ""
-                                                                : "s"}
-                                                        </strong>
-                                                    </div>
-                                                    <span className="office-preview-note">
-                                                        Showing up to 200 rows
-                                                    </span>
+                                    {/* 4. EXCEL / CSV PREVIEW */}
+                                    {["xls", "xlsx", "csv"].includes(currentExt) && (
+                                        <div className="office-preview-shell">
+                                            {loadingOfficePreview ? (
+                                                <div className="docs-loading-placeholder">
+                                                    <Loader2 size={24} className="spin-animate" />
+                                                    <span>Opening spreadsheet...</span>
                                                 </div>
-                                                <div className="spreadsheet-tabs">
-                                                    {spreadsheetSheets.map((sheet) => (
-                                                        <button
-                                                            key={sheet.name}
-                                                            type="button"
-                                                            className={
-                                                                activeSpreadsheetSheet ===
-                                                                sheet.name
-                                                                    ? "active"
-                                                                    : ""
-                                                            }
-                                                            onClick={() =>
-                                                                setActiveSpreadsheetSheet(
-                                                                    sheet.name,
-                                                                )
-                                                            }
-                                                        >
-                                                            {sheet.name}
-                                                        </button>
-                                                    ))}
+                                            ) : officePreviewError ? (
+                                                <div className="office-preview-empty">
+                                                    <FileSpreadsheet size={30} />
+                                                    <strong>Spreadsheet preview unavailable</strong>
+                                                    <span>{officePreviewError}</span>
                                                 </div>
-                                                <div className="spreadsheet-table-viewport">
-                                                    {activeSheet?.rows?.length ? (
-                                                        <table className="spreadsheet-table">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th className="row-number-cell">
-                                                                        #
-                                                                    </th>
-                                                                    {activeSheet.rows[0].map(
-                                                                        (cell, index) => (
-                                                                            <th
-                                                                                key={`head-${index}`}
-                                                                            >
-                                                                                {cell ||
-                                                                                    `Column ${index + 1}`}
-                                                                            </th>
-                                                                        ),
-                                                                    )}
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {activeSheet.rows
-                                                                    .slice(1)
-                                                                    .map((row, rowIndex) => (
-                                                                        <tr key={`row-${rowIndex}`}>
-                                                                            <td className="row-number-cell">
-                                                                                {rowIndex + 1}
-                                                                            </td>
-                                                                            {activeSheet.rows[0].map(
-                                                                                (
-                                                                                    _,
-                                                                                    columnIndex,
-                                                                                ) => (
-                                                                                    <td
-                                                                                        key={`cell-${rowIndex}-${columnIndex}`}
-                                                                                    >
-                                                                                        {row[
-                                                                                            columnIndex
-                                                                                        ] !==
-                                                                                        undefined
-                                                                                            ? String(
-                                                                                                  row[
-                                                                                                      columnIndex
-                                                                                                  ],
-                                                                                              )
-                                                                                            : ""}
-                                                                                    </td>
-                                                                                ),
-                                                                            )}
-                                                                        </tr>
-                                                                    ))}
-                                                            </tbody>
-                                                        </table>
-                                                    ) : (
-                                                        <div className="office-preview-empty">
-                                                            <span>This sheet is empty.</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* 5. POWERPOINT PREVIEW */}
-                                {currentExt === "pptx" && (
-                                    <div className="office-preview-shell">
-                                        {loadingOfficePreview ? (
-                                            <div className="docs-loading-placeholder">
-                                                <Loader2 size={24} className="spin-animate" />
-                                                <span>Opening presentation...</span>
-                                            </div>
-                                        ) : officePreviewError ? (
-                                            <div className="office-preview-empty">
-                                                <Presentation size={30} />
-                                                <strong>Presentation preview unavailable</strong>
-                                                <span>{officePreviewError}</span>
-                                            </div>
-                                        ) : activeSlide ? (
-                                            <div className="pptx-preview">
-                                                <div className="office-preview-heading">
-                                                    <div>
-                                                        <span className="office-preview-kicker">
-                                                            <Presentation size={13} /> Presentation
-                                                            preview
-                                                        </span>
-                                                        <strong>
-                                                            Slide {activeSlide.number} of{" "}
-                                                            {presentationSlides.length}
-                                                        </strong>
-                                                    </div>
-                                                    <div className="pptx-slide-controls">
-                                                        <button
-                                                            type="button"
-                                                            disabled={activePptxSlide === 0}
-                                                            onClick={() =>
-                                                                setActivePptxSlide(
-                                                                    (previous) => previous - 1,
-                                                                )
-                                                            }
-                                                            title="Previous slide"
-                                                        >
-                                                            <ChevronLeft size={15} />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            disabled={
-                                                                activePptxSlide ===
-                                                                presentationSlides.length - 1
-                                                            }
-                                                            onClick={() =>
-                                                                setActivePptxSlide(
-                                                                    (previous) => previous + 1,
-                                                                )
-                                                            }
-                                                            title="Next slide"
-                                                        >
-                                                            <ChevronRight size={15} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div className="pptx-slide-stage">
-                                                    <div className="pptx-slide-card">
-                                                        {activeSlide.text.length ? (
-                                                            activeSlide.text.map((text, index) =>
-                                                                index === 0 ? (
-                                                                    <h3
-                                                                        key={`slide-title-${index}`}
-                                                                    >
-                                                                        {text}
-                                                                    </h3>
-                                                                ) : (
-                                                                    <p key={`slide-text-${index}`}>
-                                                                        {text}
-                                                                    </p>
-                                                                ),
-                                                            )
-                                                        ) : (
-                                                            <span>
-                                                                This slide has no extractable text.
-                                                                Download the file to view graphics.
+                                            ) : (
+                                                <div className="spreadsheet-preview">
+                                                    <div className="office-preview-heading">
+                                                        <div>
+                                                            <span className="office-preview-kicker">
+                                                                <Table2 size={13} /> Spreadsheet
+                                                                preview
                                                             </span>
+                                                            <strong>
+                                                                {spreadsheetSheets.length} sheet
+                                                                {spreadsheetSheets.length === 1
+                                                                    ? ""
+                                                                    : "s"}
+                                                            </strong>
+                                                        </div>
+                                                        <span className="office-preview-note">
+                                                            Showing up to 200 rows
+                                                        </span>
+                                                    </div>
+                                                    <div className="spreadsheet-tabs">
+                                                        {spreadsheetSheets.map((sheet) => (
+                                                            <button
+                                                                key={sheet.name}
+                                                                type="button"
+                                                                className={
+                                                                    activeSpreadsheetSheet ===
+                                                                    sheet.name
+                                                                        ? "active"
+                                                                        : ""
+                                                                }
+                                                                onClick={() =>
+                                                                    setActiveSpreadsheetSheet(
+                                                                        sheet.name,
+                                                                    )
+                                                                }
+                                                            >
+                                                                {sheet.name}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <div className="spreadsheet-table-viewport">
+                                                        {activeSheet?.rows?.length ? (
+                                                            <table className="spreadsheet-table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th className="row-number-cell">
+                                                                            #
+                                                                        </th>
+                                                                        {activeSheet.rows[0].map(
+                                                                            (cell, index) => (
+                                                                                <th
+                                                                                    key={`head-${index}`}
+                                                                                >
+                                                                                    {cell ||
+                                                                                        `Column ${index + 1}`}
+                                                                                </th>
+                                                                            ),
+                                                                        )}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {activeSheet.rows
+                                                                        .slice(1)
+                                                                        .map((row, rowIndex) => (
+                                                                            <tr
+                                                                                key={`row-${rowIndex}`}
+                                                                            >
+                                                                                <td className="row-number-cell">
+                                                                                    {rowIndex + 1}
+                                                                                </td>
+                                                                                {activeSheet.rows[0].map(
+                                                                                    (
+                                                                                        _,
+                                                                                        columnIndex,
+                                                                                    ) => (
+                                                                                        <td
+                                                                                            key={`cell-${rowIndex}-${columnIndex}`}
+                                                                                        >
+                                                                                            {row[
+                                                                                                columnIndex
+                                                                                            ] !==
+                                                                                            undefined
+                                                                                                ? String(
+                                                                                                      row[
+                                                                                                          columnIndex
+                                                                                                      ],
+                                                                                                  )
+                                                                                                : ""}
+                                                                                        </td>
+                                                                                    ),
+                                                                                )}
+                                                                            </tr>
+                                                                        ))}
+                                                                </tbody>
+                                                            </table>
+                                                        ) : (
+                                                            <div className="office-preview-empty">
+                                                                <span>This sheet is empty.</span>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="pptx-slide-dots">
-                                                    {presentationSlides.map((slide, index) => (
-                                                        <button
-                                                            key={slide.number}
-                                                            type="button"
-                                                            className={
-                                                                index === activePptxSlide
-                                                                    ? "active"
-                                                                    : ""
-                                                            }
-                                                            onClick={() =>
-                                                                setActivePptxSlide(index)
-                                                            }
-                                                            aria-label={`Go to slide ${slide.number}`}
-                                                        />
-                                                    ))}
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* 5. POWERPOINT PREVIEW */}
+                                    {currentExt === "pptx" && (
+                                        <div className="office-preview-shell">
+                                            {loadingOfficePreview ? (
+                                                <div className="docs-loading-placeholder">
+                                                    <Loader2 size={24} className="spin-animate" />
+                                                    <span>Opening presentation...</span>
+                                                </div>
+                                            ) : officePreviewError ? (
+                                                <div className="office-preview-empty">
+                                                    <Presentation size={30} />
+                                                    <strong>
+                                                        Presentation preview unavailable
+                                                    </strong>
+                                                    <span>{officePreviewError}</span>
+                                                </div>
+                                            ) : activeSlide ? (
+                                                <div className="pptx-preview">
+                                                    <div className="office-preview-heading">
+                                                        <div>
+                                                            <span className="office-preview-kicker">
+                                                                <Presentation size={13} />{" "}
+                                                                Presentation preview
+                                                            </span>
+                                                            <strong>
+                                                                Slide {activeSlide.number} of{" "}
+                                                                {presentationSlides.length}
+                                                            </strong>
+                                                        </div>
+                                                        <div className="pptx-slide-controls">
+                                                            <button
+                                                                type="button"
+                                                                disabled={activePptxSlide === 0}
+                                                                onClick={() =>
+                                                                    setActivePptxSlide(
+                                                                        (previous) => previous - 1,
+                                                                    )
+                                                                }
+                                                                title="Previous slide"
+                                                            >
+                                                                <ChevronLeft size={15} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                disabled={
+                                                                    activePptxSlide ===
+                                                                    presentationSlides.length - 1
+                                                                }
+                                                                onClick={() =>
+                                                                    setActivePptxSlide(
+                                                                        (previous) => previous + 1,
+                                                                    )
+                                                                }
+                                                                title="Next slide"
+                                                            >
+                                                                <ChevronRight size={15} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="pptx-slide-stage">
+                                                        <div className="pptx-slide-card">
+                                                            {activeSlide.text.length ? (
+                                                                activeSlide.text.map(
+                                                                    (text, index) =>
+                                                                        index === 0 ? (
+                                                                            <h3
+                                                                                key={`slide-title-${index}`}
+                                                                            >
+                                                                                {text}
+                                                                            </h3>
+                                                                        ) : (
+                                                                            <p
+                                                                                key={`slide-text-${index}`}
+                                                                            >
+                                                                                {text}
+                                                                            </p>
+                                                                        ),
+                                                                )
+                                                            ) : (
+                                                                <span>
+                                                                    This slide has no extractable
+                                                                    text. Download the file to view
+                                                                    graphics.
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="pptx-slide-dots">
+                                                        {presentationSlides.map((slide, index) => (
+                                                            <button
+                                                                key={slide.number}
+                                                                type="button"
+                                                                className={
+                                                                    index === activePptxSlide
+                                                                        ? "active"
+                                                                        : ""
+                                                                }
+                                                                onClick={() =>
+                                                                    setActivePptxSlide(index)
+                                                                }
+                                                                aria-label={`Go to slide ${slide.number}`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="office-preview-empty">
+                                                    <Presentation size={30} />
+                                                    <span>
+                                                        No slides found in this presentation.
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* 6. CÁC TỆP BINARY KHÁC */}
+                                    {![
+                                        "pdf",
+                                        "docx",
+                                        "doc",
+                                        "md",
+                                        "txt",
+                                        "xls",
+                                        "xlsx",
+                                        "csv",
+                                        "pptx",
+                                    ].includes(currentExt) && (
+                                        <div className="preview-paper-sheet">
+                                            <div className="binary-doc-preview-card">
+                                                <div className="binary-card-glyph">
+                                                    {getDocIcon(
+                                                        selectedDoc.type || selectedDoc.fileType,
+                                                    )}
+                                                </div>
+                                                <h3>{selectedDoc.title || selectedDoc.filename}</h3>
+                                                <p>
+                                                    This file format is ready for download and
+                                                    offline review.
+                                                </p>
+                                                <div className="binary-action-row">
+                                                    <a
+                                                        href={documentApi.getDownloadUrl(
+                                                            selectedDoc.id,
+                                                        )}
+                                                        className="btn-download-primary"
+                                                    >
+                                                        <Download size={14} />
+                                                        <span>Download File</span>
+                                                    </a>
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div className="office-preview-empty">
-                                                <Presentation size={30} />
-                                                <span>No slides found in this presentation.</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* 6. CÁC TỆP BINARY KHÁC */}
-                                {![
-                                    "pdf",
-                                    "docx",
-                                    "doc",
-                                    "md",
-                                    "txt",
-                                    "xls",
-                                    "xlsx",
-                                    "csv",
-                                    "pptx",
-                                ].includes(currentExt) && (
-                                    <div className="preview-paper-sheet">
-                                        <div className="binary-doc-preview-card">
-                                            <div className="binary-card-glyph">
-                                                {getDocIcon(
-                                                    selectedDoc.type || selectedDoc.fileType,
-                                                )}
-                                            </div>
-                                            <h3>{selectedDoc.title || selectedDoc.filename}</h3>
-                                            <p>
-                                                This file format is ready for download and offline
-                                                review.
-                                            </p>
-                                            <div className="binary-action-row">
-                                                <a
-                                                    href={documentApi.getDownloadUrl(
-                                                        selectedDoc.id,
-                                                    )}
-                                                    className="btn-download-primary"
-                                                >
-                                                    <Download size={14} />
-                                                    <span>Download File</span>
-                                                </a>
-                                            </div>
                                         </div>
-                                    </div>
+                                    )}
+                                </div>
+
+                                {/* Ngăn ghi chú học tập bên phải */}
+                                {isNotesOpen && (
+                                    <aside className="document-notes-drawer">
+                                        <div className="notes-drawer-header">
+                                            <div className="notes-title-box">
+                                                <StickyNote size={15} />
+                                                <strong>Ghi chú học tập</strong>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsNotesOpen(false)}
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                        <div className="notes-drawer-body">
+                                            <textarea
+                                                placeholder="Viết ghi chú cá nhân, công thức cần nhớ cho bài giảng này..."
+                                                value={currentNoteText}
+                                                onChange={(e) => setCurrentNoteText(e.target.value)}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="btn-save-note"
+                                                onClick={handleSaveNote}
+                                            >
+                                                Lưu ghi chú
+                                            </button>
+                                        </div>
+                                    </aside>
                                 )}
                             </div>
                         </>
