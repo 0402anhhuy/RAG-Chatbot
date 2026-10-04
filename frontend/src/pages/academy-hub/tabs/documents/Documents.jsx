@@ -15,6 +15,7 @@ import {
     Maximize2,
     Loader2,
     MoreHorizontal,
+    Pencil,
     Presentation,
     Search,
     Sparkles,
@@ -33,19 +34,34 @@ import {
     StickyNote,
     MessageSquareQuote,
     HelpCircle,
+    Plus,
+    Clock,
+    Save,
+    Minimize2,
+    Tag,
 } from "lucide-react";
 import { renderAsync } from "docx-preview";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { documentApi } from "../../../../api/documents";
+import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import "./Documents.css";
+
+// Danh sách các loại ghi chú học tập
+const NOTE_TYPES = [
+    { id: "general", label: "Ghi chú chung", color: "green" },
+    { id: "concept", label: "Khái niệm", color: "blue" },
+    { id: "formula", label: "Công thức", color: "purple" },
+    { id: "exam", label: "Trọng tâm thi", color: "amber" },
+    { id: "question", label: "Cần hỏi lại", color: "rose" },
+];
 
 const Documents = ({
     workspaceId = "00000000-0000-0000-0000-000000000001",
     onLaunchTool,
     onAskTutor,
 }) => {
-    // --- STATE HIỆN TẠI (GIỮ NGUYÊN) ---
+    // --- STATE TÀI LIỆU (GIỮ NGUYÊN) ---
     const [documents, setDocuments] = useState([]);
     const [selectedDoc, setSelectedDoc] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -78,12 +94,22 @@ const Documents = ({
     const [markdownViewMode, setMarkdownViewMode] = useState("preview");
     const [isDocumentToolsOpen, setIsDocumentToolsOpen] = useState(false);
 
-    // --- STATE MỚI BỔ SUNG CHO NGƯỜI HỌC ---
+    // --- TÍNH NĂNG NGƯỜI HỌC & GHI CHÚ TOÀN MÀN HÌNH ---
     const [completedDocIds, setCompletedDocIds] = useState(new Set());
     const [readingTheme, setReadingTheme] = useState("light"); // 'light' | 'sepia' | 'dark'
-    const [isNotesOpen, setIsNotesOpen] = useState(false);
-    const [documentNotes, setDocumentNotes] = useState({});
-    const [currentNoteText, setCurrentNoteText] = useState("");
+
+    // Modal ghi chú Fullscreen + Stack Ghi Chú
+    const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+    const [notesStack, setNotesStack] = useState({}); // { [docId]: [{ id, title, content, type, updatedAt }] }
+    const [activeNoteId, setActiveNoteId] = useState(null);
+    const [noteTitleInput, setNoteTitleInput] = useState("");
+    const [noteContentInput, setNoteContentInput] = useState("");
+    const [noteTypeInput, setNoteTypeInput] = useState("general");
+
+    // Modal Đổi tên & Gán loại ghi chú khi bấm Icon Cây bút chì
+    const [editingNoteModal, setEditingNoteModal] = useState(null); // note object or null
+    const [editModalTitle, setEditModalTitle] = useState("");
+    const [editModalType, setEditModalType] = useState("general");
 
     // Selection floating menu
     const [selectedText, setSelectedText] = useState("");
@@ -91,6 +117,7 @@ const Documents = ({
 
     const fileUploadRef = useRef(null);
     const docxContainerRef = useRef(null);
+    const modalDocxContainerRef = useRef(null);
     const documentToolsMenuRef = useRef(null);
 
     // 1. Fetch danh sách tài liệu từ API
@@ -123,12 +150,167 @@ const Documents = ({
         fetchDocuments();
     }, [fetchDocuments]);
 
-    // Đồng bộ ghi chú khi đổi tài liệu
+    // Khởi tạo stack ghi chú từ LocalStorage khi khởi động
     useEffect(() => {
-        if (selectedDoc) {
-            setCurrentNoteText(documentNotes[selectedDoc.id] || "");
+        const savedNotes = localStorage.getItem("academy_hub_document_notes_stack");
+        if (savedNotes) {
+            try {
+                setNotesStack(JSON.parse(savedNotes));
+            } catch (e) {
+                console.error("Failed to parse notes stack:", e);
+            }
         }
-    }, [selectedDoc, documentNotes]);
+    }, []);
+
+    // Lưu notesStack vào LocalStorage mỗi khi có thay đổi
+    const persistNotesStack = (updated) => {
+        setNotesStack(updated);
+        localStorage.setItem("academy_hub_document_notes_stack", JSON.stringify(updated));
+    };
+
+    // Khi mở Modal ghi chú hoặc đổi tài liệu
+    const handleOpenNotesModal = () => {
+        if (!selectedDoc) return;
+        const currentDocNotes = notesStack[selectedDoc.id] || [];
+        if (currentDocNotes.length > 0) {
+            const latest = currentDocNotes[0];
+            setActiveNoteId(latest.id);
+            setNoteTitleInput(latest.title);
+            setNoteContentInput(latest.content);
+            setNoteTypeInput(latest.type || "general");
+        } else {
+            handleCreateNewNote();
+        }
+        setIsNotesModalOpen(true);
+    };
+
+    const handleCreateNewNote = () => {
+        const newId = `note-${Date.now()}`;
+        setActiveNoteId(newId);
+        setNoteTitleInput(`Ghi chú #${(notesStack[selectedDoc?.id]?.length || 0) + 1}`);
+        setNoteContentInput("");
+        setNoteTypeInput("general");
+    };
+
+    const handleSelectNoteFromStack = (note) => {
+        setActiveNoteId(note.id);
+        setNoteTitleInput(note.title);
+        setNoteContentInput(note.content);
+        setNoteTypeInput(note.type || "general");
+    };
+
+    const handleSaveCurrentNote = () => {
+        if (!selectedDoc) return;
+        const docId = selectedDoc.id;
+        const currentList = notesStack[docId] || [];
+        const existingIndex = currentList.findIndex((n) => n.id === activeNoteId);
+
+        const updatedNote = {
+            id: activeNoteId || `note-${Date.now()}`,
+            title: noteTitleInput.trim() || "Ghi chú không tên",
+            content: noteContentInput,
+            type: noteTypeInput || "general",
+            updatedAt: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                day: "2-digit",
+                month: "2-digit",
+            }),
+        };
+
+        let updatedList;
+        if (existingIndex >= 0) {
+            updatedList = [updatedNote, ...currentList.filter((_, idx) => idx !== existingIndex)];
+        } else {
+            updatedList = [updatedNote, ...currentList];
+        }
+
+        const nextStack = { ...notesStack, [docId]: updatedList };
+        persistNotesStack(nextStack);
+        showActionNotice("Đã lưu ghi chú vào danh sách!");
+    };
+
+    const handleDeleteNoteFromStack = (noteId, e) => {
+        e?.stopPropagation();
+        if (!selectedDoc) return;
+        const docId = selectedDoc.id;
+        const currentList = notesStack[docId] || [];
+        const updatedList = currentList.filter((n) => n.id !== noteId);
+        const nextStack = { ...notesStack, [docId]: updatedList };
+        persistNotesStack(nextStack);
+
+        if (activeNoteId === noteId) {
+            if (updatedList.length > 0) {
+                handleSelectNoteFromStack(updatedList[0]);
+            } else {
+                handleCreateNewNote();
+            }
+        }
+        showActionNotice("Đã xóa ghi chú.");
+    };
+
+    // Mở popup rename và đổi type khi nhấn icon bút chì
+    const handleOpenEditNoteModal = (note, e) => {
+        e?.stopPropagation();
+        setEditingNoteModal(note);
+        setEditModalTitle(note.title);
+        setEditModalType(note.type || "general");
+    };
+
+    // Lưu chỉnh sửa từ modal rename/type
+    const handleConfirmEditNoteModal = (e) => {
+        e?.preventDefault();
+        if (!selectedDoc || !editingNoteModal) return;
+
+        const trimmedTitle = editModalTitle.trim();
+        if (!trimmedTitle) {
+            showActionNotice("Tên ghi chú không được để trống.");
+            return;
+        }
+
+        const docId = selectedDoc.id;
+        const currentList = notesStack[docId] || [];
+        const updatedList = currentList.map((item) =>
+            item.id === editingNoteModal.id
+                ? {
+                      ...item,
+                      title: trimmedTitle,
+                      type: editModalType,
+                      updatedAt: new Date().toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          day: "2-digit",
+                          month: "2-digit",
+                      }),
+                  }
+                : item,
+        );
+
+        persistNotesStack({ ...notesStack, [docId]: updatedList });
+
+        // Cập nhật lại khung editor nếu đang chọn đúng ghi chú này
+        if (activeNoteId === editingNoteModal.id) {
+            setNoteTitleInput(trimmedTitle);
+            setNoteTypeInput(editModalType);
+        }
+
+        setEditingNoteModal(null);
+        showActionNotice("Đã cập nhật thông tin ghi chú!");
+    };
+
+    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+    const typeDropdownRef = useRef(null);
+
+    // Tự động đóng dropdown khi nhấn ra ngoài
+    useEffect(() => {
+        const handleOutsideClick = (e) => {
+            if (typeDropdownRef.current && !typeDropdownRef.current.contains(e.target)) {
+                setIsTypeDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => document.removeEventListener("mousedown", handleOutsideClick);
+    }, []);
 
     // Xử lý menu nổi khi bôi đen văn bản trong tài liệu
     const handleMouseUpSelection = () => {
@@ -150,18 +332,12 @@ const Documents = ({
 
     useEffect(() => {
         if (!isDocumentToolsOpen) return undefined;
-
         const closeDocumentTools = (event) => {
             if (event.type === "keydown" && event.key !== "Escape") return;
-            if (
-                event.type === "mousedown" &&
-                documentToolsMenuRef.current?.contains(event.target)
-            ) {
+            if (event.type === "mousedown" && documentToolsMenuRef.current?.contains(event.target))
                 return;
-            }
             setIsDocumentToolsOpen(false);
         };
-
         document.addEventListener("mousedown", closeDocumentTools);
         document.addEventListener("keydown", closeDocumentTools);
         return () => {
@@ -170,7 +346,7 @@ const Documents = ({
         };
     }, [isDocumentToolsOpen]);
 
-    // 2. Fetch nội dung text preview nếu file là Markdown hoặc TXT
+    // 2. Fetch Markdown / TXT
     useEffect(() => {
         if (!selectedDoc) {
             setPreviewContent("");
@@ -191,10 +367,22 @@ const Documents = ({
         setMarkdownViewMode("preview");
     }, [selectedDoc]);
 
-    // 3. Render file DOCX trực tiếp bằng docx-preview
+    // 3. Render file DOCX
+    const renderDocxBlob = (blob, containerRef) => {
+        if (containerRef.current) {
+            containerRef.current.innerHTML = "";
+            renderAsync(blob, containerRef.current, undefined, {
+                inWrapper: true,
+                ignoreWidth: false,
+                ignoreHeight: false,
+                experimental: true,
+                useBase64URL: true,
+            });
+        }
+    };
+
     useEffect(() => {
         if (!selectedDoc) return;
-
         const ext = (selectedDoc.type || selectedDoc.fileType || "").toLowerCase();
         if (ext === "docx" || ext === "doc") {
             setLoadingDocx(true);
@@ -203,37 +391,22 @@ const Documents = ({
                     if (!res.ok) throw new Error("Failed to load document file");
                     return res.blob();
                 })
-                .then(async (blob) => {
-                    if (docxContainerRef.current) {
-                        docxContainerRef.current.innerHTML = "";
-                        await renderAsync(blob, docxContainerRef.current, undefined, {
-                            inWrapper: true,
-                            ignoreWidth: false,
-                            ignoreHeight: false,
-                            experimental: true,
-                            useBase64URL: true,
-                        });
-                    }
+                .then((blob) => {
+                    renderDocxBlob(blob, docxContainerRef);
+                    if (isNotesModalOpen) renderDocxBlob(blob, modalDocxContainerRef);
                 })
                 .catch((err) => {
-                    console.error("DOCX rendering error:", err);
-                    if (docxContainerRef.current) {
-                        docxContainerRef.current.innerHTML = `
-                            <div class="docs-empty-placeholder">
-                                <span>Unable to preview this document. Please download to view.</span>
-                            </div>`;
-                    }
+                    console.error("DOCX error:", err);
                 })
                 .finally(() => setLoadingDocx(false));
         }
-    }, [selectedDoc]);
+    }, [selectedDoc, isNotesModalOpen]);
 
-    // 4. Render file Excel (XLSX, XLS, CSV) và PowerPoint (PPTX)
+    // 4. Render Excel & PPTX
     useEffect(() => {
         if (!selectedDoc) return;
         const ext = (selectedDoc.type || selectedDoc.fileType || "").toLowerCase();
 
-        // Xử lý Excel / CSV
         if (["xls", "xlsx", "csv"].includes(ext)) {
             setLoadingOfficePreview(true);
             setOfficePreviewError("");
@@ -249,27 +422,16 @@ const Documents = ({
                     const parsedSheets = workbook.SheetNames.map((name) => {
                         const sheet = workbook.Sheets[name];
                         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-                        return {
-                            name,
-                            rows: rows.slice(0, 200),
-                        };
+                        return { name, rows: rows.slice(0, 200) };
                     });
-
-                    if (parsedSheets.length === 0) {
-                        throw new Error("Tệp bảng tính không có dữ liệu.");
-                    }
-
+                    if (!parsedSheets.length) throw new Error("Bảng tính không có dữ liệu.");
                     setSpreadsheetSheets(parsedSheets);
                     setActiveSpreadsheetSheet(parsedSheets[0].name);
                 })
-                .catch((err) => {
-                    console.error("Excel preview error:", err);
-                    setOfficePreviewError(err.message || "Không thể đọc tệp bảng tính.");
-                })
+                .catch((err) => setOfficePreviewError(err.message))
                 .finally(() => setLoadingOfficePreview(false));
         }
 
-        // Xử lý PPTX
         if (ext === "pptx") {
             setLoadingOfficePreview(true);
             setOfficePreviewError("");
@@ -286,23 +448,18 @@ const Documents = ({
                     const slideFiles = Object.keys(zip.files).filter((path) =>
                         path.match(/^ppt\/slides\/slide\d+\.xml$/i),
                     );
-
                     slideFiles.sort((a, b) => {
                         const numA = parseInt(a.match(/slide(\d+)\.xml/i)[1], 10);
                         const numB = parseInt(b.match(/slide(\d+)\.xml/i)[1], 10);
                         return numA - numB;
                     });
-
-                    if (slideFiles.length === 0) {
-                        throw new Error("Không tìm thấy slide nào trong bài trình chiếu.");
-                    }
+                    if (!slideFiles.length) throw new Error("Không tìm thấy slide nào.");
 
                     const slidesData = await Promise.all(
                         slideFiles.map(async (filePath, index) => {
                             const xmlText = await zip.files[filePath].async("text");
                             const parser = new DOMParser();
                             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
                             const paragraphs = Array.from(xmlDoc.getElementsByTagName("a:p"));
                             const extractedText = paragraphs
                                 .map((p) => {
@@ -313,20 +470,12 @@ const Documents = ({
                                         .trim();
                                 })
                                 .filter(Boolean);
-
-                            return {
-                                number: index + 1,
-                                text: extractedText,
-                            };
+                            return { number: index + 1, text: extractedText };
                         }),
                     );
-
                     setPresentationSlides(slidesData);
                 })
-                .catch((err) => {
-                    console.error("PPTX preview error:", err);
-                    setOfficePreviewError(err.message || "Không thể đọc tệp trình chiếu PPTX.");
-                })
+                .catch((err) => setOfficePreviewError(err.message))
                 .finally(() => setLoadingOfficePreview(false));
         }
     }, [selectedDoc]);
@@ -386,8 +535,8 @@ const Documents = ({
 
     const handleToggleSelected = (id, e) => {
         e?.stopPropagation();
-        setSelectedIds((previous) => {
-            const next = new Set(previous);
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
             if (next.has(id)) next.delete(id);
             else next.add(id);
             return next;
@@ -395,8 +544,8 @@ const Documents = ({
     };
 
     const handleSelectAllVisible = () => {
-        setSelectedIds((previous) => {
-            const next = new Set(previous);
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
             if (allVisibleSelected) selectedVisibleIds.forEach((id) => next.delete(id));
             else filteredDocs.forEach((doc) => next.add(doc.id));
             return next;
@@ -405,8 +554,8 @@ const Documents = ({
 
     const handleToggleFavorite = (id, e) => {
         e?.stopPropagation();
-        setFavoriteIds((previous) => {
-            const next = new Set(previous);
+        setFavoriteIds((prev) => {
+            const next = new Set(prev);
             if (next.has(id)) next.delete(id);
             else next.add(id);
             return next;
@@ -429,23 +578,11 @@ const Documents = ({
         });
     };
 
-    const handleSaveNote = () => {
-        if (!selectedDoc) return;
-        setDocumentNotes((prev) => ({
-            ...prev,
-            [selectedDoc.id]: currentNoteText,
-        }));
-        showActionNotice("Đã lưu ghi chú học tập.");
-    };
-
     const handleSelectionAction = (actionType) => {
         if (!selectedText) return;
         if (actionType === "ask") {
-            if (onAskTutor) {
-                onAskTutor(selectedDoc, selectedText);
-            } else {
-                onLaunchTool?.("tutor");
-            }
+            if (onAskTutor) onAskTutor(selectedDoc, selectedText);
+            else onLaunchTool?.("tutor");
         } else if (actionType === "quiz") {
             showActionNotice("Đang tạo câu hỏi trắc nghiệm từ đoạn đã chọn...");
             onLaunchTool?.("exam_prep");
@@ -459,7 +596,6 @@ const Documents = ({
     const handleFilesUpload = async (fileList) => {
         const files = Array.from(fileList || []);
         if (!files.length) return;
-
         try {
             setIsUploading(true);
             const responses = await Promise.all(
@@ -490,7 +626,6 @@ const Documents = ({
     const handleDeleteDocument = async (id, e) => {
         e?.stopPropagation();
         if (!window.confirm("Bạn có chắc chắn muốn xóa tài liệu này?")) return;
-
         try {
             await documentApi.delete(id);
             await fetchDocuments();
@@ -513,7 +648,6 @@ const Documents = ({
     const handleBulkDelete = async () => {
         if (!selectedIds.size) return;
         if (!window.confirm(`Xóa ${selectedIds.size} tài liệu đã chọn?`)) return;
-
         try {
             await Promise.all([...selectedIds].map((id) => documentApi.delete(id)));
             setSelectedIds(new Set());
@@ -641,6 +775,274 @@ const Documents = ({
     const activeSheet =
         spreadsheetSheets.find((s) => s.name === activeSpreadsheetSheet) || spreadsheetSheets[0];
     const activeSlide = presentationSlides[activePptxSlide];
+    const currentDocNotesList = (selectedDoc && notesStack[selectedDoc.id]) || [];
+
+    // Helper render badge loại ghi chú
+    const renderNoteTypeBadge = (typeId) => {
+        const found = NOTE_TYPES.find((t) => t.id === typeId) || NOTE_TYPES[0];
+        return <span className={`note-type-pill ${found.color}`}>{found.label}</span>;
+    };
+
+    // Hàm render khung đọc tài liệu
+    const renderDocumentViewer = (isInsideModal = false) => (
+        <div className={`preview-scroll-viewport ${currentExt === "pdf" ? "pdf-mode" : ""}`}>
+            {/* 1. PDF */}
+            {currentExt === "pdf" && (
+                <div className="pdf-iframe-container">
+                    <iframe
+                        src={documentApi.getPreviewUrl(selectedDoc.id)}
+                        title={selectedDoc.filename || selectedDoc.title}
+                        className="pdf-iframe-view"
+                    />
+                </div>
+            )}
+
+            {/* 2. DOCX */}
+            {(currentExt === "docx" || currentExt === "doc") && (
+                <div
+                    className="docx-outer-wrapper"
+                    style={{
+                        transform: `scale(${zoomLevel / 100})`,
+                        transformOrigin: "top center",
+                    }}
+                >
+                    {loadingDocx && (
+                        <div className="docs-loading-placeholder">
+                            <Loader2 size={24} className="spin-animate" />
+                            <span>Opening Word document...</span>
+                        </div>
+                    )}
+                    <div
+                        ref={isInsideModal ? modalDocxContainerRef : docxContainerRef}
+                        className="docx-render-container"
+                        style={{ display: loadingDocx ? "none" : "block" }}
+                    />
+                </div>
+            )}
+
+            {/* 3. MARKDOWN / TXT */}
+            {["md", "txt"].includes(currentExt) && (
+                <div
+                    className="preview-paper-sheet"
+                    style={{
+                        transform: `scale(${zoomLevel / 100})`,
+                        transformOrigin: "top center",
+                    }}
+                >
+                    <div
+                        className={`markdown-viewer-mock ${markdownViewMode === "code" ? "markdown-code-mode" : "markdown-preview-mode"}`}
+                    >
+                        {loadingPreview ? (
+                            <div className="docs-loading-placeholder">
+                                <Loader2 size={20} className="spin-animate" />
+                                <span>Loading text notes...</span>
+                            </div>
+                        ) : markdownViewMode === "code" ? (
+                            <pre className="md-code-raw markdown-source-editor">
+                                <code>
+                                    {renderMarkdownCode(previewContent || "Empty file content")}
+                                </code>
+                            </pre>
+                        ) : (
+                            <article className="markdown-rendered-paper">
+                                {renderMarkdownPreview(previewContent || "Empty file content")}
+                            </article>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* 4. EXCEL */}
+            {["xls", "xlsx", "csv"].includes(currentExt) && (
+                <div className="office-preview-shell">
+                    {loadingOfficePreview ? (
+                        <div className="docs-loading-placeholder">
+                            <Loader2 size={24} className="spin-animate" />
+                            <span>Opening spreadsheet...</span>
+                        </div>
+                    ) : officePreviewError ? (
+                        <div className="office-preview-empty">
+                            <FileSpreadsheet size={30} />
+                            <strong>Spreadsheet preview unavailable</strong>
+                            <span>{officePreviewError}</span>
+                        </div>
+                    ) : (
+                        <div className="spreadsheet-preview">
+                            <div className="office-preview-heading">
+                                <div>
+                                    <span className="office-preview-kicker">
+                                        <Table2 size={13} /> Spreadsheet preview
+                                    </span>
+                                    <strong>
+                                        {spreadsheetSheets.length} sheet
+                                        {spreadsheetSheets.length === 1 ? "" : "s"}
+                                    </strong>
+                                </div>
+                                <span className="office-preview-note">Showing up to 200 rows</span>
+                            </div>
+                            <div className="spreadsheet-tabs">
+                                {spreadsheetSheets.map((sheet) => (
+                                    <button
+                                        key={sheet.name}
+                                        type="button"
+                                        className={
+                                            activeSpreadsheetSheet === sheet.name ? "active" : ""
+                                        }
+                                        onClick={() => setActiveSpreadsheetSheet(sheet.name)}
+                                    >
+                                        {sheet.name}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="spreadsheet-table-viewport">
+                                {activeSheet?.rows?.length ? (
+                                    <table className="spreadsheet-table">
+                                        <thead>
+                                            <tr>
+                                                <th className="row-number-cell">#</th>
+                                                {activeSheet.rows[0].map((cell, index) => (
+                                                    <th key={`head-${index}`}>
+                                                        {cell || `Column ${index + 1}`}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {activeSheet.rows.slice(1).map((row, rowIndex) => (
+                                                <tr key={`row-${rowIndex}`}>
+                                                    <td className="row-number-cell">
+                                                        {rowIndex + 1}
+                                                    </td>
+                                                    {activeSheet.rows[0].map((_, columnIndex) => (
+                                                        <td key={`cell-${rowIndex}-${columnIndex}`}>
+                                                            {row[columnIndex] !== undefined
+                                                                ? String(row[columnIndex])
+                                                                : ""}
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <div className="office-preview-empty">
+                                        <span>This sheet is empty.</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* 5. PPTX */}
+            {currentExt === "pptx" && (
+                <div className="office-preview-shell">
+                    {loadingOfficePreview ? (
+                        <div className="docs-loading-placeholder">
+                            <Loader2 size={24} className="spin-animate" />
+                            <span>Opening presentation...</span>
+                        </div>
+                    ) : officePreviewError ? (
+                        <div className="office-preview-empty">
+                            <Presentation size={30} />
+                            <strong>Presentation preview unavailable</strong>
+                            <span>{officePreviewError}</span>
+                        </div>
+                    ) : activeSlide ? (
+                        <div className="pptx-preview">
+                            <div className="office-preview-heading">
+                                <div>
+                                    <span className="office-preview-kicker">
+                                        <Presentation size={13} /> Presentation preview
+                                    </span>
+                                    <strong>
+                                        Slide {activeSlide.number} of {presentationSlides.length}
+                                    </strong>
+                                </div>
+                                <div className="pptx-slide-controls">
+                                    <button
+                                        type="button"
+                                        disabled={activePptxSlide === 0}
+                                        onClick={() => setActivePptxSlide((prev) => prev - 1)}
+                                        title="Previous slide"
+                                    >
+                                        <ChevronLeft size={15} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={activePptxSlide === presentationSlides.length - 1}
+                                        onClick={() => setActivePptxSlide((prev) => prev + 1)}
+                                        title="Next slide"
+                                    >
+                                        <ChevronRight size={15} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="pptx-slide-stage">
+                                <div className="pptx-slide-card">
+                                    {activeSlide.text.length ? (
+                                        activeSlide.text.map((text, index) =>
+                                            index === 0 ? (
+                                                <h3 key={`slide-title-${index}`}>{text}</h3>
+                                            ) : (
+                                                <p key={`slide-text-${index}`}>{text}</p>
+                                            ),
+                                        )
+                                    ) : (
+                                        <span>
+                                            This slide has no extractable text. Download the file to
+                                            view graphics.
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="pptx-slide-dots">
+                                {presentationSlides.map((slide, index) => (
+                                    <button
+                                        key={slide.number}
+                                        type="button"
+                                        className={index === activePptxSlide ? "active" : ""}
+                                        onClick={() => setActivePptxSlide(index)}
+                                        aria-label={`Go to slide ${slide.number}`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="office-preview-empty">
+                            <Presentation size={30} />
+                            <span>No slides found in this presentation.</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* 6. Binary Types */}
+            {!["pdf", "docx", "doc", "md", "txt", "xls", "xlsx", "csv", "pptx"].includes(
+                currentExt,
+            ) && (
+                <div className="preview-paper-sheet">
+                    <div className="binary-doc-preview-card">
+                        <div className="binary-card-glyph">
+                            {getDocIcon(selectedDoc.type || selectedDoc.fileType)}
+                        </div>
+                        <h3>{selectedDoc.title || selectedDoc.filename}</h3>
+                        <p>This file format is ready for download and offline review.</p>
+                        <div className="binary-action-row">
+                            <a
+                                href={documentApi.getDownloadUrl(selectedDoc.id)}
+                                className="btn-download-primary"
+                            >
+                                <Download size={14} />
+                                <span>Download File</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <div
@@ -746,7 +1148,7 @@ const Documents = ({
                             type="button"
                             className={`icon-control ${isAdvancedFiltersOpen ? "active" : ""}`}
                             title="Advanced filters"
-                            onClick={() => setIsAdvancedFiltersOpen((previous) => !previous)}
+                            onClick={() => setIsAdvancedFiltersOpen((prev) => !prev)}
                         >
                             <Filter size={14} />
                         </button>
@@ -986,12 +1388,12 @@ const Documents = ({
 
                                     <div className="toolbar-divider" />
 
-                                    {/* Mở sổ ghi chú nhanh */}
+                                    {/* Nút mở Modal Ghi chú Fullscreen 2 nửa */}
                                     <button
                                         type="button"
-                                        className={`btn-toolbar-glyph ${isNotesOpen ? "active" : ""}`}
-                                        onClick={() => setIsNotesOpen((prev) => !prev)}
-                                        title="Ghi chú bài học này"
+                                        className="btn-toolbar-glyph active-note-btn"
+                                        onClick={handleOpenNotesModal}
+                                        title="Mở không gian học tập & Ghi chú toàn màn hình"
                                     >
                                         <StickyNote size={14} />
                                     </button>
@@ -1010,7 +1412,7 @@ const Documents = ({
                                         type="button"
                                         className="btn-toolbar-glyph"
                                         title="Fullscreen preview"
-                                        onClick={() => setIsFullscreen((previous) => !previous)}
+                                        onClick={() => setIsFullscreen((prev) => !prev)}
                                     >
                                         <Maximize2 size={14} />
                                     </button>
@@ -1059,6 +1461,7 @@ const Documents = ({
                                         </button>
                                     )}
                                 </div>
+
                                 {currentExt === "md" && (
                                     <div
                                         className="markdown-view-toggle"
@@ -1087,6 +1490,7 @@ const Documents = ({
                                         </button>
                                     </div>
                                 )}
+
                                 <div className="document-ai-actions">
                                     <div
                                         ref={documentToolsMenuRef}
@@ -1097,9 +1501,7 @@ const Documents = ({
                                             className={`document-more-trigger ${isDocumentToolsOpen ? "active" : ""}`}
                                             title="More document tools"
                                             aria-expanded={isDocumentToolsOpen}
-                                            onClick={() =>
-                                                setIsDocumentToolsOpen((previous) => !previous)
-                                            }
+                                            onClick={() => setIsDocumentToolsOpen((prev) => !prev)}
                                         >
                                             <MoreHorizontal size={15} />
                                         </button>
@@ -1149,395 +1551,12 @@ const Documents = ({
                                 </div>
                             </div>
 
-                            {/* Viewport chính và Ngăn ghi chú bài học */}
+                            {/* Viewport hiển thị tài liệu ở trang chính */}
                             <div
                                 className="preview-main-workspace"
                                 onMouseUp={handleMouseUpSelection}
                             >
-                                <div
-                                    className={`preview-scroll-viewport ${currentExt === "pdf" ? "pdf-mode" : ""}`}
-                                >
-                                    {/* 1. PDF VIEWER */}
-                                    {currentExt === "pdf" && (
-                                        <div className="pdf-iframe-container">
-                                            <iframe
-                                                src={documentApi.getPreviewUrl(selectedDoc.id)}
-                                                title={selectedDoc.filename || selectedDoc.title}
-                                                className="pdf-iframe-view"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* 2. WORD VIEWER (.docx / .doc) */}
-                                    {(currentExt === "docx" || currentExt === "doc") && (
-                                        <div
-                                            className="docx-outer-wrapper"
-                                            style={{
-                                                transform: `scale(${zoomLevel / 100})`,
-                                                transformOrigin: "top center",
-                                            }}
-                                        >
-                                            {loadingDocx && (
-                                                <div className="docs-loading-placeholder">
-                                                    <Loader2 size={24} className="spin-animate" />
-                                                    <span>Opening Word document...</span>
-                                                </div>
-                                            )}
-                                            <div
-                                                ref={docxContainerRef}
-                                                className="docx-render-container"
-                                                style={{ display: loadingDocx ? "none" : "block" }}
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* 3. MARKDOWN / TXT VIEWER */}
-                                    {["md", "txt"].includes(currentExt) && (
-                                        <div
-                                            className="preview-paper-sheet"
-                                            style={{
-                                                transform: `scale(${zoomLevel / 100})`,
-                                                transformOrigin: "top center",
-                                            }}
-                                        >
-                                            <div
-                                                className={`markdown-viewer-mock ${markdownViewMode === "code" ? "markdown-code-mode" : "markdown-preview-mode"}`}
-                                            >
-                                                {loadingPreview ? (
-                                                    <div className="docs-loading-placeholder">
-                                                        <Loader2
-                                                            size={20}
-                                                            className="spin-animate"
-                                                        />
-                                                        <span>Loading text notes...</span>
-                                                    </div>
-                                                ) : markdownViewMode === "code" ? (
-                                                    <pre className="md-code-raw markdown-source-editor">
-                                                        <code>
-                                                            {renderMarkdownCode(
-                                                                previewContent ||
-                                                                    "Empty file content",
-                                                            )}
-                                                        </code>
-                                                    </pre>
-                                                ) : (
-                                                    <article className="markdown-rendered-paper">
-                                                        {renderMarkdownPreview(
-                                                            previewContent || "Empty file content",
-                                                        )}
-                                                    </article>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* 4. EXCEL / CSV PREVIEW */}
-                                    {["xls", "xlsx", "csv"].includes(currentExt) && (
-                                        <div className="office-preview-shell">
-                                            {loadingOfficePreview ? (
-                                                <div className="docs-loading-placeholder">
-                                                    <Loader2 size={24} className="spin-animate" />
-                                                    <span>Opening spreadsheet...</span>
-                                                </div>
-                                            ) : officePreviewError ? (
-                                                <div className="office-preview-empty">
-                                                    <FileSpreadsheet size={30} />
-                                                    <strong>Spreadsheet preview unavailable</strong>
-                                                    <span>{officePreviewError}</span>
-                                                </div>
-                                            ) : (
-                                                <div className="spreadsheet-preview">
-                                                    <div className="office-preview-heading">
-                                                        <div>
-                                                            <span className="office-preview-kicker">
-                                                                <Table2 size={13} /> Spreadsheet
-                                                                preview
-                                                            </span>
-                                                            <strong>
-                                                                {spreadsheetSheets.length} sheet
-                                                                {spreadsheetSheets.length === 1
-                                                                    ? ""
-                                                                    : "s"}
-                                                            </strong>
-                                                        </div>
-                                                        <span className="office-preview-note">
-                                                            Showing up to 200 rows
-                                                        </span>
-                                                    </div>
-                                                    <div className="spreadsheet-tabs">
-                                                        {spreadsheetSheets.map((sheet) => (
-                                                            <button
-                                                                key={sheet.name}
-                                                                type="button"
-                                                                className={
-                                                                    activeSpreadsheetSheet ===
-                                                                    sheet.name
-                                                                        ? "active"
-                                                                        : ""
-                                                                }
-                                                                onClick={() =>
-                                                                    setActiveSpreadsheetSheet(
-                                                                        sheet.name,
-                                                                    )
-                                                                }
-                                                            >
-                                                                {sheet.name}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                    <div className="spreadsheet-table-viewport">
-                                                        {activeSheet?.rows?.length ? (
-                                                            <table className="spreadsheet-table">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th className="row-number-cell">
-                                                                            #
-                                                                        </th>
-                                                                        {activeSheet.rows[0].map(
-                                                                            (cell, index) => (
-                                                                                <th
-                                                                                    key={`head-${index}`}
-                                                                                >
-                                                                                    {cell ||
-                                                                                        `Column ${index + 1}`}
-                                                                                </th>
-                                                                            ),
-                                                                        )}
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {activeSheet.rows
-                                                                        .slice(1)
-                                                                        .map((row, rowIndex) => (
-                                                                            <tr
-                                                                                key={`row-${rowIndex}`}
-                                                                            >
-                                                                                <td className="row-number-cell">
-                                                                                    {rowIndex + 1}
-                                                                                </td>
-                                                                                {activeSheet.rows[0].map(
-                                                                                    (
-                                                                                        _,
-                                                                                        columnIndex,
-                                                                                    ) => (
-                                                                                        <td
-                                                                                            key={`cell-${rowIndex}-${columnIndex}`}
-                                                                                        >
-                                                                                            {row[
-                                                                                                columnIndex
-                                                                                            ] !==
-                                                                                            undefined
-                                                                                                ? String(
-                                                                                                      row[
-                                                                                                          columnIndex
-                                                                                                      ],
-                                                                                                  )
-                                                                                                : ""}
-                                                                                        </td>
-                                                                                    ),
-                                                                                )}
-                                                                            </tr>
-                                                                        ))}
-                                                                </tbody>
-                                                            </table>
-                                                        ) : (
-                                                            <div className="office-preview-empty">
-                                                                <span>This sheet is empty.</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* 5. POWERPOINT PREVIEW */}
-                                    {currentExt === "pptx" && (
-                                        <div className="office-preview-shell">
-                                            {loadingOfficePreview ? (
-                                                <div className="docs-loading-placeholder">
-                                                    <Loader2 size={24} className="spin-animate" />
-                                                    <span>Opening presentation...</span>
-                                                </div>
-                                            ) : officePreviewError ? (
-                                                <div className="office-preview-empty">
-                                                    <Presentation size={30} />
-                                                    <strong>
-                                                        Presentation preview unavailable
-                                                    </strong>
-                                                    <span>{officePreviewError}</span>
-                                                </div>
-                                            ) : activeSlide ? (
-                                                <div className="pptx-preview">
-                                                    <div className="office-preview-heading">
-                                                        <div>
-                                                            <span className="office-preview-kicker">
-                                                                <Presentation size={13} />{" "}
-                                                                Presentation preview
-                                                            </span>
-                                                            <strong>
-                                                                Slide {activeSlide.number} of{" "}
-                                                                {presentationSlides.length}
-                                                            </strong>
-                                                        </div>
-                                                        <div className="pptx-slide-controls">
-                                                            <button
-                                                                type="button"
-                                                                disabled={activePptxSlide === 0}
-                                                                onClick={() =>
-                                                                    setActivePptxSlide(
-                                                                        (previous) => previous - 1,
-                                                                    )
-                                                                }
-                                                                title="Previous slide"
-                                                            >
-                                                                <ChevronLeft size={15} />
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                disabled={
-                                                                    activePptxSlide ===
-                                                                    presentationSlides.length - 1
-                                                                }
-                                                                onClick={() =>
-                                                                    setActivePptxSlide(
-                                                                        (previous) => previous + 1,
-                                                                    )
-                                                                }
-                                                                title="Next slide"
-                                                            >
-                                                                <ChevronRight size={15} />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div className="pptx-slide-stage">
-                                                        <div className="pptx-slide-card">
-                                                            {activeSlide.text.length ? (
-                                                                activeSlide.text.map(
-                                                                    (text, index) =>
-                                                                        index === 0 ? (
-                                                                            <h3
-                                                                                key={`slide-title-${index}`}
-                                                                            >
-                                                                                {text}
-                                                                            </h3>
-                                                                        ) : (
-                                                                            <p
-                                                                                key={`slide-text-${index}`}
-                                                                            >
-                                                                                {text}
-                                                                            </p>
-                                                                        ),
-                                                                )
-                                                            ) : (
-                                                                <span>
-                                                                    This slide has no extractable
-                                                                    text. Download the file to view
-                                                                    graphics.
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="pptx-slide-dots">
-                                                        {presentationSlides.map((slide, index) => (
-                                                            <button
-                                                                key={slide.number}
-                                                                type="button"
-                                                                className={
-                                                                    index === activePptxSlide
-                                                                        ? "active"
-                                                                        : ""
-                                                                }
-                                                                onClick={() =>
-                                                                    setActivePptxSlide(index)
-                                                                }
-                                                                aria-label={`Go to slide ${slide.number}`}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="office-preview-empty">
-                                                    <Presentation size={30} />
-                                                    <span>
-                                                        No slides found in this presentation.
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* 6. CÁC TỆP BINARY KHÁC */}
-                                    {![
-                                        "pdf",
-                                        "docx",
-                                        "doc",
-                                        "md",
-                                        "txt",
-                                        "xls",
-                                        "xlsx",
-                                        "csv",
-                                        "pptx",
-                                    ].includes(currentExt) && (
-                                        <div className="preview-paper-sheet">
-                                            <div className="binary-doc-preview-card">
-                                                <div className="binary-card-glyph">
-                                                    {getDocIcon(
-                                                        selectedDoc.type || selectedDoc.fileType,
-                                                    )}
-                                                </div>
-                                                <h3>{selectedDoc.title || selectedDoc.filename}</h3>
-                                                <p>
-                                                    This file format is ready for download and
-                                                    offline review.
-                                                </p>
-                                                <div className="binary-action-row">
-                                                    <a
-                                                        href={documentApi.getDownloadUrl(
-                                                            selectedDoc.id,
-                                                        )}
-                                                        className="btn-download-primary"
-                                                    >
-                                                        <Download size={14} />
-                                                        <span>Download File</span>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Ngăn ghi chú học tập bên phải */}
-                                {isNotesOpen && (
-                                    <aside className="document-notes-drawer">
-                                        <div className="notes-drawer-header">
-                                            <div className="notes-title-box">
-                                                <StickyNote size={15} />
-                                                <strong>Ghi chú học tập</strong>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsNotesOpen(false)}
-                                            >
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                        <div className="notes-drawer-body">
-                                            <textarea
-                                                placeholder="Viết ghi chú cá nhân, công thức cần nhớ cho bài giảng này..."
-                                                value={currentNoteText}
-                                                onChange={(e) => setCurrentNoteText(e.target.value)}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="btn-save-note"
-                                                onClick={handleSaveNote}
-                                            >
-                                                Lưu ghi chú
-                                            </button>
-                                        </div>
-                                    </aside>
-                                )}
+                                {renderDocumentViewer(false)}
                             </div>
                         </>
                     ) : (
@@ -1548,6 +1567,247 @@ const Documents = ({
                     )}
                 </div>
             </div>
+
+            {/* ======================================================== */}
+            {/* MODAL FULL MÀN HÌNH: 1 BÊN TÀI LIỆU - 1 BÊN GHI CHÚ STACK */}
+            {/* ======================================================== */}
+            {isNotesModalOpen && selectedDoc && (
+                <div className="fullscreen-notes-modal-backdrop">
+                    <div className="fullscreen-notes-modal-container">
+                        {/* Thanh Topbar của Modal */}
+                        <div className="notes-modal-topbar">
+                            <div className="modal-doc-identity">
+                                {getDocIcon(selectedDoc.type || selectedDoc.fileType)}
+                                <strong>{selectedDoc.title || selectedDoc.filename}</strong>
+                                <span className="modal-course-badge">
+                                    {selectedDoc.courseCode || "GEN"}
+                                </span>
+                            </div>
+                            <div className="modal-topbar-actions">
+                                <button
+                                    type="button"
+                                    className="btn-modal-action-exit"
+                                    onClick={() => setIsNotesModalOpen(false)}
+                                    title="Đóng không gian ghi chú"
+                                >
+                                    <Minimize2 size={16} />
+                                    <span>Thu nhỏ & Đóng</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Thân Modal chia đôi 50/50 */}
+                        <div className="notes-modal-split-body">
+                            {/* NỬA TRÁI: PREVIEW TÀI LIỆU */}
+                            <div
+                                className="modal-half-left-viewer"
+                                onMouseUp={handleMouseUpSelection}
+                            >
+                                {renderDocumentViewer(true)}
+                            </div>
+
+                            {/* NỬA PHẢI: WORKSPACE GHI CHÚ VỚI STACK FILE */}
+                            <div className="modal-half-right-notes">
+                                {/* Cột con bên phải: Soạn thảo ghi chú hiện tại */}
+                                <div className="notes-editor-pane">
+                                    <div className="editor-pane-header">
+                                        <div className="editor-title-wrap">
+                                            <input
+                                                type="text"
+                                                className="note-title-inline-input"
+                                                placeholder="Tiêu đề ghi chú..."
+                                                value={noteTitleInput}
+                                                onChange={(e) => setNoteTitleInput(e.target.value)}
+                                            />
+                                            <CustomSelector
+                                                options={NOTE_TYPES}
+                                                value={noteTypeInput}
+                                                onChange={(val) => setNoteTypeInput(val)}
+                                            />
+                                        </div>
+
+                                        <div className="editor-header-buttons">
+                                            <button
+                                                type="button"
+                                                className="btn-new-note-action"
+                                                onClick={handleCreateNewNote}
+                                                title="Tạo ghi chú mới"
+                                                aria-label="Tạo ghi chú mới"
+                                            >
+                                                <Plus size={14} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn-save-note-action"
+                                                onClick={handleSaveCurrentNote}
+                                                title="Lưu lại ghi chú"
+                                                aria-label="Lưu lại ghi chú"
+                                            >
+                                                <Save size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <textarea
+                                        className="note-body-textarea"
+                                        placeholder="Ghi lại các công thức, lưu ý quan trọng, câu hỏi thắc mắc khi đang đọc tài liệu..."
+                                        value={noteContentInput}
+                                        onChange={(e) => setNoteContentInput(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Cột con bên phải: STACK CÁC FILE GHI CHÚ CŨ */}
+                                <div className="notes-stack-sidebar">
+                                    <div className="stack-sidebar-header">
+                                        <StickyNote size={15} />
+                                        <strong>Kho ghi chú ({currentDocNotesList.length})</strong>
+                                    </div>
+
+                                    <div className="notes-stack-cards-track">
+                                        {currentDocNotesList.length === 0 ? (
+                                            <div className="empty-notes-stack">
+                                                <StickyNote size={24} color="#94a3b8" />
+                                                <span>Chưa có ghi chú nào cho tài liệu này.</span>
+                                            </div>
+                                        ) : (
+                                            currentDocNotesList.map((note) => {
+                                                const isActive = note.id === activeNoteId;
+                                                return (
+                                                    <div
+                                                        key={note.id}
+                                                        className={`note-stack-card-item ${isActive ? "active-card" : ""}`}
+                                                        onClick={() =>
+                                                            handleSelectNoteFromStack(note)
+                                                        }
+                                                    >
+                                                        <div className="stack-card-top">
+                                                            <div className="stack-card-title-line">
+                                                                <strong title={note.title}>
+                                                                    {note.title}
+                                                                </strong>
+                                                                {renderNoteTypeBadge(
+                                                                    note.type || "general",
+                                                                )}
+                                                            </div>
+                                                            <div className="note-card-actions">
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn-rename-card-note"
+                                                                    onClick={(e) =>
+                                                                        handleOpenEditNoteModal(
+                                                                            note,
+                                                                            e,
+                                                                        )
+                                                                    }
+                                                                    title="Đổi tên và phân loại ghi chú"
+                                                                >
+                                                                    <Pencil size={13} />
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn-delete-card-note"
+                                                                    onClick={(e) =>
+                                                                        handleDeleteNoteFromStack(
+                                                                            note.id,
+                                                                            e,
+                                                                        )
+                                                                    }
+                                                                    title="Xóa ghi chú này"
+                                                                >
+                                                                    <Trash2 size={13} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <p className="stack-card-snippet">
+                                                            {note.content || "Chưa có nội dung..."}
+                                                        </p>
+                                                        <div className="stack-card-bottom">
+                                                            <Clock size={11} />
+                                                            <span>
+                                                                {note.updatedAt || "Vừa xong"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* POPUP MODAL ĐỔI TÊN & PHÂN LOẠI TYPE GHI CHÚ            */}
+            {/* ======================================================== */}
+            {editingNoteModal && (
+                <div
+                    className="modal-backdrop-scrim note-edit-popup-backdrop"
+                    onClick={() => setEditingNoteModal(null)}
+                >
+                    <div className="note-edit-dialog-card" onClick={(e) => e.stopPropagation()}>
+                        <div className="note-edit-dialog-header">
+                            <div className="dialog-title-group">
+                                <Pencil size={15} className="text-emerald" />
+                                <strong>Chỉnh sửa ghi chú</strong>
+                            </div>
+                            <button
+                                type="button"
+                                className="btn-close-edit-dialog"
+                                onClick={() => setEditingNoteModal(null)}
+                            >
+                                <X size={15} />
+                            </button>
+                        </div>
+
+                        <form
+                            onSubmit={handleConfirmEditNoteModal}
+                            className="note-edit-dialog-body"
+                        >
+                            <div className="dialog-form-unit">
+                                <label>Tên ghi chú</label>
+                                <input
+                                    type="text"
+                                    value={editModalTitle}
+                                    onChange={(e) => setEditModalTitle(e.target.value)}
+                                    placeholder="Nhập tên mới cho ghi chú..."
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="dialog-form-unit">
+                                <label>Loại ghi chú (Phân loại)</label>
+                                <div className="note-types-pill-selection">
+                                    {NOTE_TYPES.map((t) => (
+                                        <button
+                                            key={t.id}
+                                            type="button"
+                                            className={`type-choice-chip ${t.color} ${editModalType === t.id ? "selected" : ""}`}
+                                            onClick={() => setEditModalType(t.id)}
+                                        >
+                                            {t.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="dialog-footer-actions">
+                                <button
+                                    type="button"
+                                    className="btn-cancel-dialog"
+                                    onClick={() => setEditingNoteModal(null)}
+                                >
+                                    Hủy
+                                </button>
+                                <button type="submit" className="btn-confirm-dialog">
+                                    Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
