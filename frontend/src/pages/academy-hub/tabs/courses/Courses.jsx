@@ -1,19 +1,16 @@
 import { useState } from "react";
 import {
-    ArrowUpRight,
     BookOpen,
-    CheckCircle2,
-    Database,
-    FileCheck,
+    Download,
     FileText,
-    Filter,
-    FolderGit2,
     GraduationCap,
     MoreHorizontal,
     Plus,
     Search,
     Sparkles,
     UploadCloud,
+    CheckCircle,
+    Clock,
 } from "lucide-react";
 import "./Courses.css";
 
@@ -25,17 +22,28 @@ const COURSES_DATA = [
         semester: "Fall 2026",
         instructor: "Dr. Nguyen Van A",
         docsCount: 14,
-        vectorStatus: "Indexed",
         progress: 75,
+        completedLessons: 9,
+        totalLessons: 12,
         syllabus: [
-            { name: "Lecture_01_Divide_Conquer.pdf", size: "2.4 MB", chunks: 84, status: "ready" },
+            {
+                name: "Lecture_01_Divide_Conquer.pdf",
+                size: "2.4 MB",
+                uploadedAt: "Sep 20, 2026",
+                status: "ready",
+            },
             {
                 name: "Lecture_04_Dynamic_Programming.pdf",
                 size: "3.8 MB",
-                chunks: 142,
+                uploadedAt: "Sep 25, 2026",
                 status: "ready",
             },
-            { name: "Lab_03_Graph_Dijkstra_Spec.pdf", size: "1.1 MB", chunks: 36, status: "ready" },
+            {
+                name: "Lab_03_Graph_Dijkstra_Spec.pdf",
+                size: "1.1 MB",
+                uploadedAt: "Sep 28, 2026",
+                status: "ready",
+            },
         ],
     },
     {
@@ -45,20 +53,26 @@ const COURSES_DATA = [
         semester: "Fall 2026",
         instructor: "MSc. Tran Thi B",
         docsCount: 18,
-        vectorStatus: "Indexed",
         progress: 60,
+        completedLessons: 6,
+        totalLessons: 10,
         syllabus: [
-            { name: "Syllabus_SE301_Courseware.pdf", size: "850 KB", chunks: 28, status: "ready" },
+            {
+                name: "Syllabus_SE301_Courseware.pdf",
+                size: "850 KB",
+                uploadedAt: "Sep 15, 2026",
+                status: "ready",
+            },
             {
                 name: "Chapter_05_Microservices_EventDriven.pdf",
                 size: "4.2 MB",
-                chunks: 160,
+                uploadedAt: "Sep 22, 2026",
                 status: "ready",
             },
             {
                 name: "Clean_Architecture_Handbook.pdf",
                 size: "5.6 MB",
-                chunks: 210,
+                uploadedAt: "Sep 26, 2026",
                 status: "ready",
             },
         ],
@@ -66,30 +80,25 @@ const COURSES_DATA = [
     {
         id: "ai402",
         code: "AI402",
-        title: "Large Language Models & Agentic RAG",
+        title: "Artificial Intelligence & Natural Language Processing",
         semester: "Fall 2026",
         instructor: "Dr. Le Hoang C",
         docsCount: 12,
-        vectorStatus: "Syncing",
-        progress: 92,
+        progress: 90,
+        completedLessons: 9,
+        totalLessons: 10,
         syllabus: [
             {
-                name: "GraphRAG_KnowledgeGraph_Traversal.pdf",
+                name: "Graph_Knowledge_Overview.pdf",
                 size: "3.1 MB",
-                chunks: 115,
+                uploadedAt: "Sep 18, 2026",
                 status: "ready",
             },
             {
-                name: "Qdrant_Vector_Search_Benchmark.pdf",
-                size: "1.9 MB",
-                chunks: 64,
-                status: "ready",
-            },
-            {
-                name: "DeepSeek_Prompt_Engineering_Guide.pdf",
+                name: "Deep_Learning_NLP_Guide.pdf",
                 size: "2.2 MB",
-                chunks: 90,
-                status: "syncing",
+                uploadedAt: "Sep 27, 2026",
+                status: "ready",
             },
         ],
     },
@@ -104,35 +113,35 @@ const Courses = ({ onLaunchTool }) => {
         const matchesQuery =
             course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             course.code.toLowerCase().includes(searchQuery.toLowerCase());
-        if (activeFilter === "indexed") return matchesQuery && course.vectorStatus === "Indexed";
-        if (activeFilter === "syncing") return matchesQuery && course.vectorStatus === "Syncing";
+        if (activeFilter === "completed") return matchesQuery && course.progress >= 80;
+        if (activeFilter === "in_progress") return matchesQuery && course.progress < 80;
         return matchesQuery;
     });
 
     return (
         <div className="courses-tab-bounds">
-            {/* Header Banner */}
+            {/* 1. Header Banner */}
             <div className="courses-header-banner">
                 <div className="banner-left-meta">
-                    <h2>Courseware & Knowledge Base</h2>
+                    <h2>My Enrolled Courses</h2>
                     <span>
-                        Manage syllabi, slide decks, lab rubrics, and RAG knowledge graphs per
-                        module
+                        Access lecture materials, track semester progress, and study with your AI
+                        Tutor
                     </span>
                 </div>
                 <button type="button" className="btn-add-course">
                     <Plus size={14} />
-                    <span>Enroll New Course</span>
+                    <span>Join Course</span>
                 </button>
             </div>
 
-            {/* Filter & Search Bar */}
+            {/* 2. Filter & Search Bar */}
             <div className="courses-filter-bar">
                 <div className="search-course-box">
                     <Search size={14} className="search-icon" />
                     <input
                         type="text"
-                        placeholder="Search by course code, lecture title, syllabus..."
+                        placeholder="Search courses or topics..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -147,24 +156,24 @@ const Courses = ({ onLaunchTool }) => {
                     </button>
                     <button
                         type="button"
-                        className={`filter-pill ${activeFilter === "indexed" ? "active" : ""}`}
-                        onClick={() => setActiveFilter("indexed")}
+                        className={`filter-pill ${activeFilter === "in_progress" ? "active" : ""}`}
+                        onClick={() => setActiveFilter("in_progress")}
                     >
-                        Vector Indexed
+                        In Progress
                     </button>
                     <button
                         type="button"
-                        className={`filter-pill ${activeFilter === "syncing" ? "active" : ""}`}
-                        onClick={() => setActiveFilter("syncing")}
+                        className={`filter-pill ${activeFilter === "completed" ? "active" : ""}`}
+                        onClick={() => setActiveFilter("completed")}
                     >
-                        Syncing
+                        Almost Done
                     </button>
                 </div>
             </div>
 
-            {/* Two-Column Master / Detail Layout */}
+            {/* 3. Split Grid Layout */}
             <div className="courses-split-grid">
-                {/* Left Column: Course List */}
+                {/* Cột trái: Danh sách khóa học */}
                 <div className="courses-card-list">
                     {filteredCourses.map((c) => {
                         const isSelected = selectedCourse.id === c.id;
@@ -179,30 +188,24 @@ const Courses = ({ onLaunchTool }) => {
                                         <GraduationCap size={13} />
                                         <span>{c.code}</span>
                                     </div>
-                                    <span className={`status-pill ${c.vectorStatus.toLowerCase()}`}>
-                                        {c.vectorStatus === "Indexed" ? (
-                                            <CheckCircle2 size={11} />
-                                        ) : (
-                                            <Database size={11} />
-                                        )}
-                                        {c.vectorStatus}
-                                    </span>
+                                    <span className="course-semester-tag">{c.semester}</span>
                                 </div>
 
                                 <strong className="course-title-text">{c.title}</strong>
-                                <span className="course-inst-text">
-                                    {c.instructor} · {c.semester}
-                                </span>
+                                <span className="course-inst-text">{c.instructor}</span>
 
                                 <div className="card-bottom-row">
                                     <span className="file-count-meta">
-                                        <FileText size={12} /> {c.docsCount} documents
+                                        <FileText size={12} /> {c.docsCount} materials
                                     </span>
-                                    <div className="progress-mini-bar">
-                                        <div
-                                            className="progress-mini-fill"
-                                            style={{ width: `${c.progress}%` }}
-                                        />
+                                    <div className="progress-info-group">
+                                        <span className="progress-text">{c.progress}%</span>
+                                        <div className="progress-mini-bar">
+                                            <div
+                                                className="progress-mini-fill"
+                                                style={{ width: `${c.progress}%` }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -210,7 +213,7 @@ const Courses = ({ onLaunchTool }) => {
                     })}
                 </div>
 
-                {/* Right Column: Selected Courseware & RAG Context */}
+                {/* Cột phải: Chi tiết khóa học & Tài liệu học tập */}
                 <div className="course-detail-view">
                     <div className="detail-header-panel">
                         <div className="detail-lead-meta">
@@ -218,89 +221,115 @@ const Courses = ({ onLaunchTool }) => {
                             <div>
                                 <h3>{selectedCourse.title}</h3>
                                 <p>
-                                    {selectedCourse.instructor} · {selectedCourse.semester}
+                                    Instructor: {selectedCourse.instructor} •{" "}
+                                    {selectedCourse.semester}
                                 </p>
                             </div>
                         </div>
 
-                        {/* Quick AI Action Buttons */}
+                        {/* Nút tác vụ học tập */}
                         <div className="detail-actions-cluster">
                             <button
                                 type="button"
                                 className="btn-action-tool tutor"
                                 onClick={() => onLaunchTool && onLaunchTool("tutor")}
-                                title="Open Socratic Code Tutor for this module"
+                                title="Chat with AI Tutor on this course"
                             >
                                 <Sparkles size={14} />
-                                <span>Learn with Tutor</span>
+                                <span>Ask Tutor</span>
                             </button>
                             <button
                                 type="button"
                                 className="btn-action-tool exam"
                                 onClick={() => onLaunchTool && onLaunchTool("exam_prep")}
-                                title="Generate adaptive practice drills"
+                                title="Practice with quizzes"
                             >
                                 <BookOpen size={14} />
-                                <span>Practice Quizzes</span>
+                                <span>Practice Exam</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* Vector DB Engine Health */}
-                    <div className="vector-metric-banner">
-                        <div className="metric-col">
-                            <span>Vector Store Engine</span>
-                            <strong>Qdrant Cloud · 384 Chunks</strong>
+                    {/* Thẻ thống kê học tập thân thiện */}
+                    <div className="course-summary-cards">
+                        <div className="summary-card">
+                            <div className="summary-icon blue">
+                                <FileText size={18} />
+                            </div>
+                            <div className="summary-data">
+                                <span>Course Materials</span>
+                                <strong>{selectedCourse.syllabus.length} Files Ready</strong>
+                            </div>
                         </div>
-                        <div className="metric-col">
-                            <span>Retrieval Precision</span>
-                            <strong className="high-rate">94.8% Cosine Match</strong>
+
+                        <div className="summary-card">
+                            <div className="summary-icon green">
+                                <CheckCircle size={18} />
+                            </div>
+                            <div className="summary-data">
+                                <span>Completed Modules</span>
+                                <strong>
+                                    {selectedCourse.completedLessons} /{" "}
+                                    {selectedCourse.totalLessons} Lessons
+                                </strong>
+                            </div>
                         </div>
-                        <div className="metric-col">
-                            <span>Knowledge Graph (GraphRAG)</span>
-                            <strong>Neo4j Live Node Linking</strong>
+
+                        <div className="summary-card">
+                            <div className="summary-icon amber">
+                                <Clock size={18} />
+                            </div>
+                            <div className="summary-data">
+                                <span>Semester Status</span>
+                                <strong>On Track</strong>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Syllabus Files Table */}
+                    {/* Bảng danh sách bài giảng & bài tập */}
                     <div className="courseware-files-section">
                         <div className="files-section-header">
                             <strong>
-                                Syllabus Materials & Handouts ({selectedCourse.syllabus.length})
+                                Study Materials & Slides ({selectedCourse.syllabus.length})
                             </strong>
                             <button type="button" className="btn-upload-file">
                                 <UploadCloud size={13} />
-                                <span>Upload Slides / PDF</span>
+                                <span>Upload Material</span>
                             </button>
                         </div>
 
                         <div className="syllabus-file-table">
                             <div className="table-header-row">
-                                <span className="col-name">DOCUMENT NAME</span>
+                                <span className="col-name">DOCUMENT TITLE</span>
                                 <span className="col-size">SIZE</span>
-                                <span className="col-chunks">RAG CHUNKS</span>
-                                <span className="col-status">STATUS</span>
-                                <span className="col-actions"></span>
+                                <span className="col-date">DATE ADDED</span>
+                                <span className="col-actions">ACTIONS</span>
                             </div>
 
                             {selectedCourse.syllabus.map((file, idx) => (
                                 <div key={idx} className="table-data-row">
                                     <div className="col-name file-primary-cell">
-                                        <FileCheck size={14} className="file-icon" />
+                                        <div className="file-badge-icon">
+                                            <FileText size={14} />
+                                        </div>
                                         <span>{file.name}</span>
                                     </div>
                                     <span className="col-size">{file.size}</span>
-                                    <span className="col-chunks">
-                                        <code>{file.chunks} chunks</code>
-                                    </span>
-                                    <span className="col-status">
-                                        <span className={`file-badge ${file.status}`}>
-                                            {file.status === "ready" ? "Indexed" : "Processing"}
-                                        </span>
-                                    </span>
-                                    <div className="col-actions">
-                                        <button type="button" className="btn-more-options">
-                                            <MoreHorizontal size={14} />
+                                    <span className="col-date">{file.uploadedAt}</span>
+                                    <div className="col-actions file-action-buttons">
+                                        <button
+                                            type="button"
+                                            className="btn-table-action"
+                                            title="Download"
+                                        >
+                                            <Download size={13} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-table-action"
+                                            title="Options"
+                                        >
+                                            <MoreHorizontal size={13} />
                                         </button>
                                     </div>
                                 </div>

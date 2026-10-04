@@ -1,150 +1,292 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
     BookOpen,
-    CheckCircle2,
-    Clock,
-    Database,
+    Check,
+    ChevronLeft,
+    ChevronRight,
+    Code2,
     Download,
-    ExternalLink,
-    Eye,
     FileSpreadsheet,
     FileText,
     FileType,
     Filter,
-    Layers,
+    FolderOpen,
+    Eye,
     Maximize2,
+    Loader2,
     MoreHorizontal,
-    Plus,
     Presentation,
-    RefreshCw,
     Search,
     Sparkles,
+    Table2,
     Trash2,
     UploadCloud,
     ZoomIn,
     ZoomOut,
+    CheckCircle2,
+    Star,
+    X,
 } from "lucide-react";
+import { renderAsync } from "docx-preview";
+import * as XLSX from "xlsx";
+import JSZip from "jszip";
+import { documentApi } from "../../../../api/documents";
 import "./Documents.css";
 
-const MOCK_DOCUMENTS = [
-    {
-        id: "doc-1",
-        title: "Lecture_04_Dynamic_Programming.pdf",
-        type: "pdf",
-        size: "3.8 MB",
-        uploadedAt: "Yesterday, 14:20",
-        chunks: 142,
-        status: "Indexed",
-        courseCode: "CS204",
-        previewData: {
-            totalPages: 24,
-            currentPage: 18,
-            excerpt:
-                "The 0/1 Knapsack Problem: Given a set of n items numbered from 1 up to n, each with a weight w[i] and a value v[i], along with a maximum weight capacity W.",
-            highlightFormula: "dp[i][w] = max(dp[i-1][w], dp[i-1][w - weight[i]] + value[i])",
-            citationNote: "Vector matched in 12 quiz questions",
-        },
-    },
-    {
-        id: "doc-2",
-        title: "Clean_Architecture_Domain_Guidelines.docx",
-        type: "docx",
-        size: "1.4 MB",
-        uploadedAt: "3 days ago",
-        chunks: 86,
-        status: "Indexed",
-        courseCode: "SE301",
-        previewData: {
-            heading: "Domain-Driven Design (DDD) Entity Separation",
-            author: "MSc. Tran Thi B",
-            paragraphs: [
-                "1. Core Domain Layer: Entities must remain completely isolated from presentation or infrastructure framework dependencies.",
-                "2. Use Case Interactors: Coordinate business flows, accepting boundary request data transfer objects (DTOs) and emitting response DTOs.",
-                "3. Inversion of Control: Database persistence gateways are specified as interfaces in the application layer and implemented externally.",
-            ],
-        },
-    },
-    {
-        id: "doc-3",
-        title: "Benchmark_Retrieval_Vector_Latency.xlsx",
-        type: "xlsx",
-        size: "620 KB",
-        uploadedAt: "1 week ago",
-        chunks: 48,
-        status: "Indexed",
-        courseCode: "AI402",
-        previewData: {
-            sheetName: "Vector_DB_Benchmark",
-            headers: ["Model", "Database", "Index Type", "Top-K", "Latency (ms)", "Precision@5"],
-            rows: [
-                [
-                    "text-embedding-3-small",
-                    "Qdrant Cloud",
-                    "HNSW (Cosine)",
-                    "5",
-                    "18.4 ms",
-                    "94.6%",
-                ],
-                ["bge-large-en-v1.5", "Pinecone Serverless", "HNSW", "5", "26.1 ms", "92.1%"],
-                ["all-MiniLM-L6-v2", "ChromaDB (Local)", "Flat", "5", "12.8 ms", "88.4%"],
-                ["text-embedding-ada-002", "Neo4j Vector", "Lucene HNSW", "5", "31.2 ms", "91.0%"],
-            ],
-        },
-    },
-    {
-        id: "doc-4",
-        title: "Microservices_Event_Driven_Patterns.pptx",
-        type: "pptx",
-        size: "8.5 MB",
-        uploadedAt: "Sep 20, 2026",
-        chunks: 110,
-        status: "Indexed",
-        courseCode: "SE301",
-        previewData: {
-            totalSlides: 36,
-            currentSlide: 12,
-            slideTitle: "Transactional Outbox Pattern & Event Sourcing",
-            slideBullets: [
-                "Dual-write anti-pattern: Updating an RDBMS and publishing to Kafka concurrently leads to inconsistency during network partitions.",
-                "Solution: Insert events into an 'OUTBOX' table within the exact same database transaction.",
-                "Polling publisher / Debezium CDC reads write-ahead logs (WAL) to push events into broker with at-least-once delivery.",
-            ],
-        },
-    },
-    {
-        id: "doc-5",
-        title: "GraphRAG_KnowledgeGraph_Spec.md",
-        type: "md",
-        size: "94 KB",
-        uploadedAt: "Sep 18, 2026",
-        chunks: 24,
-        status: "Indexed",
-        courseCode: "AI402",
-        previewData: {
-            rawMarkdown: `# GraphRAG Node Traversal Pipeline
-
-## Overview
-Combining **Dense Vector Search** with **Neo4j Cypher Traversal** facilitates multi-hop reasoning over unstructured courseware.
-
-### Pipeline Stages:
-- **Entity Extraction:** SpaCy / LLM identifying Nodes (\`Concept\`, \`Algorithm\`, \`Course\`).
-- **Relationship Linking:** Extracted triples (\`Dijkstra\` -[:BELONGS_TO]-> \`Graph_Theory\`).
-- **Hybrid Fusion:** Reciprocal Rank Fusion (RRF) scores vector similarity alongside graph depth.
-`,
-        },
-    },
-];
-
-const Documents = ({ onLaunchTool }) => {
-    const [documents, setDocuments] = useState(MOCK_DOCUMENTS);
-    const [selectedDoc, setSelectedDoc] = useState(MOCK_DOCUMENTS[0]);
+const Documents = ({ workspaceId = "00000000-0000-0000-0000-000000000001", onLaunchTool }) => {
+    const [documents, setDocuments] = useState([]);
+    const [selectedDoc, setSelectedDoc] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState("all");
     const [zoomLevel, setZoomLevel] = useState(100);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
+    const [previewContent, setPreviewContent] = useState("");
+    const [loadingPreview, setLoadingPreview] = useState(false);
+    const [loadingDocx, setLoadingDocx] = useState(false);
+
+    // State dành cho Excel và PowerPoint Preview
+    const [spreadsheetSheets, setSpreadsheetSheets] = useState([]);
+    const [activeSpreadsheetSheet, setActiveSpreadsheetSheet] = useState("");
+    const [presentationSlides, setPresentationSlides] = useState([]);
+    const [activePptxSlide, setActivePptxSlide] = useState(0);
+    const [loadingOfficePreview, setLoadingOfficePreview] = useState(false);
+    const [officePreviewError, setOfficePreviewError] = useState("");
+
+    const [selectedIds, setSelectedIds] = useState(new Set());
+    const [favoriteIds, setFavoriteIds] = useState(new Set());
+    const [isAdvancedFiltersOpen, setIsAdvancedFiltersOpen] = useState(false);
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [courseFilter, setCourseFilter] = useState("all");
+    const [sortBy, setSortBy] = useState("recent");
+    const [contentSearchQuery, setContentSearchQuery] = useState("");
+    const [isDragging, setIsDragging] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [actionNotice, setActionNotice] = useState("");
+    const [markdownViewMode, setMarkdownViewMode] = useState("preview");
+    const [isDocumentToolsOpen, setIsDocumentToolsOpen] = useState(false);
+
     const fileUploadRef = useRef(null);
+    const docxContainerRef = useRef(null);
+    const documentToolsMenuRef = useRef(null);
+
+    // 1. Fetch danh sách tài liệu từ API
+    const fetchDocuments = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const data = await documentApi.getByWorkspace(workspaceId, {
+                fileType: typeFilter !== "all" ? typeFilter : null,
+            });
+            const docList = Array.isArray(data) ? data : [];
+            setDocuments(docList);
+            localStorage.setItem("academy_hub_documents", JSON.stringify(docList));
+
+            if (docList.length > 0) {
+                setSelectedDoc((prev) => {
+                    const exists = docList.find((d) => d.id === prev?.id);
+                    return exists || docList[0];
+                });
+            } else {
+                setSelectedDoc(null);
+            }
+        } catch (err) {
+            console.error("Failed to load documents:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [workspaceId, typeFilter]);
+
+    useEffect(() => {
+        fetchDocuments();
+    }, [fetchDocuments]);
+
+    useEffect(() => {
+        if (!isDocumentToolsOpen) return undefined;
+
+        const closeDocumentTools = (event) => {
+            if (event.type === "keydown" && event.key !== "Escape") return;
+            if (
+                event.type === "mousedown" &&
+                documentToolsMenuRef.current?.contains(event.target)
+            ) {
+                return;
+            }
+            setIsDocumentToolsOpen(false);
+        };
+
+        document.addEventListener("mousedown", closeDocumentTools);
+        document.addEventListener("keydown", closeDocumentTools);
+        return () => {
+            document.removeEventListener("mousedown", closeDocumentTools);
+            document.removeEventListener("keydown", closeDocumentTools);
+        };
+    }, [isDocumentToolsOpen]);
+
+    // 2. Fetch nội dung text preview nếu file là Markdown hoặc TXT
+    useEffect(() => {
+        if (!selectedDoc) {
+            setPreviewContent("");
+            return;
+        }
+
+        const ext = (selectedDoc.type || selectedDoc.fileType || "").toLowerCase();
+        if (["md", "txt"].includes(ext)) {
+            setLoadingPreview(true);
+            fetch(documentApi.getPreviewUrl(selectedDoc.id))
+                .then((res) => (res.ok ? res.text() : "No preview available."))
+                .then((text) => setPreviewContent(text))
+                .catch(() => setPreviewContent("Error loading preview."))
+                .finally(() => setLoadingPreview(false));
+        } else {
+            setPreviewContent("");
+        }
+        setMarkdownViewMode("preview");
+    }, [selectedDoc]);
+
+    // 3. Render file DOCX trực tiếp bằng docx-preview
+    useEffect(() => {
+        if (!selectedDoc) return;
+
+        const ext = (selectedDoc.type || selectedDoc.fileType || "").toLowerCase();
+        if (ext === "docx" || ext === "doc") {
+            setLoadingDocx(true);
+            fetch(documentApi.getDownloadUrl(selectedDoc.id))
+                .then((res) => {
+                    if (!res.ok) throw new Error("Failed to load document file");
+                    return res.blob();
+                })
+                .then(async (blob) => {
+                    if (docxContainerRef.current) {
+                        docxContainerRef.current.innerHTML = "";
+                        await renderAsync(blob, docxContainerRef.current, undefined, {
+                            inWrapper: true,
+                            ignoreWidth: false,
+                            ignoreHeight: false,
+                            experimental: true,
+                            useBase64URL: true,
+                        });
+                    }
+                })
+                .catch((err) => {
+                    console.error("DOCX rendering error:", err);
+                    if (docxContainerRef.current) {
+                        docxContainerRef.current.innerHTML = `
+                            <div class="docs-empty-placeholder">
+                                <span>Unable to preview this document. Please download to view.</span>
+                            </div>`;
+                    }
+                })
+                .finally(() => setLoadingDocx(false));
+        }
+    }, [selectedDoc]);
+
+    // 4. Render file Excel (XLSX, XLS, CSV) và PowerPoint (PPTX)
+    useEffect(() => {
+        if (!selectedDoc) return;
+        const ext = (selectedDoc.type || selectedDoc.fileType || "").toLowerCase();
+
+        // Xử lý Excel / CSV
+        if (["xls", "xlsx", "csv"].includes(ext)) {
+            setLoadingOfficePreview(true);
+            setOfficePreviewError("");
+            setSpreadsheetSheets([]);
+
+            fetch(documentApi.getDownloadUrl(selectedDoc.id))
+                .then((res) => {
+                    if (!res.ok) throw new Error("Không thể tải tệp bảng tính.");
+                    return res.arrayBuffer();
+                })
+                .then((buffer) => {
+                    const workbook = XLSX.read(buffer, { type: "array" });
+                    const parsedSheets = workbook.SheetNames.map((name) => {
+                        const sheet = workbook.Sheets[name];
+                        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                        return {
+                            name,
+                            rows: rows.slice(0, 200), // Lấy tối đa 200 dòng đầu tiên để tối ưu hiệu năng
+                        };
+                    });
+
+                    if (parsedSheets.length === 0) {
+                        throw new Error("Tệp bảng tính không có dữ liệu.");
+                    }
+
+                    setSpreadsheetSheets(parsedSheets);
+                    setActiveSpreadsheetSheet(parsedSheets[0].name);
+                })
+                .catch((err) => {
+                    console.error("Excel preview error:", err);
+                    setOfficePreviewError(err.message || "Không thể đọc tệp bảng tính.");
+                })
+                .finally(() => setLoadingOfficePreview(false));
+        }
+
+        // Xử lý PPTX
+        if (ext === "pptx") {
+            setLoadingOfficePreview(true);
+            setOfficePreviewError("");
+            setPresentationSlides([]);
+            setActivePptxSlide(0);
+
+            fetch(documentApi.getDownloadUrl(selectedDoc.id))
+                .then((res) => {
+                    if (!res.ok) throw new Error("Không thể tải tệp bản trình bày.");
+                    return res.arrayBuffer();
+                })
+                .then(async (buffer) => {
+                    const zip = await JSZip.loadAsync(buffer);
+                    const slideFiles = Object.keys(zip.files).filter((path) =>
+                        path.match(/^ppt\/slides\/slide\d+\.xml$/i),
+                    );
+
+                    // Sắp xếp thứ tự slide theo số
+                    slideFiles.sort((a, b) => {
+                        const numA = parseInt(a.match(/slide(\d+)\.xml/i)[1], 10);
+                        const numB = parseInt(b.match(/slide(\d+)\.xml/i)[1], 10);
+                        return numA - numB;
+                    });
+
+                    if (slideFiles.length === 0) {
+                        throw new Error("Không tìm thấy slide nào trong bài trình chiếu.");
+                    }
+
+                    const slidesData = await Promise.all(
+                        slideFiles.map(async (filePath, index) => {
+                            const xmlText = await zip.files[filePath].async("text");
+                            const parser = new DOMParser();
+                            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+                            // Trích xuất văn bản từ thẻ a:p (paragraph) và a:t (text)
+                            const paragraphs = Array.from(xmlDoc.getElementsByTagName("a:p"));
+                            const extractedText = paragraphs
+                                .map((p) => {
+                                    const texts = Array.from(p.getElementsByTagName("a:t"));
+                                    return texts
+                                        .map((t) => t.textContent)
+                                        .join("")
+                                        .trim();
+                                })
+                                .filter(Boolean);
+
+                            return {
+                                number: index + 1,
+                                text: extractedText,
+                            };
+                        }),
+                    );
+
+                    setPresentationSlides(slidesData);
+                })
+                .catch((err) => {
+                    console.error("PPTX preview error:", err);
+                    setOfficePreviewError(err.message || "Không thể đọc tệp trình chiếu PPTX.");
+                })
+                .finally(() => setLoadingOfficePreview(false));
+        }
+    }, [selectedDoc]);
 
     const getDocIcon = (type) => {
-        switch (type) {
+        switch ((type || "").toLowerCase()) {
             case "pdf":
                 return <FileText size={16} className="file-type-icon pdf" />;
             case "docx":
@@ -162,62 +304,291 @@ const Documents = ({ onLaunchTool }) => {
         }
     };
 
-    const filteredDocs = documents.filter((doc) => {
-        const matchesQuery =
-            doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            doc.courseCode.toLowerCase().includes(searchQuery.toLowerCase());
-        if (typeFilter !== "all" && doc.type !== typeFilter) return false;
-        return matchesQuery;
-    });
+    const availableCourses = [...new Set(documents.map((doc) => doc.courseCode).filter(Boolean))];
 
-    const handleFileUpload = (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const extension = file.name.split(".").pop().toLowerCase();
-        const newDoc = {
-            id: `doc-${Date.now()}`,
-            title: file.name,
-            type: extension,
-            size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-            uploadedAt: "Just now",
-            chunks: Math.floor(Math.random() * 80) + 20,
-            status: "Indexed",
-            courseCode: "GEN",
-            previewData: {
-                totalPages: 1,
-                excerpt:
-                    "Uploaded file successfully ingested and indexed into Qdrant vector store.",
-            },
-        };
-
-        setDocuments((prev) => [newDoc, ...prev]);
-        setSelectedDoc(newDoc);
+    const getDocumentStatus = (doc) => {
+        const status = (doc.status || "ready").toLowerCase();
+        return ["ready", "processing", "failed"].includes(status) ? status : "ready";
     };
 
+    const getDocumentTitle = (doc) => doc.title || doc.filename || "Untitled document";
+
+    const filteredDocs = documents
+        .filter((doc) => {
+            const title = getDocumentTitle(doc);
+            const course = doc.courseCode || "";
+            const matchesQuery =
+                title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                course.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesCourse = courseFilter === "all" || course === courseFilter;
+            const matchesStatus = statusFilter === "all" || getDocumentStatus(doc) === statusFilter;
+            const matchesFavorite =
+                !isAdvancedFiltersOpen || !favoriteIds.size || favoriteIds.has(doc.id);
+            return matchesQuery && matchesCourse && matchesStatus && matchesFavorite;
+        })
+        .sort((first, second) => {
+            if (sortBy === "name")
+                return getDocumentTitle(first).localeCompare(getDocumentTitle(second));
+            if (sortBy === "size")
+                return (second.size || 0).toString().localeCompare((first.size || 0).toString());
+            return new Date(second.uploadedAt || 0) - new Date(first.uploadedAt || 0);
+        });
+
+    const selectedVisibleIds = filteredDocs
+        .filter((doc) => selectedIds.has(doc.id))
+        .map((doc) => doc.id);
+    const allVisibleSelected =
+        filteredDocs.length > 0 && selectedVisibleIds.length === filteredDocs.length;
+
+    const showActionNotice = (message) => {
+        setActionNotice(message);
+        window.setTimeout(() => setActionNotice(""), 2600);
+    };
+
+    const handleToggleSelected = (id, e) => {
+        e?.stopPropagation();
+        setSelectedIds((previous) => {
+            const next = new Set(previous);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
+    const handleSelectAllVisible = () => {
+        setSelectedIds((previous) => {
+            const next = new Set(previous);
+            if (allVisibleSelected) selectedVisibleIds.forEach((id) => next.delete(id));
+            else filteredDocs.forEach((doc) => next.add(doc.id));
+            return next;
+        });
+    };
+
+    const handleToggleFavorite = (id, e) => {
+        e?.stopPropagation();
+        setFavoriteIds((previous) => {
+            const next = new Set(previous);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
+    const handleFilesUpload = async (fileList) => {
+        const files = Array.from(fileList || []);
+        if (!files.length) return;
+
+        try {
+            setIsUploading(true);
+            const responses = await Promise.all(
+                files.map((file) => documentApi.upload(file, workspaceId, "GEN")),
+            );
+            await fetchDocuments();
+            const uploadedDoc = responses[0]?.document || responses[0];
+            if (uploadedDoc) setSelectedDoc(uploadedDoc);
+            showActionNotice(`${files.length} tài liệu đã được đưa vào hàng đợi vector hóa.`);
+        } catch (err) {
+            alert("Upload failed: " + (err.message || "Server error"));
+        } finally {
+            setIsUploading(false);
+            if (fileUploadRef.current) fileUploadRef.current.value = "";
+        }
+    };
+
+    const handleFileUpload = async (e) => {
+        await handleFilesUpload(e.target.files);
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        await handleFilesUpload(e.dataTransfer.files);
+    };
+
+    const handleDeleteDocument = async (id, e) => {
+        e?.stopPropagation();
+        if (!window.confirm("Are you sure you want to delete this document?")) return;
+
+        try {
+            await documentApi.delete(id);
+            await fetchDocuments();
+        } catch (err) {
+            alert("Delete failed: " + err.message);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!selectedIds.size) return;
+        if (!window.confirm(`Delete ${selectedIds.size} selected document(s)?`)) return;
+
+        try {
+            await Promise.all([...selectedIds].map((id) => documentApi.delete(id)));
+            setSelectedIds(new Set());
+            await fetchDocuments();
+            showActionNotice("Các tài liệu đã chọn đã được xóa.");
+        } catch (err) {
+            alert("Bulk delete failed: " + err.message);
+        }
+    };
+
+    const handleDocumentAction = (action) => {
+        const labels = {
+            summarize: "Tóm tắt AI sẽ dùng tài liệu đang mở làm context.",
+            flashcards: "Flashcard sẽ được tạo từ các khái niệm quan trọng trong tài liệu.",
+            quiz: "Quiz luyện tập sẽ được tạo từ tài liệu đang mở.",
+        };
+        showActionNotice(labels[action]);
+        if (action === "quiz" && onLaunchTool) onLaunchTool("exam_prep");
+    };
+
+    const renderSearchableText = (text) => {
+        if (!contentSearchQuery.trim()) return text;
+        const escapedTerm = contentSearchQuery.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return text
+            .split(new RegExp(`(${escapedTerm})`, "gi"))
+            .map((part, index) =>
+                part.toLowerCase() === contentSearchQuery.trim().toLowerCase() ? (
+                    <mark key={`${part}-${index}`}>{part}</mark>
+                ) : (
+                    part
+                ),
+            );
+    };
+
+    const renderInlineMarkdown = (text) => {
+        const inlinePattern = /(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
+        return text.split(inlinePattern).map((part, index) => {
+            if (part.startsWith("`") && part.endsWith("`")) {
+                return (
+                    <code key={`${part}-${index}`} className="md-preview-inline-code">
+                        {part.slice(1, -1)}
+                    </code>
+                );
+            }
+            if (part.startsWith("**") && part.endsWith("**")) {
+                return <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong>;
+            }
+            const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+            if (linkMatch) {
+                return (
+                    <a
+                        key={`${part}-${index}`}
+                        href={linkMatch[2]}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        {linkMatch[1]}
+                    </a>
+                );
+            }
+            return renderSearchableText(part);
+        });
+    };
+
+    const renderMarkdownCode = (text) =>
+        text.split("\n").map((line, index) => {
+            const headingMatch = line.match(/^(#{1,6})(\s+)(.*)$/);
+            const listMatch = line.match(/^([-*]|\d+\.)(\s+)(.*)$/);
+            const lineContent = headingMatch ? (
+                <>
+                    <span className="md-token-heading">{headingMatch[1]}</span>
+                    <span>{headingMatch[2]}</span>
+                    <span className="md-token-heading-text">{headingMatch[3]}</span>
+                </>
+            ) : listMatch ? (
+                <>
+                    <span className="md-token-list">{listMatch[1]}</span>
+                    <span>{listMatch[2]}</span>
+                    <span className="md-token-text">{listMatch[3]}</span>
+                </>
+            ) : (
+                renderInlineMarkdown(line)
+            );
+
+            return (
+                <span className="markdown-code-line" key={`line-${index}`}>
+                    {lineContent}
+                    {index < text.split("\n").length - 1 ? <br /> : null}
+                </span>
+            );
+        });
+
+    const renderMarkdownPreview = (text) =>
+        text.split("\n").map((line, index) => {
+            const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
+            const listMatch = line.match(/^([-*]|\d+\.)(\s+)(.*)$/);
+            if (!line.trim()) return <div className="md-preview-spacer" key={`space-${index}`} />;
+            if (headingMatch) {
+                const Heading = `h${headingMatch[1].length}`;
+                return (
+                    <Heading key={`heading-${index}`}>
+                        {renderInlineMarkdown(headingMatch[2])}
+                    </Heading>
+                );
+            }
+            if (listMatch)
+                return <li key={`list-${index}`}>{renderInlineMarkdown(listMatch[3])}</li>;
+            return <p key={`paragraph-${index}`}>{renderInlineMarkdown(line)}</p>;
+        });
+
+    const currentExt = (selectedDoc?.type || selectedDoc?.fileType || "").toLowerCase();
+    const shouldCompactDocumentTools = true;
+
+    // Sheet đang mở và Slide đang mở
+    const activeSheet =
+        spreadsheetSheets.find((s) => s.name === activeSpreadsheetSheet) || spreadsheetSheets[0];
+    const activeSlide = presentationSlides[activePptxSlide];
+
     return (
-        <div className="documents-tab-bounds">
+        <div
+            className={`documents-tab-bounds ${isFullscreen ? "documents-fullscreen" : ""}`}
+            onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+        >
+            {isDragging && (
+                <div className="document-drop-overlay">
+                    <UploadCloud size={34} />
+                    <strong>Thả tài liệu để bắt đầu upload</strong>
+                    <span>PDF, DOCX, XLSX, PPTX, MD hoặc TXT</span>
+                </div>
+            )}
+
+            {actionNotice && (
+                <div className="document-action-notice">
+                    <Check size={14} /> {actionNotice}
+                </div>
+            )}
+
             {/* Header Banner */}
             <div className="documents-header-banner">
                 <div>
-                    <h2>Courseware Documents & Assets</h2>
+                    <h2>Documents</h2>
                     <span>
-                        Manage uploaded learning materials (PDF, Word, Excel, PPT, Markdown) with
-                        real-time vector indexing and inline inspection
+                        View course handouts, lecture notes, and study guides with your AI Tutor
                     </span>
                 </div>
                 <div className="banner-actions-group">
                     <button
                         type="button"
                         className="btn-upload-document"
+                        disabled={isUploading}
                         onClick={() => fileUploadRef.current?.click()}
                     >
-                        <UploadCloud size={14} />
-                        <span>Upload Documents</span>
+                        {isUploading ? (
+                            <Loader2 size={14} className="spin-animate" />
+                        ) : (
+                            <UploadCloud size={14} />
+                        )}
+                        <span>{isUploading ? "Uploading..." : "Upload Material"}</span>
                     </button>
                     <input
                         ref={fileUploadRef}
                         type="file"
+                        multiple
                         accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.md,.txt"
                         hidden
                         onChange={handleFileUpload}
@@ -229,119 +600,217 @@ const Documents = ({ onLaunchTool }) => {
             <div className="documents-split-container">
                 {/* CỘT TRÁI: DANH SÁCH TÀI LIỆU */}
                 <div className="documents-sidebar-list">
-                    {/* Search bar */}
                     <div className="docs-search-bar">
                         <Search size={14} className="search-glyph" />
                         <input
                             type="text"
-                            placeholder="Filter documents, extensions..."
+                            placeholder="Search by title, course..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
 
-                    {/* Filter Type Pills */}
+                    <div className="docs-list-toolbar">
+                        <label className="select-all-docs">
+                            <input
+                                type="checkbox"
+                                checked={allVisibleSelected}
+                                onChange={handleSelectAllVisible}
+                            />
+                            <span>
+                                {selectedIds.size ? `${selectedIds.size} selected` : "Select all"}
+                            </span>
+                        </label>
+                        <button
+                            type="button"
+                            className={`icon-control ${isAdvancedFiltersOpen ? "active" : ""}`}
+                            title="Advanced filters"
+                            onClick={() => setIsAdvancedFiltersOpen((previous) => !previous)}
+                        >
+                            <Filter size={14} />
+                        </button>
+                        <select
+                            className="docs-sort-select"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                        >
+                            <option value="recent">Recent</option>
+                            <option value="name">Name</option>
+                            <option value="size">Size</option>
+                        </select>
+                    </div>
+
+                    {isAdvancedFiltersOpen && (
+                        <div className="docs-advanced-filters">
+                            <select
+                                value={courseFilter}
+                                onChange={(e) => setCourseFilter(e.target.value)}
+                            >
+                                <option value="all">All courses</option>
+                                {availableCourses.map((course) => (
+                                    <option key={course} value={course}>
+                                        {course}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                            >
+                                <option value="all">All statuses</option>
+                                <option value="ready">Ready</option>
+                                <option value="processing">Processing</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                            <span className="filter-help-text">
+                                <Star size={12} /> Favorites are highlighted
+                            </span>
+                        </div>
+                    )}
+
+                    {selectedIds.size > 0 && (
+                        <div className="bulk-actions-bar">
+                            <span>{selectedIds.size} tài liệu</span>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    showActionNotice("Đã đưa tài liệu vào hàng đợi re-index.")
+                                }
+                            >
+                                <Sparkles size={12} /> Re-index
+                            </button>
+                            <button type="button" onClick={handleBulkDelete}>
+                                <Trash2 size={12} /> Delete
+                            </button>
+                            <button
+                                type="button"
+                                className="bulk-clear"
+                                onClick={() => setSelectedIds(new Set())}
+                            >
+                                <X size={13} />
+                            </button>
+                        </div>
+                    )}
+
                     <div className="docs-type-filters">
-                        <button
-                            type="button"
-                            className={`type-pill ${typeFilter === "all" ? "active" : ""}`}
-                            onClick={() => setTypeFilter("all")}
-                        >
-                            All ({documents.length})
-                        </button>
-                        <button
-                            type="button"
-                            className={`type-pill ${typeFilter === "pdf" ? "active" : ""}`}
-                            onClick={() => setTypeFilter("pdf")}
-                        >
-                            PDF
-                        </button>
-                        <button
-                            type="button"
-                            className={`type-pill ${typeFilter === "docx" ? "active" : ""}`}
-                            onClick={() => setTypeFilter("docx")}
-                        >
-                            Word
-                        </button>
-                        <button
-                            type="button"
-                            className={`type-pill ${typeFilter === "xlsx" ? "active" : ""}`}
-                            onClick={() => setTypeFilter("xlsx")}
-                        >
-                            Excel
-                        </button>
-                        <button
-                            type="button"
-                            className={`type-pill ${typeFilter === "pptx" ? "active" : ""}`}
-                            onClick={() => setTypeFilter("pptx")}
-                        >
-                            PPT
-                        </button>
-                        <button
-                            type="button"
-                            className={`type-pill ${typeFilter === "md" ? "active" : ""}`}
-                            onClick={() => setTypeFilter("md")}
-                        >
-                            MD
-                        </button>
+                        {["all", "pdf", "docx", "xlsx", "pptx", "md"].map((type) => (
+                            <button
+                                key={type}
+                                type="button"
+                                className={`type-pill ${typeFilter === type ? "active" : ""}`}
+                                onClick={() => setTypeFilter(type)}
+                            >
+                                {type.toUpperCase()}
+                            </button>
+                        ))}
                     </div>
 
-                    {/* Document Items List */}
                     <div className="docs-scroll-track">
-                        {filteredDocs.map((doc) => {
-                            const isSelected = selectedDoc?.id === doc.id;
-                            return (
-                                <div
-                                    key={doc.id}
-                                    className={`doc-item-entry ${isSelected ? "selected" : ""}`}
-                                    onClick={() => setSelectedDoc(doc)}
-                                >
-                                    <div className="doc-icon-wrapper">{getDocIcon(doc.type)}</div>
-                                    <div className="doc-meta-column">
-                                        <div className="doc-title-row">
-                                            <strong className="doc-title-text" title={doc.title}>
-                                                {doc.title}
-                                            </strong>
+                        {isLoading ? (
+                            <div className="docs-loading-placeholder">
+                                <Loader2 size={24} className="spin-animate" />
+                                <span>Loading documents...</span>
+                            </div>
+                        ) : filteredDocs.length === 0 ? (
+                            <div className="docs-empty-placeholder">
+                                <FileText size={28} color="#cbd5e1" />
+                                <span>No materials found</span>
+                            </div>
+                        ) : (
+                            filteredDocs.map((doc) => {
+                                const isSelected = selectedDoc?.id === doc.id;
+                                const docType = doc.type || doc.fileType;
+                                const docTitle = doc.title || doc.filename;
+                                const docSize = doc.size || doc.fileSizeFormatted;
+
+                                return (
+                                    <div
+                                        key={doc.id}
+                                        className={`doc-item-entry ${isSelected ? "selected" : ""}`}
+                                        onClick={() => setSelectedDoc(doc)}
+                                    >
+                                        <input
+                                            className="doc-select-checkbox"
+                                            type="checkbox"
+                                            checked={selectedIds.has(doc.id)}
+                                            onChange={(e) => handleToggleSelected(doc.id, e)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            aria-label={`Select ${docTitle}`}
+                                        />
+                                        <div className="doc-icon-wrapper">
+                                            {getDocIcon(docType)}
                                         </div>
-                                        <div className="doc-sub-details">
-                                            <span className="doc-course-tag">{doc.courseCode}</span>
-                                            <span>{doc.size}</span>
-                                            <span>•</span>
-                                            <span className="doc-chunks-stat">
-                                                <Database size={10} /> {doc.chunks} chunks
-                                            </span>
+                                        <div className="doc-meta-column">
+                                            <div className="doc-title-row">
+                                                <strong className="doc-title-text" title={docTitle}>
+                                                    {docTitle}
+                                                </strong>
+                                            </div>
+                                            <div className="doc-sub-details">
+                                                <span className="doc-course-tag">
+                                                    {doc.courseCode || "GEN"}
+                                                </span>
+                                                <span>{docSize}</span>
+                                                <span>•</span>
+                                                <span
+                                                    className={`doc-ready-status status-${getDocumentStatus(doc)}`}
+                                                >
+                                                    <CheckCircle2 size={11} />{" "}
+                                                    {getDocumentStatus(doc)}
+                                                </span>
+                                            </div>
                                         </div>
+                                        <button
+                                            type="button"
+                                            className={`btn-favorite-doc ${favoriteIds.has(doc.id) ? "active" : ""}`}
+                                            title="Favorite document"
+                                            onClick={(e) => handleToggleFavorite(doc.id, e)}
+                                        >
+                                            <Star
+                                                size={13}
+                                                fill={
+                                                    favoriteIds.has(doc.id)
+                                                        ? "currentColor"
+                                                        : "none"
+                                                }
+                                            />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-trash-doc"
+                                            title="Delete document"
+                                            onClick={(e) => handleDeleteDocument(doc.id, e)}
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
                                     </div>
-                                    <span className="doc-status-dot" title="Vectorized in Qdrant" />
-                                </div>
-                            );
-                        })}
+                                );
+                            })
+                        )}
                     </div>
 
-                    {/* Footer Storage Stats */}
                     <div className="docs-sidebar-footer">
                         <div className="storage-meter-row">
-                            <span>Storage Utilized</span>
-                            <strong>15.2 MB / 500 MB</strong>
-                        </div>
-                        <div className="storage-progress-rail">
-                            <div className="storage-fill" style={{ width: "8%" }} />
+                            <span>Total Files</span>
+                            <strong>{documents.length} Available</strong>
                         </div>
                     </div>
                 </div>
 
-                {/* CỘT PHẢI: XEM TRƯỚC TÀI LIỆU TRỰC TIẾP (PREVIEW CANVAS) */}
+                {/* CỘT PHẢI: XEM TRƯỚC TÀI LIỆU */}
                 <div className="documents-preview-canvas">
                     {selectedDoc ? (
                         <>
-                            {/* Preview Toolbar */}
                             <div className="preview-top-toolbar">
                                 <div className="preview-file-identity">
-                                    {getDocIcon(selectedDoc.type)}
+                                    {getDocIcon(selectedDoc.type || selectedDoc.fileType)}
                                     <div>
-                                        <strong>{selectedDoc.title}</strong>
+                                        <strong>{selectedDoc.title || selectedDoc.filename}</strong>
                                         <small>
-                                            {selectedDoc.size} • Uploaded {selectedDoc.uploadedAt}
+                                            {selectedDoc.size || selectedDoc.fileSizeFormatted}
+                                            {selectedDoc.uploadedAt
+                                                ? ` • Uploaded ${selectedDoc.uploadedAt}`
+                                                : ""}
                                         </small>
                                     </div>
                                 </div>
@@ -377,7 +846,7 @@ const Documents = ({ onLaunchTool }) => {
                                         type="button"
                                         className="btn-ai-query-file"
                                         onClick={() => onLaunchTool && onLaunchTool("tutor")}
-                                        title="Send file context to Socratic Tutor"
+                                        title="Chat with Tutor using this document"
                                     >
                                         <Sparkles size={13} />
                                         <span>Ask Tutor</span>
@@ -386,153 +855,499 @@ const Documents = ({ onLaunchTool }) => {
                                     <button
                                         type="button"
                                         className="btn-toolbar-glyph"
-                                        title="Download Original"
+                                        title="Fullscreen preview"
+                                        onClick={() => setIsFullscreen((previous) => !previous)}
+                                    >
+                                        <Maximize2 size={14} />
+                                    </button>
+
+                                    <a
+                                        href={documentApi.getDownloadUrl(selectedDoc.id)}
+                                        download
+                                        className="btn-toolbar-glyph"
+                                        title="Download Material"
                                     >
                                         <Download size={14} />
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
 
-                            {/* Viewer Body with Multi-type Rendering */}
-                            <div className="preview-scroll-viewport">
-                                <div
-                                    className="preview-paper-sheet"
-                                    style={{
-                                        transform: `scale(${zoomLevel / 100})`,
-                                        transformOrigin: "top center",
-                                    }}
-                                >
-                                    {/* 1. PDF VIEWER */}
-                                    {selectedDoc.type === "pdf" && (
-                                        <div className="pdf-viewer-mock">
-                                            <div className="pdf-page-indicator">
-                                                Page {selectedDoc.previewData.currentPage} of{" "}
-                                                {selectedDoc.previewData.totalPages}
-                                            </div>
-                                            <h3>{selectedDoc.title.replace(".pdf", "")}</h3>
-                                            <p className="pdf-paragraph-text">
-                                                {selectedDoc.previewData.excerpt}
-                                            </p>
-                                            <div className="pdf-formula-highlight">
-                                                <code>
-                                                    {selectedDoc.previewData.highlightFormula}
-                                                </code>
-                                            </div>
-                                            <p className="pdf-paragraph-text">
-                                                The time complexity of this state space is bounded
-                                                by O(n × W). Through memory table memoization,
-                                                overlapping subproblems are calculated strictly
-                                                once.
-                                            </p>
-                                            <div className="rag-reference-stamp">
-                                                <Database size={12} color="#059669" />
-                                                <span>{selectedDoc.previewData.citationNote}</span>
-                                            </div>
-                                        </div>
+                            <div className="document-insights-bar">
+                                <div className="document-index-summary">
+                                    <span className="indexed-dot" />
+                                    <span>Ready for AI study</span>
+                                    <small>{selectedDoc.chunks || 0} chunks indexed</small>
+                                </div>
+                                <div className="content-search-bar">
+                                    <Search size={13} />
+                                    <input
+                                        type="search"
+                                        placeholder="Find in document..."
+                                        value={contentSearchQuery}
+                                        onChange={(e) => setContentSearchQuery(e.target.value)}
+                                    />
+                                    {contentSearchQuery && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setContentSearchQuery("")}
+                                        >
+                                            <X size={12} />
+                                        </button>
                                     )}
-
-                                    {/* 2. WORD (.DOCX) VIEWER */}
-                                    {selectedDoc.type === "docx" && (
-                                        <div className="word-viewer-mock">
-                                            <div className="word-document-header">
-                                                <h2>{selectedDoc.previewData.heading}</h2>
-                                                <span className="doc-author">
-                                                    Author: {selectedDoc.previewData.author}
-                                                </span>
-                                            </div>
-                                            <div className="word-body-content">
-                                                {selectedDoc.previewData.paragraphs.map(
-                                                    (p, idx) => (
-                                                        <p key={idx} className="word-text-line">
-                                                            {p}
-                                                        </p>
-                                                    ),
-                                                )}
-                                            </div>
-                                        </div>
+                                </div>
+                                {currentExt === "md" && (
+                                    <div
+                                        className="markdown-view-toggle"
+                                        role="group"
+                                        aria-label="Markdown view mode"
+                                    >
+                                        <button
+                                            type="button"
+                                            className={markdownViewMode === "code" ? "active" : ""}
+                                            onClick={() => setMarkdownViewMode("code")}
+                                            title="View Markdown source"
+                                        >
+                                            <Code2 size={13} />
+                                            <span>Code</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={
+                                                markdownViewMode === "preview" ? "active" : ""
+                                            }
+                                            onClick={() => setMarkdownViewMode("preview")}
+                                            title="View rendered Markdown"
+                                        >
+                                            <Eye size={13} />
+                                            <span>Preview</span>
+                                        </button>
+                                    </div>
+                                )}
+                                <div className="document-ai-actions">
+                                    {!shouldCompactDocumentTools && (
+                                        <>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDocumentAction("summarize")}
+                                            >
+                                                <Sparkles size={12} /> Summarize
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDocumentAction("flashcards")}
+                                            >
+                                                <BookOpen size={12} /> Flashcards
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDocumentAction("quiz")}
+                                            >
+                                                <FolderOpen size={12} /> Create quiz
+                                            </button>
+                                        </>
                                     )}
-
-                                    {/* 3. EXCEL (.XLSX) SPREADSHEET VIEWER */}
-                                    {selectedDoc.type === "xlsx" && (
-                                        <div className="excel-viewer-mock">
-                                            <div className="excel-sheet-tab-bar">
-                                                <span className="sheet-tab active">
-                                                    <FileSpreadsheet size={13} />{" "}
-                                                    {selectedDoc.previewData.sheetName}
-                                                </span>
-                                            </div>
-                                            <div className="excel-table-wrapper">
-                                                <table className="excel-grid-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            {selectedDoc.previewData.headers.map(
-                                                                (h, i) => (
-                                                                    <th key={i}>{h}</th>
-                                                                ),
-                                                            )}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {selectedDoc.previewData.rows.map(
-                                                            (row, rIdx) => (
-                                                                <tr key={rIdx}>
-                                                                    <td className="row-num-cell">
-                                                                        {rIdx + 1}
-                                                                    </td>
-                                                                    {row.map((cell, cIdx) => (
-                                                                        <td key={cIdx}>{cell}</td>
-                                                                    ))}
-                                                                </tr>
-                                                            ),
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* 4. POWERPOINT (.PPTX) VIEWER */}
-                                    {selectedDoc.type === "pptx" && (
-                                        <div className="pptx-viewer-mock">
-                                            <div className="slide-frame-container">
-                                                <div className="slide-top-header">
-                                                    <span className="slide-tag">
-                                                        SLIDE {selectedDoc.previewData.currentSlide}{" "}
-                                                        / {selectedDoc.previewData.totalSlides}
-                                                    </span>
-                                                    <h4>{selectedDoc.previewData.slideTitle}</h4>
+                                    {shouldCompactDocumentTools && (
+                                        <div ref={documentToolsMenuRef} className="document-tools-menu-wrap">
+                                            <button
+                                                type="button"
+                                                className={`document-more-trigger ${isDocumentToolsOpen ? "active" : ""}`}
+                                                title="More document tools"
+                                                aria-expanded={isDocumentToolsOpen}
+                                                onClick={() =>
+                                                    setIsDocumentToolsOpen((previous) => !previous)
+                                                }
+                                            >
+                                                <MoreHorizontal size={15} />
+                                            </button>
+                                            {isDocumentToolsOpen && (
+                                                <div className="document-tools-menu">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleDocumentAction("summarize");
+                                                            setIsDocumentToolsOpen(false);
+                                                        }}
+                                                    >
+                                                        <Sparkles size={13} /> Summarize
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleDocumentAction("flashcards");
+                                                            setIsDocumentToolsOpen(false);
+                                                        }}
+                                                    >
+                                                        <BookOpen size={13} /> Flashcards
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleDocumentAction("quiz");
+                                                            setIsDocumentToolsOpen(false);
+                                                        }}
+                                                    >
+                                                        <FolderOpen size={13} /> Create quiz
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            showActionNotice(
+                                                                "Đã sao chép citation của tài liệu.",
+                                                            );
+                                                            setIsDocumentToolsOpen(false);
+                                                        }}
+                                                    >
+                                                        <Check size={13} /> Copy citation
+                                                    </button>
                                                 </div>
-                                                <ul className="slide-bullet-points">
-                                                    {selectedDoc.previewData.slideBullets.map(
-                                                        (bullet, idx) => (
-                                                            <li key={idx}>{bullet}</li>
-                                                        ),
-                                                    )}
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* 5. MARKDOWN (.MD) VIEWER */}
-                                    {selectedDoc.type === "md" && (
-                                        <div className="markdown-viewer-mock">
-                                            <div className="md-rendered-body">
-                                                <pre className="md-code-raw">
-                                                    <code>
-                                                        {selectedDoc.previewData.rawMarkdown}
-                                                    </code>
-                                                </pre>
-                                            </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
+                            </div>
+
+                            <div
+                                className={`preview-scroll-viewport ${currentExt === "pdf" ? "pdf-mode" : ""}`}
+                            >
+                                {/* 1. PDF VIEWER */}
+                                {currentExt === "pdf" && (
+                                    <div className="pdf-iframe-container">
+                                        <iframe
+                                            src={documentApi.getPreviewUrl(selectedDoc.id)}
+                                            title={selectedDoc.filename || selectedDoc.title}
+                                            className="pdf-iframe-view"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* 2. WORD VIEWER (.docx / .doc) */}
+                                {(currentExt === "docx" || currentExt === "doc") && (
+                                    <div
+                                        className="docx-outer-wrapper"
+                                        style={{
+                                            transform: `scale(${zoomLevel / 100})`,
+                                            transformOrigin: "top center",
+                                        }}
+                                    >
+                                        {loadingDocx && (
+                                            <div className="docs-loading-placeholder">
+                                                <Loader2 size={24} className="spin-animate" />
+                                                <span>Opening Word document...</span>
+                                            </div>
+                                        )}
+                                        <div
+                                            ref={docxContainerRef}
+                                            className="docx-render-container"
+                                            style={{ display: loadingDocx ? "none" : "block" }}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* 3. MARKDOWN / TXT VIEWER */}
+                                {["md", "txt"].includes(currentExt) && (
+                                    <div
+                                        className="preview-paper-sheet"
+                                        style={{
+                                            transform: `scale(${zoomLevel / 100})`,
+                                            transformOrigin: "top center",
+                                        }}
+                                    >
+                                        <div
+                                            className={`markdown-viewer-mock ${markdownViewMode === "code" ? "markdown-code-mode" : "markdown-preview-mode"}`}
+                                        >
+                                            {loadingPreview ? (
+                                                <div className="docs-loading-placeholder">
+                                                    <Loader2 size={20} className="spin-animate" />
+                                                    <span>Loading text notes...</span>
+                                                </div>
+                                            ) : markdownViewMode === "code" ? (
+                                                <pre className="md-code-raw markdown-source-editor">
+                                                    <code>
+                                                        {renderMarkdownCode(
+                                                            previewContent || "Empty file content",
+                                                        )}
+                                                    </code>
+                                                </pre>
+                                            ) : (
+                                                <article className="markdown-rendered-paper">
+                                                    {renderMarkdownPreview(
+                                                        previewContent || "Empty file content",
+                                                    )}
+                                                </article>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 4. EXCEL / CSV PREVIEW */}
+                                {["xls", "xlsx", "csv"].includes(currentExt) && (
+                                    <div className="office-preview-shell">
+                                        {loadingOfficePreview ? (
+                                            <div className="docs-loading-placeholder">
+                                                <Loader2 size={24} className="spin-animate" />
+                                                <span>Opening spreadsheet...</span>
+                                            </div>
+                                        ) : officePreviewError ? (
+                                            <div className="office-preview-empty">
+                                                <FileSpreadsheet size={30} />
+                                                <strong>Spreadsheet preview unavailable</strong>
+                                                <span>{officePreviewError}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="spreadsheet-preview">
+                                                <div className="office-preview-heading">
+                                                    <div>
+                                                        <span className="office-preview-kicker">
+                                                            <Table2 size={13} /> Spreadsheet preview
+                                                        </span>
+                                                        <strong>
+                                                            {spreadsheetSheets.length} sheet
+                                                            {spreadsheetSheets.length === 1
+                                                                ? ""
+                                                                : "s"}
+                                                        </strong>
+                                                    </div>
+                                                    <span className="office-preview-note">
+                                                        Showing up to 200 rows
+                                                    </span>
+                                                </div>
+                                                <div className="spreadsheet-tabs">
+                                                    {spreadsheetSheets.map((sheet) => (
+                                                        <button
+                                                            key={sheet.name}
+                                                            type="button"
+                                                            className={
+                                                                activeSpreadsheetSheet ===
+                                                                sheet.name
+                                                                    ? "active"
+                                                                    : ""
+                                                            }
+                                                            onClick={() =>
+                                                                setActiveSpreadsheetSheet(
+                                                                    sheet.name,
+                                                                )
+                                                            }
+                                                        >
+                                                            {sheet.name}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <div className="spreadsheet-table-viewport">
+                                                    {activeSheet?.rows?.length ? (
+                                                        <table className="spreadsheet-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th className="row-number-cell">
+                                                                        #
+                                                                    </th>
+                                                                    {activeSheet.rows[0].map(
+                                                                        (cell, index) => (
+                                                                            <th
+                                                                                key={`head-${index}`}
+                                                                            >
+                                                                                {cell ||
+                                                                                    `Column ${index + 1}`}
+                                                                            </th>
+                                                                        ),
+                                                                    )}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {activeSheet.rows
+                                                                    .slice(1)
+                                                                    .map((row, rowIndex) => (
+                                                                        <tr key={`row-${rowIndex}`}>
+                                                                            <td className="row-number-cell">
+                                                                                {rowIndex + 1}
+                                                                            </td>
+                                                                            {activeSheet.rows[0].map(
+                                                                                (
+                                                                                    _,
+                                                                                    columnIndex,
+                                                                                ) => (
+                                                                                    <td
+                                                                                        key={`cell-${rowIndex}-${columnIndex}`}
+                                                                                    >
+                                                                                        {row[
+                                                                                            columnIndex
+                                                                                        ] !==
+                                                                                        undefined
+                                                                                            ? String(
+                                                                                                  row[
+                                                                                                      columnIndex
+                                                                                                  ],
+                                                                                              )
+                                                                                            : ""}
+                                                                                    </td>
+                                                                                ),
+                                                                            )}
+                                                                        </tr>
+                                                                    ))}
+                                                            </tbody>
+                                                        </table>
+                                                    ) : (
+                                                        <div className="office-preview-empty">
+                                                            <span>This sheet is empty.</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* 5. POWERPOINT PREVIEW */}
+                                {currentExt === "pptx" && (
+                                    <div className="office-preview-shell">
+                                        {loadingOfficePreview ? (
+                                            <div className="docs-loading-placeholder">
+                                                <Loader2 size={24} className="spin-animate" />
+                                                <span>Opening presentation...</span>
+                                            </div>
+                                        ) : officePreviewError ? (
+                                            <div className="office-preview-empty">
+                                                <Presentation size={30} />
+                                                <strong>Presentation preview unavailable</strong>
+                                                <span>{officePreviewError}</span>
+                                            </div>
+                                        ) : activeSlide ? (
+                                            <div className="pptx-preview">
+                                                <div className="office-preview-heading">
+                                                    <div>
+                                                        <span className="office-preview-kicker">
+                                                            <Presentation size={13} /> Presentation
+                                                            preview
+                                                        </span>
+                                                        <strong>
+                                                            Slide {activeSlide.number} of{" "}
+                                                            {presentationSlides.length}
+                                                        </strong>
+                                                    </div>
+                                                    <div className="pptx-slide-controls">
+                                                        <button
+                                                            type="button"
+                                                            disabled={activePptxSlide === 0}
+                                                            onClick={() =>
+                                                                setActivePptxSlide(
+                                                                    (previous) => previous - 1,
+                                                                )
+                                                            }
+                                                            title="Previous slide"
+                                                        >
+                                                            <ChevronLeft size={15} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            disabled={
+                                                                activePptxSlide ===
+                                                                presentationSlides.length - 1
+                                                            }
+                                                            onClick={() =>
+                                                                setActivePptxSlide(
+                                                                    (previous) => previous + 1,
+                                                                )
+                                                            }
+                                                            title="Next slide"
+                                                        >
+                                                            <ChevronRight size={15} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="pptx-slide-stage">
+                                                    <div className="pptx-slide-card">
+                                                        {activeSlide.text.length ? (
+                                                            activeSlide.text.map((text, index) =>
+                                                                index === 0 ? (
+                                                                    <h3
+                                                                        key={`slide-title-${index}`}
+                                                                    >
+                                                                        {text}
+                                                                    </h3>
+                                                                ) : (
+                                                                    <p key={`slide-text-${index}`}>
+                                                                        {text}
+                                                                    </p>
+                                                                ),
+                                                            )
+                                                        ) : (
+                                                            <span>
+                                                                This slide has no extractable text.
+                                                                Download the file to view graphics.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="pptx-slide-dots">
+                                                    {presentationSlides.map((slide, index) => (
+                                                        <button
+                                                            key={slide.number}
+                                                            type="button"
+                                                            className={
+                                                                index === activePptxSlide
+                                                                    ? "active"
+                                                                    : ""
+                                                            }
+                                                            onClick={() =>
+                                                                setActivePptxSlide(index)
+                                                            }
+                                                            aria-label={`Go to slide ${slide.number}`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="office-preview-empty">
+                                                <Presentation size={30} />
+                                                <span>No slides found in this presentation.</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* 6. CÁC TỆP BINARY KHÁC */}
+                                {![
+                                    "pdf",
+                                    "docx",
+                                    "doc",
+                                    "md",
+                                    "txt",
+                                    "xls",
+                                    "xlsx",
+                                    "csv",
+                                    "pptx",
+                                ].includes(currentExt) && (
+                                    <div className="preview-paper-sheet">
+                                        <div className="binary-doc-preview-card">
+                                            <div className="binary-card-glyph">
+                                                {getDocIcon(
+                                                    selectedDoc.type || selectedDoc.fileType,
+                                                )}
+                                            </div>
+                                            <h3>{selectedDoc.title || selectedDoc.filename}</h3>
+                                            <p>
+                                                This file format is ready for download and offline
+                                                review.
+                                            </p>
+                                            <div className="binary-action-row">
+                                                <a
+                                                    href={documentApi.getDownloadUrl(
+                                                        selectedDoc.id,
+                                                    )}
+                                                    className="btn-download-primary"
+                                                >
+                                                    <Download size={14} />
+                                                    <span>Download File</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </>
                     ) : (
                         <div className="no-document-selected">
                             <BookOpen size={36} color="#cbd5e1" />
-                            <p>Select any document from the list to preview its content directly</p>
+                            <p>Select any learning material from the list to preview</p>
                         </div>
                     )}
                 </div>

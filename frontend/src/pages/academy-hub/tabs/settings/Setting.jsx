@@ -1,56 +1,60 @@
 import { useState } from "react";
 import {
-    Bell,
-    BookOpen,
-    Bot,
-    Check,
-    Database,
-    GraduationCap,
-    Key,
-    Moon,
-    Save,
-    ShieldCheck,
-    Sliders,
-    Sparkles,
-    Sun,
     User,
+    Bot,
+    Target,
+    Bell,
+    Check,
+    Save,
+    Sparkles,
+    GraduationCap,
+    BookOpen,
 } from "lucide-react";
 import "./Setting.css";
 
 const SETTINGS_SECTIONS = [
-    { id: "academic_profile", label: "Academic Profile", icon: User },
-    { id: "ai_tutor", label: "AI Tutor Pedagogy", icon: Bot },
-    { id: "rag_engine", label: "Courseware RAG Engine", icon: Database },
-    { id: "notifications", label: "Exam & Study Alerts", icon: Bell },
-    { id: "security", label: "API Keys & Integrations", icon: Key },
+    { id: "profile", label: "Student Profile", icon: User },
+    { id: "ai_tutor", label: "AI Tutor Preferences", icon: Bot },
+    { id: "study_goals", label: "Study Goals & Focus", icon: Target },
+    { id: "notifications", label: "Reminders & Alerts", icon: Bell },
 ];
 
 const Setting = () => {
-    const [activeSection, setActiveSection] = useState("academic_profile");
+    const [activeSection, setActiveSection] = useState("profile");
     const [isSaved, setIsSaved] = useState(false);
 
-    // Form states
+    // Profile State
     const [profile, setProfile] = useState({
-        fullName: "Huy Tran Anh",
+        fullName: "Trần Anh Huy",
         email: "anhhuyrubic@gmail.com",
-        university: "HCMC University of Technology and Engineering (HCMUTE)",
+        university: "HCMC University of Technology and Education (HCMUTE)",
         studentId: "23110042",
-        major: "Information Technology (CS/AI)",
-        expectedGraduation: "2027",
+        major: "Information Technology",
+        academicYear: "3rd Year (Class of 2027)",
     });
 
+    // Tutor State
     const [tutorSettings, setTutorSettings] = useState({
-        mode: "socratic", // 'socratic' | 'direct'
-        strictness: "balanced", // 'lenient' | 'balanced' | 'rigorous'
-        codeExplanationDetail: "line-by-line",
-        autoGenerateFlashcards: true,
+        responseStyle: "guided", // 'guided' | 'detailed'
+        tone: "friendly", // 'encouraging' | 'friendly' | 'academic'
+        autoQuiz: true,
+        languagePreference: "bilingual", // 'vi' | 'en' | 'bilingual'
     });
 
-    const [ragSettings, setRagSettings] = useState({
-        vectorTopK: 5,
-        similarityThreshold: 0.82,
-        hybridGraphEnabled: true,
-        defaultEmbeddingModel: "text-embedding-3-small",
+    // Study Goals State
+    const [studyGoals, setStudyGoals] = useState({
+        dailyStudyTarget: 45, // phút
+        weeklyQuizTarget: 3,
+        autoFlashcards: true,
+        focusMode: true,
+    });
+
+    // Notifications State
+    const [notifications, setNotifications] = useState({
+        dailyReminder: true,
+        assignmentAlerts: true,
+        streakReminder: true,
+        weeklySummary: true,
     });
 
     const handleSave = () => {
@@ -63,10 +67,9 @@ const Setting = () => {
             {/* Header Banner */}
             <div className="edu-settings-header">
                 <div>
-                    <h2>Academy Preferences & Studio Settings</h2>
+                    <h2>Account & Study Preferences</h2>
                     <span>
-                        Configure your academic profile, Socratic tutor strictness, and courseware
-                        RAG retrieval parameters
+                        Customize your learning goals, AI Tutor behavior, and schedule reminders
                     </span>
                 </div>
                 <button
@@ -80,7 +83,7 @@ const Setting = () => {
                         </>
                     ) : (
                         <>
-                            <Save size={14} /> Save Preferences
+                            <Save size={14} /> Save Changes
                         </>
                     )}
                 </button>
@@ -88,7 +91,7 @@ const Setting = () => {
 
             {/* Split Settings Layout */}
             <div className="edu-settings-grid">
-                {/* Left Column: Sub-navigation */}
+                {/* Cột trái: Điều hướng danh mục */}
                 <aside className="settings-nav-column">
                     {SETTINGS_SECTIONS.map((sec) => {
                         const Icon = sec.icon;
@@ -107,22 +110,21 @@ const Setting = () => {
                     })}
                 </aside>
 
-                {/* Right Column: Settings Content Panels */}
+                {/* Cột phải: Nội dung chi tiết */}
                 <main className="settings-content-panel">
-                    {/* SECTION 1: ACADEMIC PROFILE */}
-                    {activeSection === "academic_profile" && (
+                    {/* SECTION 1: PROFILE */}
+                    {activeSection === "profile" && (
                         <div className="settings-form-group">
                             <div className="section-narrative-header">
-                                <h3>Student & University Information</h3>
+                                <h3>Student Profile Information</h3>
                                 <p>
-                                    Manage your linked university curriculum credentials and
-                                    semester standing.
+                                    Update your personal details and university academic standing.
                                 </p>
                             </div>
 
                             <div className="form-fields-grid">
                                 <div className="input-field-unit">
-                                    <label>Full Legal Name</label>
+                                    <label>Full Name</label>
                                     <input
                                         type="text"
                                         value={profile.fullName}
@@ -133,7 +135,7 @@ const Setting = () => {
                                 </div>
 
                                 <div className="input-field-unit">
-                                    <label>Academic Email</label>
+                                    <label>Email Address</label>
                                     <input
                                         type="email"
                                         value={profile.email}
@@ -144,7 +146,7 @@ const Setting = () => {
                                 </div>
 
                                 <div className="input-field-unit full-width">
-                                    <label>University / Institution</label>
+                                    <label>University / College</label>
                                     <input
                                         type="text"
                                         value={profile.university}
@@ -166,7 +168,7 @@ const Setting = () => {
                                 </div>
 
                                 <div className="input-field-unit">
-                                    <label>Major / Faculty</label>
+                                    <label>Major / Specialization</label>
                                     <input
                                         type="text"
                                         value={profile.major}
@@ -175,68 +177,79 @@ const Setting = () => {
                                         }
                                     />
                                 </div>
+
+                                <div className="input-field-unit full-width">
+                                    <label>Academic Standing</label>
+                                    <input
+                                        type="text"
+                                        value={profile.academicYear}
+                                        onChange={(e) =>
+                                            setProfile({ ...profile, academicYear: e.target.value })
+                                        }
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* SECTION 2: AI TUTOR PEDAGOGY */}
+                    {/* SECTION 2: AI TUTOR */}
                     {activeSection === "ai_tutor" && (
                         <div className="settings-form-group">
                             <div className="section-narrative-header">
-                                <h3>Socratic AI Tutoring Behavior</h3>
+                                <h3>AI Tutor Teaching Style</h3>
                                 <p>
-                                    Determine how interactive AI mentors prompt questions and
-                                    evaluate student code submissions.
+                                    Personalize how your AI companion assists with explanations and
+                                    practice.
                                 </p>
                             </div>
 
                             <div className="setting-card-block">
-                                <span className="block-title">Instructional Style</span>
+                                <span className="block-title">Explanation Approach</span>
                                 <div className="options-radio-cluster">
                                     <label
-                                        className={`radio-card-choice ${tutorSettings.mode === "socratic" ? "selected" : ""}`}
+                                        className={`radio-card-choice ${tutorSettings.responseStyle === "guided" ? "selected" : ""}`}
                                     >
                                         <input
                                             type="radio"
-                                            name="tutorMode"
-                                            value="socratic"
-                                            checked={tutorSettings.mode === "socratic"}
+                                            name="responseStyle"
+                                            value="guided"
+                                            checked={tutorSettings.responseStyle === "guided"}
                                             onChange={() =>
                                                 setTutorSettings({
                                                     ...tutorSettings,
-                                                    mode: "socratic",
+                                                    responseStyle: "guided",
                                                 })
                                             }
                                         />
                                         <div>
-                                            <strong>Socratic Method (Recommended)</strong>
+                                            <strong>Guided Learning (Recommended)</strong>
                                             <p>
-                                                Guides with incremental hints and inquiry questions
-                                                instead of immediate answer reveals.
+                                                Provides step-by-step hints and questions to help
+                                                you reason through problems on your own.
                                             </p>
                                         </div>
                                     </label>
 
                                     <label
-                                        className={`radio-card-choice ${tutorSettings.mode === "direct" ? "selected" : ""}`}
+                                        className={`radio-card-choice ${tutorSettings.responseStyle === "detailed" ? "selected" : ""}`}
                                     >
                                         <input
                                             type="radio"
-                                            name="tutorMode"
-                                            value="direct"
-                                            checked={tutorSettings.mode === "direct"}
+                                            name="responseStyle"
+                                            value="detailed"
+                                            checked={tutorSettings.responseStyle === "detailed"}
                                             onChange={() =>
                                                 setTutorSettings({
                                                     ...tutorSettings,
-                                                    mode: "direct",
+                                                    responseStyle: "detailed",
                                                 })
                                             }
                                         />
                                         <div>
-                                            <strong>Direct Solutions & Debugging</strong>
+                                            <strong>Comprehensive Direct Answers</strong>
                                             <p>
-                                                Provides fully corrected code implementations with
-                                                comprehensive algorithmic proofs immediately.
+                                                Gives complete explanations, clear code examples,
+                                                and direct solutions immediately.
                                             </p>
                                         </div>
                                     </label>
@@ -244,51 +257,42 @@ const Setting = () => {
                             </div>
 
                             <div className="setting-card-block">
-                                <span className="block-title">
-                                    Feedback Rigor & Rubric Enforcement
-                                </span>
+                                <span className="block-title">Language & Communication Tone</span>
                                 <div className="select-dropdown-unit">
                                     <select
-                                        value={tutorSettings.strictness}
+                                        value={tutorSettings.tone}
                                         onChange={(e) =>
                                             setTutorSettings({
                                                 ...tutorSettings,
-                                                strictness: e.target.value,
+                                                tone: e.target.value,
                                             })
                                         }
                                     >
-                                        <option value="lenient">
-                                            Lenient — Focus on code completion and conceptual
-                                            understanding
+                                        <option value="encouraging">
+                                            Encouraging & Supportive
                                         </option>
-                                        <option value="balanced">
-                                            Balanced — Standard university rubric (syntax, style &
-                                            Big-O)
-                                        </option>
-                                        <option value="rigorous">
-                                            Rigorous — Strict SAST static security & memory leak
-                                            audits
-                                        </option>
+                                        <option value="friendly">Friendly & Casual</option>
+                                        <option value="academic">Academic & Formal</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div className="setting-card-block toggle-row">
                                 <div>
-                                    <strong>Automatic Flashcard Synthesis</strong>
+                                    <strong>Interactive Practice Prompts</strong>
                                     <p>
-                                        Automatically extract failed quiz questions into active
-                                        recall flashcards.
+                                        Suggest short practice questions after explaining difficult
+                                        concepts.
                                     </p>
                                 </div>
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={tutorSettings.autoGenerateFlashcards}
+                                    checked={tutorSettings.autoQuiz}
                                     onChange={(e) =>
                                         setTutorSettings({
                                             ...tutorSettings,
-                                            autoGenerateFlashcards: e.target.checked,
+                                            autoQuiz: e.target.checked,
                                         })
                                     }
                                 />
@@ -296,85 +300,80 @@ const Setting = () => {
                         </div>
                     )}
 
-                    {/* SECTION 3: RAG ENGINE PARAMETERS */}
-                    {activeSection === "rag_engine" && (
+                    {/* SECTION 3: STUDY GOALS */}
+                    {activeSection === "study_goals" && (
                         <div className="settings-form-group">
                             <div className="section-narrative-header">
-                                <h3>Courseware RAG & Vector Index Parameters</h3>
+                                <h3>Daily Study Goals & Review Habits</h3>
                                 <p>
-                                    Tune retrieval hyperparameters for syllabus semantic search and
-                                    Neo4j knowledge graph queries.
+                                    Set realistic study targets and enable automatic review tools.
                                 </p>
                             </div>
 
                             <div className="setting-card-block">
                                 <div className="range-field-header">
-                                    <label>Vector Search Top-K Retrieval</label>
+                                    <label>Daily Study Target</label>
                                     <span className="range-metric-chip">
-                                        {ragSettings.vectorTopK} Chunks
+                                        {studyGoals.dailyStudyTarget} minutes / day
                                     </span>
                                 </div>
                                 <input
                                     type="range"
-                                    min="2"
-                                    max="12"
-                                    value={ragSettings.vectorTopK}
+                                    min="15"
+                                    max="180"
+                                    step="15"
+                                    value={studyGoals.dailyStudyTarget}
                                     onChange={(e) =>
-                                        setRagSettings({
-                                            ...ragSettings,
-                                            vectorTopK: Number(e.target.value),
+                                        setStudyGoals({
+                                            ...studyGoals,
+                                            dailyStudyTarget: Number(e.target.value),
                                         })
                                     }
                                     className="slider-range-input"
                                 />
                                 <span className="range-subtext">
-                                    Number of courseware passages retrieved per tutor query.
-                                </span>
-                            </div>
-
-                            <div className="setting-card-block">
-                                <div className="range-field-header">
-                                    <label>Cosine Similarity Threshold</label>
-                                    <span className="range-metric-chip">
-                                        {ragSettings.similarityThreshold}
-                                    </span>
-                                </div>
-                                <input
-                                    type="range"
-                                    min="0.6"
-                                    max="0.95"
-                                    step="0.01"
-                                    value={ragSettings.similarityThreshold}
-                                    onChange={(e) =>
-                                        setRagSettings({
-                                            ...ragSettings,
-                                            similarityThreshold: Number(e.target.value),
-                                        })
-                                    }
-                                    className="slider-range-input"
-                                />
-                                <span className="range-subtext">
-                                    Minimum threshold required to accept textbook evidence into LLM
-                                    prompts.
+                                    Recommended daily reading and practice time for semester
+                                    courses.
                                 </span>
                             </div>
 
                             <div className="setting-card-block toggle-row">
                                 <div>
-                                    <strong>Hybrid GraphRAG Node Traversal</strong>
+                                    <strong>Auto-generate Study Flashcards</strong>
                                     <p>
-                                        Connect vector embeddings with Neo4j entity relationships
-                                        for cross-chapter reasoning.
+                                        Automatically turn important course definitions and formulas
+                                        into revision cards.
                                     </p>
                                 </div>
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={ragSettings.hybridGraphEnabled}
+                                    checked={studyGoals.autoFlashcards}
                                     onChange={(e) =>
-                                        setRagSettings({
-                                            ...ragSettings,
-                                            hybridGraphEnabled: e.target.checked,
+                                        setStudyGoals({
+                                            ...studyGoals,
+                                            autoFlashcards: e.target.checked,
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div className="setting-card-block toggle-row">
+                                <div>
+                                    <strong>Focus Mode during Sessions</strong>
+                                    <p>
+                                        Hide unnecessary sidebars and secondary widgets while
+                                        reading documents.
+                                    </p>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    className="setting-checkbox-toggle"
+                                    checked={studyGoals.focusMode}
+                                    onChange={(e) =>
+                                        setStudyGoals({
+                                            ...studyGoals,
+                                            focusMode: e.target.checked,
                                         })
                                     }
                                 />
@@ -386,94 +385,95 @@ const Setting = () => {
                     {activeSection === "notifications" && (
                         <div className="settings-form-group">
                             <div className="section-narrative-header">
-                                <h3>Exam Reminders & Schedule Alerts</h3>
+                                <h3>Reminders & Schedule Alerts</h3>
                                 <p>
-                                    Set up automated reminders for approaching midterm drills,
-                                    assignment rubrics, and study streaks.
+                                    Choose which alerts you want to receive to keep your study
+                                    streak active.
                                 </p>
                             </div>
 
                             <div className="setting-card-block toggle-row">
                                 <div>
-                                    <strong>Daily Study Streak Reminders</strong>
+                                    <strong>Daily Study Reminders</strong>
                                     <p>
-                                        Receive alert pings when your daily practice drill has not
-                                        been completed.
+                                        Get a gentle notification at your chosen study time if you
+                                        haven't reviewed yet.
                                     </p>
                                 </div>
                                 <input
                                     type="checkbox"
-                                    defaultChecked
                                     className="setting-checkbox-toggle"
+                                    checked={notifications.dailyReminder}
+                                    onChange={(e) =>
+                                        setNotifications({
+                                            ...notifications,
+                                            dailyReminder: e.target.checked,
+                                        })
+                                    }
                                 />
                             </div>
 
                             <div className="setting-card-block toggle-row">
                                 <div>
-                                    <strong>Lab Assignment Rubric Deadlines</strong>
+                                    <strong>Course Deadline Alerts</strong>
                                     <p>
-                                        Notify 48 hours prior to deadline if automated code review
-                                        checks are still failing.
+                                        Remind you 2 days before assignment submissions and midterm
+                                        exam dates.
                                     </p>
                                 </div>
                                 <input
                                     type="checkbox"
-                                    defaultChecked
                                     className="setting-checkbox-toggle"
+                                    checked={notifications.assignmentAlerts}
+                                    onChange={(e) =>
+                                        setNotifications({
+                                            ...notifications,
+                                            assignmentAlerts: e.target.checked,
+                                        })
+                                    }
                                 />
                             </div>
 
                             <div className="setting-card-block toggle-row">
                                 <div>
-                                    <strong>AI Knowledge Gap Alerts</strong>
+                                    <strong>Study Streak Keeper</strong>
                                     <p>
-                                        Weekly digest highlighting areas requiring remediation based
-                                        on recent quiz scores.
+                                        Alerts before midnight so you don't lose your consecutive
+                                        daily study streak.
                                     </p>
                                 </div>
                                 <input
                                     type="checkbox"
-                                    defaultChecked
                                     className="setting-checkbox-toggle"
+                                    checked={notifications.streakReminder}
+                                    onChange={(e) =>
+                                        setNotifications({
+                                            ...notifications,
+                                            streakReminder: e.target.checked,
+                                        })
+                                    }
                                 />
                             </div>
-                        </div>
-                    )}
 
-                    {/* SECTION 5: API KEYS & SECURITY */}
-                    {activeSection === "security" && (
-                        <div className="settings-form-group">
-                            <div className="section-narrative-header">
-                                <h3>API Keys & External Tool Integrations</h3>
-                                <p>
-                                    Manage authorization tokens for local container sandboxes and
-                                    cloud LLM endpoints.
-                                </p>
-                            </div>
-
-                            <div className="input-field-unit full-width">
-                                <label>OpenAI / DeepSeek Custom Endpoint Key</label>
+                            <div className="setting-card-block toggle-row">
+                                <div>
+                                    <strong>Weekly Learning Summary</strong>
+                                    <p>
+                                        A concise summary of chapters covered, questions answered,
+                                        and quiz scores.
+                                    </p>
+                                </div>
                                 <input
-                                    type="password"
-                                    defaultValue="sk-proj-982402xxxxxxxxxxxxxxxx"
-                                    placeholder="sk-..."
+                                    type="checkbox"
+                                    className="setting-checkbox-toggle"
+                                    checked={notifications.weeklySummary}
+                                    onChange={(e) =>
+                                        setNotifications({
+                                            ...notifications,
+                                            weeklySummary: e.target.checked,
+                                        })
+                                    }
                                 />
-                            </div>
-
-                            <div className="input-field-unit full-width">
-                                <label>Qdrant Vector Cloud Cluster URL</label>
-                                <input
-                                    type="text"
-                                    defaultValue="https://qdrant-cluster-prod.prismstudio.dev:6333"
-                                />
-                            </div>
-
-                            <div className="security-notice-box">
-                                <ShieldCheck size={16} color="#059669" />
-                                <span>
-                                    All credentials are encrypted client-side and authenticated
-                                    through secure session storage.
-                                </span>
                             </div>
                         </div>
                     )}

@@ -1,5 +1,5 @@
 .courses-tab-bounds {
-    max-width: 1120px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -61,7 +61,7 @@
     border-radius: 6px;
     padding: 6px 12px;
     flex: 1;
-    max-width: 380px;
+    max-width: 360px;
 }
 
 .search-course-box .search-icon {
@@ -107,15 +107,15 @@
     font-weight: 600;
 }
 
-/* 3. Split Grid (List & Detail) */
+/* 3. Split Grid Layout */
 .courses-split-grid {
     display: grid;
-    grid-template-columns: 340px 1fr;
+    grid-template-columns: 320px 1fr;
     gap: 16px;
     align-items: flex-start;
 }
 
-/* Cột danh sách khóa học */
+/* Cột danh sách khóa học bên trái */
 .courses-card-list {
     display: flex;
     flex-direction: column;
@@ -131,7 +131,7 @@
     flex-direction: column;
     gap: 6px;
     cursor: pointer;
-    transition: all 0.12s ease;
+    transition: all 0.15s ease;
 }
 
 .course-item-card:hover {
@@ -163,24 +163,10 @@
     border-radius: 4px;
 }
 
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.65rem;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-.status-pill.indexed {
-    background-color: #ecfdf5;
-    color: #059669;
-}
-
-.status-pill.syncing {
-    background-color: #fffbeb;
-    color: #d97706;
+.course-semester-tag {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    font-weight: 500;
 }
 
 .course-title-text {
@@ -212,8 +198,20 @@
     color: #94a3b8;
 }
 
+.progress-info-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.progress-text {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #059669;
+}
+
 .progress-mini-bar {
-    width: 60px;
+    width: 50px;
     height: 4px;
     background-color: #e2e8f0;
     border-radius: 2px;
@@ -314,37 +312,65 @@
     background-color: #fef3c7;
 }
 
-/* Vector Metric Banner */
-.vector-metric-banner {
+/* 4. Thẻ tóm tắt học tập (Thay thế cho Vector Metric cũ) */
+.course-summary-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 7px;
+    border-radius: 8px;
     padding: 12px 14px;
 }
 
-.metric-col {
+.summary-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.summary-icon.blue {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.summary-icon.green {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.summary-icon.amber {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.summary-data {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.metric-col span {
+.summary-data span {
     font-size: 0.68rem;
     color: #64748b;
 }
 
-.metric-col strong {
+.summary-data strong {
     font-size: 0.8rem;
     color: #0f172a;
+    font-weight: 600;
 }
 
-.metric-col strong.high-rate {
-    color: #059669;
-}
-
-/* Syllabus Table */
+/* 5. Danh sách tài liệu khóa học */
 .courseware-files-section {
     display: flex;
     flex-direction: column;
@@ -374,6 +400,7 @@
     color: #059669;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.12s ease;
 }
 
 .btn-upload-file:hover {
@@ -392,9 +419,9 @@
 .table-header-row,
 .table-data-row {
     display: grid;
-    grid-template-columns: 1fr 90px 110px 100px 40px;
+    grid-template-columns: 1fr 100px 120px 80px;
     align-items: center;
-    padding: 8px 12px;
+    padding: 9px 14px;
 }
 
 .table-header-row {
@@ -424,49 +451,41 @@
 .file-primary-cell {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: #0f172a;
     font-weight: 500;
 }
 
-.file-primary-cell .file-icon {
-    color: #059669;
-}
-
-.col-chunks code {
-    background-color: #f1f5f9;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    color: #0f172a;
-}
-
-.file-badge {
-    font-size: 0.64rem;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-.file-badge.ready {
+.file-badge-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
     background-color: #ecfdf5;
     color: #059669;
+    display: grid;
+    place-items: center;
 }
 
-.file-badge.syncing {
-    background-color: #fffbeb;
-    color: #d97706;
+.file-action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
 }
 
-.btn-more-options {
+.btn-table-action {
     background: transparent;
     border: none;
     color: #94a3b8;
     cursor: pointer;
-    padding: 4px;
-    display: flex;
+    padding: 5px;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    transition: all 0.1s ease;
 }
 
-.btn-more-options:hover {
+.btn-table-action:hover {
     color: #0f172a;
+    background-color: #e2e8f0;
 }

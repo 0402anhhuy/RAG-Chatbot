@@ -26,6 +26,8 @@ const AcademyHub = () => {
             '{"role":"USER","name":"Huy Tran","email":"huy@prismstudio.dev"}'
     );
 
+    const currentWorkspaceId = session?.workspaceId || "00000000-0000-0000-0000-000000000001";
+
     const handleLaunchTool = (toolId) => {
         setActiveSubTool(toolId);
         setIsSidebarCollapsed(true);
@@ -75,15 +77,21 @@ const AcademyHub = () => {
                     )}
 
                     {activeTab === "documents" && (
-                        <Documents onLaunchTool={handleLaunchTool} />
+                        <Documents 
+                            workspaceId={currentWorkspaceId} 
+                            onLaunchTool={handleLaunchTool} 
+                        />
+                    )}
+
+                    {activeTab === "conversations" && (
+                        <Conversation 
+                            workspaceId={currentWorkspaceId} 
+                            onLaunchTool={handleLaunchTool} 
+                        />
                     )}
 
                     {activeTab === "tools" && !activeSubTool && (
                         <EduTools onLaunchTool={handleLaunchTool} />
-                    )}
-
-                    {activeTab === "conversations" && (
-                        <Conversation onLaunchTool={handleLaunchTool} />
                     )}
 
                     {activeTab === "quizzes" && (
