@@ -1,0 +1,415 @@
+/* Overlay toàn màn hình */
+.task-modal-fixed-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 120;
+    padding: 20px;
+    box-sizing: border-box;
+    backdrop-filter: blur(2px);
+}
+
+/* Card Modal chính: Giới hạn chiều cao và chia 3 tầng rõ rệt */
+.task-modal-container-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 88vh; /* Không bao giờ tràn ra ngoài màn hình */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+    overflow: hidden; /* Che thanh cuộn ở viền ngoài cùng */
+    box-sizing: border-box;
+}
+
+/* 1. Header cố định: Nền trắng, có viền ngăn cách */
+.task-modal-header-fixed {
+    background-color: #ffffff;
+    padding: 18px 24px 14px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0; /* Giữ nguyên kích thước, không bị co */
+    z-index: 2;
+}
+
+.modal-title-with-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-title-with-tag h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.task-id-badge {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-family: monospace;
+}
+
+.btn-modal-close-round {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    transition: background-color 0.12s ease;
+}
+
+.btn-modal-close-round:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+/* 2. Body cuộn riêng biệt ở giữa */
+.task-modal-body-scrollable {
+    flex: 1;
+    overflow-y: auto; /* Chỉ phần này được phép cuộn */
+    padding: 18px 24px;
+    box-sizing: border-box;
+}
+
+/* Thanh cuộn nhỏ gọn, tinh tế */
+.task-modal-body-scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+.task-modal-body-scrollable::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+.task-modal-body-scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Form fields layout */
+.modal-inner-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-input-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-title-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+}
+
+/* Title input */
+.pill-text-input {
+    width: 100%;
+    height: 38px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0 14px;
+    font-size: 0.82rem;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.12s ease;
+}
+
+.pill-text-input.active-border {
+    border: 1.5px solid #0f172a;
+    height: 40px;
+}
+
+/* Description textarea & AI generate */
+.field-action-header-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn-ai-generate-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: #0f172a;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.textarea-field-box {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Attachments dropzone */
+.field-icon-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.attachment-clip-glyph {
+    color: #475569;
+}
+
+.dropzone-dashed-box {
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 14px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #64748b;
+    background-color: #fafbfc;
+    cursor: pointer;
+    transition: border-color 0.12s ease;
+}
+
+.dropzone-dashed-box:hover {
+    border-color: #94a3b8;
+}
+
+/* Estimates 3 cột */
+.estimates-triplet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.field-jira-help-text {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: -6px;
+}
+
+/* Status & Priority Row */
+.status-priority-dual-row {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 16px;
+}
+
+.dual-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.status-chips-2col-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.btn-chip-status-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    font-size: 0.75rem;
+    color: #334155;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.12s ease;
+}
+
+.btn-chip-status-selector.selected {
+    border: 1.5px solid #0f172a;
+    background-color: #f1f5f9;
+    font-weight: 500;
+}
+
+.chip-color-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.chip-color-dot.dot-backlog {
+    background-color: #64748b;
+}
+.chip-color-dot.dot-in-progress {
+    background-color: #3b82f6;
+}
+.chip-color-dot.dot-review {
+    background-color: #f59e0b;
+}
+.chip-color-dot.dot-completed {
+    background-color: #10b981;
+}
+
+.priority-pills-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+}
+
+.btn-priority-toggle {
+    background: transparent;
+    border: none;
+    font-size: 0.76rem;
+    color: #64748b;
+    padding: 4px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.btn-priority-toggle.selected {
+    background-color: #e0f2fe;
+    color: #0284c7;
+    font-weight: 600;
+}
+
+/* Assignee Pill */
+.assignee-pill-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0 14px;
+    box-sizing: border-box;
+}
+
+.avatar-letter-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.62rem;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+}
+
+.assignee-display-name {
+    font-size: 0.8rem;
+    color: #0f172a;
+    flex: 1;
+}
+
+.assignee-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+}
+
+.clear-assignee-glyph,
+.dropdown-caret-glyph {
+    cursor: pointer;
+}
+
+.task-created-date-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #64748b;
+    padding-top: 4px;
+}
+
+/* 3. Footer cố định: Nền trắng, nằm trên lớp cuộn */
+.task-modal-footer-fixed {
+    background-color: #ffffff;
+    padding: 14px 24px 18px 24px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0; /* Giữ nguyên kích thước, không bị co */
+    z-index: 2;
+}
+
+.btn-action-archive-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background-color 0.12s ease;
+}
+
+.btn-action-archive-left:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.footer-right-buttons-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-footer-close-pill {
+    padding: 7px 18px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-footer-close-pill:hover {
+    background-color: #f8fafc;
+}
+
+.btn-footer-save-pill {
+    padding: 7px 20px;
+    background-color: #71717a;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-footer-save-pill:hover {
+    background-color: #52525b;
+}

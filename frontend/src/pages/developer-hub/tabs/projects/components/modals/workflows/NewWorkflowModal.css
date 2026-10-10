@@ -1,0 +1,246 @@
+.new-wf-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 120;
+    padding: 20px;
+    box-sizing: border-box;
+    backdrop-filter: blur(2px);
+}
+
+.new-wf-modal-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 460px;
+    padding: 22px 24px;
+    box-sizing: border-box;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Header */
+.new-wf-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.new-wf-title-col h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.new-wf-title-col p {
+    margin: 3px 0 0 0;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.btn-wf-modal-close {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    transition: all 0.12s ease;
+}
+
+.btn-wf-modal-close:hover {
+    color: #0f172a;
+    background-color: #f1f5f9;
+}
+
+/* Form body */
+.new-wf-form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.wf-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wf-field-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+}
+
+/* Ô nhập Name */
+.input-wf-name-pill {
+    width: 100%;
+    height: 40px;
+    background-color: #ffffff;
+    border: 1.5px solid #0f172a;
+    border-radius: 20px;
+    padding: 0 16px;
+    font-size: 0.82rem;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.input-wf-name-pill::placeholder {
+    color: #64748b;
+}
+
+/* Textarea Description */
+.textarea-wf-desc {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.12s ease;
+}
+
+.textarea-wf-desc:focus {
+    border-color: #0f172a;
+}
+
+.textarea-wf-desc::placeholder {
+    color: #64748b;
+}
+
+/* Lưới Icons */
+.wf-icons-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.btn-wf-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #475569;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.12s ease;
+}
+
+.btn-wf-icon-box:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.btn-wf-icon-box.selected {
+    border: 1.5px solid #0f172a;
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+/* Lựa chọn Màu Palette */
+.wf-color-palette-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.color-swatches-list {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.btn-color-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition:
+        transform 0.12s ease,
+        border-color 0.12s ease;
+}
+
+.btn-color-dot:hover {
+    transform: scale(1.1);
+}
+
+.btn-color-dot.active {
+    border-color: #0f172a;
+    transform: scale(1.15);
+}
+
+.color-hex-tag-pill {
+    padding: 4px 12px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    font-size: 0.72rem;
+    color: #0f172a;
+    font-family: monospace;
+    font-weight: 500;
+}
+
+/* Footer Actions */
+.new-wf-footer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.btn-wf-cancel-pill {
+    padding: 7px 18px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-wf-cancel-pill:hover {
+    background-color: #f8fafc;
+}
+
+.btn-wf-submit-pill {
+    padding: 7px 20px;
+    background-color: #71717a;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-wf-submit-pill:hover {
+    background-color: #52525b;
+}

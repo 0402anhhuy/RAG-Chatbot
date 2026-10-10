@@ -1,0 +1,190 @@
+.add-member-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 120;
+    padding: 20px;
+    box-sizing: border-box;
+    backdrop-filter: blur(2px);
+}
+
+.add-member-modal-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 440px;
+    padding: 22px 24px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.16);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+}
+
+/* Header modal */
+.add-member-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.add-member-title-col h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.add-member-title-col p {
+    margin: 3px 0 0 0;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.btn-close-modal {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    transition: all 0.12s ease;
+}
+
+.btn-close-modal:hover {
+    color: #0f172a;
+    background-color: #f1f5f9;
+}
+
+/* Form fields */
+.add-member-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.modal-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+}
+
+.input-group-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+}
+
+/* Search email pill input */
+.search-email-pill-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0 14px;
+    height: 40px;
+    box-sizing: border-box;
+    transition: border-color 0.12s ease;
+}
+
+.search-email-pill-box:focus-within {
+    border-color: #0f172a;
+}
+
+.search-glyph-icon {
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.search-email-pill-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.8rem;
+    color: #0f172a;
+    width: 100%;
+}
+
+.search-email-pill-box input::placeholder {
+    color: #64748b;
+}
+
+/* Selector Role Pill */
+.role-pill-selector-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0 16px;
+    height: 40px;
+    font-size: 0.8rem;
+    color: #1e293b;
+    cursor: pointer;
+    box-sizing: border-box;
+    user-select: none;
+    transition: border-color 0.12s ease;
+}
+
+.role-pill-selector-box:hover {
+    border-color: #94a3b8;
+}
+
+.selector-caret {
+    color: #64748b;
+}
+
+/* Custom dropdown menu */
+.custom-role-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dropdown-role-option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #334155;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.dropdown-role-option-row:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+.dropdown-role-option-row.active {
+    font-weight: 500;
+    color: #0f172a;
+}
+
+.check-mark-glyph {
+    color: #0f172a;
+}

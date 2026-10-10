@@ -1,0 +1,229 @@
+.project-dashboard-viewport {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 24px;
+}
+
+/* Nút Open Workbench & Create Task */
+.dashboard-top-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.btn-open-workbench-solid {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #18181b;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-open-workbench-solid:hover {
+    background-color: #27272a;
+}
+
+.btn-create-task-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-create-task-outline:hover {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+}
+
+/* Continue Card */
+.dashboard-continue-card {
+    background-color: #f0fdf4;
+    border: 1px solid #dcfce7;
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.continue-circle-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #d1fae5;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.continue-content-meta {
+    flex: 1;
+}
+
+.continue-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #059669;
+    letter-spacing: 0.05em;
+}
+
+.continue-content-meta h3 {
+    margin: 2px 0 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #064e3b;
+}
+
+.continue-content-meta p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #047857;
+}
+
+.btn-continue-green {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-continue-green:hover {
+    background-color: #047857;
+}
+
+/* Lưới 4 Thẻ KPI */
+.dashboard-stats-four-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.kpi-surface-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 85px;
+    box-sizing: border-box;
+}
+
+.kpi-value-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kpi-big-number {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.kpi-header-icon {
+    color: #64748b;
+}
+
+.kpi-label {
+    font-size: 0.76rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.kpi-member-avatar-chip {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.68rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    align-self: flex-start;
+    margin-top: 6px;
+}
+
+/* My Tasks Area */
+.dashboard-my-tasks-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-my-tasks-card h4 {
+    margin: 0 0 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.my-tasks-empty-panel {
+    text-align: center;
+    padding: 40px 0;
+    color: #64748b;
+}
+
+.my-tasks-empty-panel p {
+    margin: 0 0 6px;
+    font-size: 0.84rem;
+    color: #334155;
+}
+
+.my-tasks-empty-panel small {
+    font-size: 0.76rem;
+    color: #64748b;
+}
+
+.inline-kanban-link {
+    background: transparent;
+    border: none;
+    color: #0f172a;
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+@media (max-width: 1080px) {
+    .dashboard-stats-four-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

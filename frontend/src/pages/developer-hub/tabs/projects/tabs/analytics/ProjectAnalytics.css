@@ -1,0 +1,476 @@
+.vibe-analytics-viewport {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 30px;
+    box-sizing: border-box;
+}
+
+/* 1. Header Title & Month Filter */
+.analytics-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.analytics-title-cluster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analytics-title-glyph {
+    color: #0f172a;
+}
+
+.analytics-title-cluster h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.analytics-month-pill-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    color: #0f172a;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.12s ease;
+}
+
+.analytics-month-pill-wrap:hover {
+    border-color: #94a3b8;
+}
+
+/* 2. Sub-tabs Toolbar */
+.analytics-subtabs-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.analytics-subtabs-pill-box {
+    display: flex;
+    align-items: center;
+    background-color: #f1f5f9;
+    padding: 3px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-subtab-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 18px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-subtab-pill:hover {
+    color: #0f172a;
+}
+
+.btn-subtab-pill.active {
+    background-color: #ffffff;
+    color: #0f172a;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.analytics-export-cluster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-csv-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+}
+
+.btn-export-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+/* Container stack */
+.analytics-view-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* 3. Lưới Thẻ KPI */
+.kpi-six-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.kpi-four-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.kpi-analytic-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-sizing: border-box;
+}
+
+.kpi-analytic-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.kpi-analytic-value {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+.kpi-analytic-sub {
+    font-size: 0.68rem;
+    color: #94a3b8;
+}
+
+/* 4. COST PER OUTCOME */
+.outcome-section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.outcome-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.04em;
+}
+
+.outcome-four-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.kpi-outcome-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-sizing: border-box;
+}
+
+.kpi-outcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.74rem;
+    color: #64748b;
+}
+
+.kpi-outcome-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.kpi-outcome-sub {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+/* 5. Biểu đồ Vector Panels */
+.chart-panel-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 22px 14px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.chart-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chart-panel-header h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.chart-legend-text {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.chart-svg-wrapper {
+    position: relative;
+    width: 100%;
+    height: 180px;
+}
+
+.chart-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.chart-axis-y {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: #64748b;
+    pointer-events: none;
+}
+
+.chart-axis-x {
+    position: absolute;
+    bottom: -4px;
+    left: 40px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: #64748b;
+    pointer-events: none;
+}
+
+/* Tooltip nổi trên biểu đồ Cost & Usage */
+.chart-floating-tooltip {
+    position: absolute;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.72rem;
+    z-index: 5;
+}
+
+.tooltip-date-header {
+    font-weight: 600;
+    color: #0f172a;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+}
+
+.tooltip-item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+}
+
+.tooltip-item-row strong {
+    margin-left: auto;
+    color: #0f172a;
+}
+
+.dot-circle {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.dot-circle.blue {
+    background-color: #3b82f6;
+}
+.dot-circle.purple {
+    background-color: #8b5cf6;
+}
+.dot-circle.amber {
+    background-color: #f59e0b;
+}
+
+/* 6. Bảng Dữ Liệu Analytics Tables */
+.analytics-section-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.section-panel-title {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.section-header-caption-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.caption-subtext {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.analytics-table-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+.analytics-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.analytics-data-table th {
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 16px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.analytics-data-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.analytics-data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.td-provider {
+    color: #0f172a;
+    font-weight: 500;
+}
+.td-model {
+    color: #64748b;
+    font-family: monospace;
+    font-size: 0.74rem;
+}
+.td-cost {
+    font-weight: 600;
+    color: #0f172a;
+}
+.td-percent {
+    font-weight: 500;
+    color: #0f172a;
+}
+
+/* User row styling */
+.user-table-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.avatar-chip-small {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    border: 1px solid #e2e8f0;
+}
+
+.text-green-bold {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.text-red-bold {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .kpi-six-cards-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .outcome-four-cards-grid,
+    .kpi-four-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-six-cards-grid,
+    .outcome-four-cards-grid,
+    .kpi-four-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}

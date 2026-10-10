@@ -1,0 +1,205 @@
+.project-members-viewport {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    padding: 10px 0 30px;
+    box-sizing: border-box;
+}
+
+/* Thẻ bao ngoài chính */
+.members-main-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px 28px;
+    width: 100%;
+    max-width: 900px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Header card */
+.members-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-text-cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.header-text-cluster h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.member-count-caption {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+/* Nút Add Member dạng viên thuốc màu đen */
+.btn-add-member-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    background-color: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-add-member-pill:hover {
+    background-color: #1e293b;
+}
+
+/* Danh sách thành viên */
+.members-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.member-row-item {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    transition: border-color 0.12s ease;
+}
+
+.member-row-item:hover {
+    border-color: #cbd5e1;
+}
+
+/* Thông tin member bên trái */
+.member-left-profile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.member-avatar-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.member-identity-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.name-and-role-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.member-name-label {
+    font-size: 0.86rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.member-inline-role {
+    font-size: 0.72rem;
+    color: #334155;
+    font-weight: 500;
+}
+
+.member-email-label {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* Hành động bên phải */
+.member-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.member-role-select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0 28px 0 14px;
+    height: 32px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color 0.12s ease;
+}
+
+.member-role-select-wrap:hover {
+    border-color: #94a3b8;
+}
+
+.member-role-native-select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: #1e293b;
+    appearance: none;
+    cursor: pointer;
+}
+
+.role-caret-icon {
+    position: absolute;
+    right: 10px;
+    pointer-events: none;
+    color: #64748b;
+}
+
+.btn-delete-member {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background-color 0.12s ease,
+        opacity 0.12s ease;
+}
+
+.btn-delete-member:hover {
+    background-color: #fee2e2;
+    opacity: 0.9;
+}

@@ -1,0 +1,183 @@
+.vibe-agents-viewport {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 24px;
+    box-sizing: border-box;
+}
+
+/* 1. Header & Filter Bar */
+.agents-filter-control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filter-pill-switch-group {
+    display: flex;
+    align-items: center;
+    background-color: #f1f5f9;
+    padding: 3px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-filter-pill {
+    padding: 5px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 18px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-filter-pill:hover {
+    color: #0f172a;
+}
+
+.btn-filter-pill.active {
+    background-color: #0f172a;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.btn-new-agent-black {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    background-color: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-new-agent-black:hover {
+    background-color: #1e293b;
+}
+
+/* 2. Lưới Thẻ 3 Cột */
+.agents-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.agent-card-surface {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
+.agent-card-surface:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+}
+
+/* Dải màu line ở mép đỉnh đầu */
+.agent-card-top-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+/* Header Thẻ */
+.agent-card-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.agent-icon-well {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.agent-name-text {
+    font-size: 0.95rem;
+    color: #0f172a;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Đoạn mô tả */
+.agent-desc-text {
+    margin: 0;
+    font-size: 0.76rem;
+    color: #64748b;
+    line-height: 1.45;
+    min-height: 54px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+/* Chân Thẻ */
+.agent-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 6px;
+}
+
+.agent-badge-type {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #334155;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+}
+
+.agent-permission-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.perm-shield-icon {
+    color: #94a3b8;
+}
+
+@media (max-width: 1100px) {
+    .agents-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .agents-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}

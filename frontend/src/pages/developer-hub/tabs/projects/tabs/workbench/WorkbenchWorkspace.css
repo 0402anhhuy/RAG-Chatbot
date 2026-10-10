@@ -1,0 +1,741 @@
+.workbench-main-viewport {
+    width: 100%;
+    height: calc(100vh - 48px);
+    overflow: hidden;
+    background-color: #f6f5f4; /* Nền giấy canvas làm nổi các thẻ pill trắng */
+    box-sizing: border-box;
+    padding: 10px; /* Khoảng cách đệm quanh 4 mép màn hình */
+}
+
+/* ======================================================== */
+/* 1. IDE 3 CỘT (PILL CARD TÁCH RỜI BO GÓC)                  */
+/* ======================================================== */
+.workbench-three-col-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 440px;
+    gap: 10px; /* Tách rời 3 cột, không dính liền */
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Base style cho 3 card cột độc lập */
+.wb-column-files-pane,
+.wb-column-editor-pane,
+.wb-column-chat-pane {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px; /* Bo góc mềm mại */
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Header từng cột */
+.wb-pane-header-row {
+    height: 40px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    color: #475569;
+}
+
+.wb-pane-title-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.wb-header-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Nút pill "Sync to folder" */
+.btn-sync-to-folder-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    background-color: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    color: #7c3aed;
+    border-radius: 14px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-sync-to-folder-pill:hover {
+    background-color: #ede9fe;
+    border-color: #c4b5fd;
+}
+
+.btn-icon-ghost {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    transition: all 0.12s ease;
+}
+
+.btn-icon-ghost:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+/* Files dropdown menu */
+.wb-pane-more-relative {
+    position: relative;
+}
+
+.wb-files-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    width: 230px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dropdown-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    font-size: 0.76rem;
+    color: #334155;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.dropdown-menu-item:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+.dropdown-menu-item.with-caption {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+}
+
+.dropdown-menu-item.with-caption small {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    line-height: 1.35;
+}
+
+.dropdown-menu-divider {
+    height: 1px;
+    background-color: #f1f5f9;
+    margin: 4px 0;
+}
+
+/* Vùng nội dung trống */
+.wb-files-empty-stage,
+.wb-editor-empty-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.glyph-empty-folder,
+.glyph-empty-file {
+    color: #cbd5e1;
+}
+
+.editor-sub-breadcrumb {
+    padding: 6px 12px;
+    font-size: 0.72rem;
+    color: #94a3b8;
+    border-bottom: 1px solid #f8fafc;
+}
+
+/* Chat Convo Flyout Dropdown */
+.wb-convo-selector-wrap {
+    position: relative;
+}
+
+.btn-convo-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+.wb-convo-flyout-card {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 240px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-create-convo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #0f172a;
+    cursor: pointer;
+    padding: 0;
+}
+
+.convo-flyout-title-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #0f172a;
+}
+
+.convo-flyout-filters {
+    display: flex;
+    gap: 10px;
+    font-size: 0.72rem;
+    color: #64748b;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 6px;
+}
+
+.convo-flyout-filters .active-pill {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.convo-flyout-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.convo-item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.convo-item-row:hover {
+    background-color: #f8fafc;
+}
+
+.convo-meta-col {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.convo-meta-col strong {
+    font-size: 0.74rem;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.convo-meta-col small {
+    font-size: 0.65rem;
+    color: #94a3b8;
+}
+
+.dot-status.green {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+    flex-shrink: 0;
+}
+
+/* Chat Middle Stage */
+.wb-chat-middle-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.start-sandbox-banner-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 340px;
+    gap: 10px;
+}
+
+.sandbox-logo-pill {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background-color: #f1f5f9;
+    display: grid;
+    place-items: center;
+    margin-bottom: 4px;
+}
+
+.logo-sparkle-dots {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    color: #64748b;
+}
+
+.start-sandbox-banner-card h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.start-sandbox-banner-card p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.45;
+}
+
+.btn-start-sandbox-solid {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: background-color 0.12s ease;
+}
+
+.btn-start-sandbox-solid:hover {
+    background-color: #047857;
+}
+
+.sandbox-idle-note {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    line-height: 1.35;
+}
+
+/* Chat Prompt Footer */
+.wb-chat-prompt-footer {
+    padding: 12px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: #ffffff;
+}
+
+.prompt-input-surface-box {
+    background-color: #fafbfc;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.prompt-stopped-hint {
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+
+.prompt-bottom-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.prompt-left-tools-wrap {
+    position: relative;
+}
+
+.btn-plus-tool-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    color: #475569;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+.prompt-tools-popup-menu {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    width: 240px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 6px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tool-menu-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 0.74rem;
+    color: #334155;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.tool-menu-row:hover {
+    background-color: #f8fafc;
+}
+
+.tool-menu-row kbd,
+.tool-menu-val {
+    margin-left: auto;
+    font-size: 0.65rem;
+    color: #94a3b8;
+}
+
+.tool-menu-divider {
+    height: 1px;
+    background-color: #f1f5f9;
+    margin: 4px 0;
+}
+
+.prompt-right-tools-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-select-model-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    font-size: 0.72rem;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.btn-send-message-disabled {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #64748b;
+    color: #ffffff;
+    border: none;
+    display: grid;
+    place-items: center;
+    cursor: not-allowed;
+}
+
+.ai-disclaimer-text {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* ======================================================== */
+/* 2. CANVAS VIEW (GRAPH NODE DESIGNER)                     */
+/* ======================================================== */
+.workbench-canvas-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 10px;
+    height: 100%;
+    width: 100%;
+}
+
+.canvas-left-picker-pane {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.canvas-picker-tabs-row {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.btn-canvas-subtab {
+    flex: 1;
+    padding: 6px 0;
+    background: transparent;
+    border: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.btn-canvas-subtab.active {
+    color: #0f172a;
+    border-bottom: 2px solid #0f172a;
+}
+
+.canvas-picker-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+.canvas-picker-search input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.75rem;
+    width: 100%;
+}
+
+.canvas-picker-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.canvas-item-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    color: #334155;
+    cursor: pointer;
+}
+
+.canvas-item-entry:hover {
+    background-color: #f1f5f9;
+}
+
+.indicator-line {
+    width: 3px;
+    height: 12px;
+    border-radius: 2px;
+}
+.indicator-line.cyan {
+    background-color: #06b6d4;
+}
+.indicator-line.indigo {
+    background-color: #6366f1;
+}
+.indicator-line.red {
+    background-color: #ef4444;
+}
+.indicator-line.amber {
+    background-color: #f59e0b;
+}
+.indicator-line.blue {
+    background-color: #3b82f6;
+}
+.indicator-line.emerald {
+    background-color: #10b981;
+}
+.indicator-line.purple {
+    background-color: #8b5cf6;
+}
+
+.canvas-graph-main-pane {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: auto;
+}
+
+.canvas-graph-top-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.canvas-status-tag {
+    font-size: 0.76rem;
+    color: #475569;
+}
+
+.canvas-top-btn-cluster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-canvas-save,
+.btn-canvas-save-tpl {
+    padding: 5px 12px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-canvas-start-sb {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.canvas-nodes-flow-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 8px;
+    background-color: #fafbfc;
+    flex: 1;
+}
+
+.canvas-node-card {
+    background-color: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 14px 18px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.node-port {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.node-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.node-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #0f172a;
+}
+
+.node-role-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.node-body-snippet {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.node-parallel-agents-tags {
+    display: flex;
+    gap: 6px;
+}
+
+.node-parallel-agents-tags span {
+    font-size: 0.65rem;
+    border: 1px solid #c084fc;
+    color: #9333ea;
+    background-color: #faf5ff;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.node-flow-connector-line {
+    width: 2px;
+    height: 24px;
+    background-color: #cbd5e1;
+}
