@@ -1,0 +1,165 @@
+.vibe-navbar {
+    height: 48px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+    min-width: 0;
+    box-sizing: border-box;
+    /* Đẩy Navbar lên trên cùng bao trùm toàn bộ màn hình */
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+/* Khối nhận diện bên trái (Logo + Breadcrumb) */
+.navbar-identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+/* Breadcrumb */
+.navbar-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.crumb-root {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.crumb-separator {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+}
+
+.crumb-project {
+    color: #475569;
+    font-weight: 500;
+}
+
+.crumb-current {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Cụm Controls bên phải */
+.navbar-controls-cluster {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Sandbox Indicator */
+.navbar-sandbox-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.74rem;
+}
+
+.sandbox-running-badge {
+    background-color: #10b981;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.sandbox-progress-track {
+    width: 38px;
+    height: 5px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.sandbox-progress-bar {
+    height: 100%;
+    background-color: #10b981;
+}
+
+.sandbox-memory-text {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-family: monospace;
+}
+
+.btn-stop-sandbox-outline {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #fecdd3;
+    background-color: #fff1f2;
+    color: #e11d48;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-stop-sandbox-outline:hover {
+    background-color: #ffe4e6;
+    border-color: #fda4af;
+}
+
+/* Phím tắt */
+.navbar-keybind-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.key-shortcut-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.12s ease;
+}
+
+.key-shortcut-tag:hover {
+    color: #0f172a;
+}
+
+.key-shortcut-tag.mini-kbd {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 1px 4px;
+    background-color: #f8fafc;
+}
+
+/* Nút New Project chính màu đen bo tròn chuẩn VibeFlow */
+.btn-new-project-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background-color: #18181b;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-new-project-primary:hover {
+    background-color: #27272a;
+}

@@ -1,0 +1,374 @@
+/* Lớp phủ mờ nền */
+.new-task-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 120;
+    padding: 20px;
+    box-sizing: border-box;
+    backdrop-filter: blur(2px);
+}
+
+/* Khung modal: Chiều cao tối đa 88vh, chia 3 tầng (Header - Body - Footer) */
+.new-task-modal-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+    overflow: hidden; /* Cắt góc tròn viền ngoài */
+    box-sizing: border-box;
+}
+
+/* 1. HEADER CỐ ĐỊNH */
+.modal-header-fixed {
+    background-color: #ffffff;
+    padding: 18px 24px 14px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+.modal-header-fixed h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.btn-modal-close {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s ease;
+}
+
+.btn-modal-close:hover {
+    color: #0f172a;
+    background-color: #f1f5f9;
+}
+
+/* 2. BODY CUỘN RIÊNG Ở GIỮA */
+.modal-body-scrollable {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 24px;
+    box-sizing: border-box;
+}
+
+.modal-body-scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body-scrollable::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+.modal-body-scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Các trường form */
+.modal-form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+}
+
+/* Ô nhập Title với bo viền đậm */
+.input-title-pill {
+    width: 100%;
+    height: 42px;
+    background-color: #ffffff;
+    border: 1.5px solid #0f172a;
+    border-radius: 20px;
+    padding: 0 16px;
+    font-size: 0.88rem;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+}
+
+/* Description kèm nút Generate */
+.label-with-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn-ai-generate {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: #0f172a;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 2px 4px;
+    transition: opacity 0.12s ease;
+}
+
+.btn-ai-generate:hover {
+    opacity: 0.7;
+}
+
+.textarea-description {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.textarea-description::placeholder {
+    color: #64748b;
+    font-style: italic;
+}
+
+/* Ô input dạng viên thuốc */
+.input-default-pill {
+    width: 100%;
+    height: 38px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0 14px;
+    font-size: 0.8rem;
+    color: #0f172a;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.12s ease;
+}
+
+.input-default-pill:focus {
+    border-color: #0f172a;
+}
+
+.input-default-pill::placeholder {
+    color: #64748b;
+}
+
+/* 3 Cột Estimates */
+.estimates-three-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.field-caption-note {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: -6px;
+}
+
+/* Status & Priority Row */
+.status-priority-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+    margin-top: 4px;
+}
+
+.status-field-col,
+.priority-field-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Chips Status */
+.status-chips-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.btn-status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    font-size: 0.75rem;
+    color: #334155;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.12s ease;
+}
+
+.btn-status-chip:hover {
+    background-color: #f8fafc;
+}
+
+.btn-status-chip.selected {
+    border: 1.5px solid #0f172a;
+    background-color: #f1f5f9;
+    font-weight: 500;
+}
+
+.chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.chip-dot.dot-backlog {
+    background-color: #64748b;
+}
+.chip-dot.dot-in-progress {
+    background-color: #3b82f6;
+}
+.chip-dot.dot-review {
+    background-color: #f59e0b;
+}
+.chip-dot.dot-completed {
+    background-color: #10b981;
+}
+
+/* Priority Row */
+.priority-options-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+}
+
+.btn-priority-item {
+    background: transparent;
+    border: none;
+    font-size: 0.75rem;
+    color: #64748b;
+    padding: 4px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-priority-item.selected {
+    background-color: #e0f2fe;
+    color: #0284c7;
+    font-weight: 600;
+}
+
+/* Assignee Pill Select */
+.assignee-select-pill-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 38px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 0 14px;
+    box-sizing: border-box;
+}
+
+.assignee-glyph-muted {
+    color: #64748b;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.assignee-native-select {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.78rem;
+    color: #334155;
+    appearance: none;
+    cursor: pointer;
+}
+
+.assignee-caret-glyph {
+    color: #64748b;
+    pointer-events: none;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* 3. FOOTER CỐ ĐỊNH */
+.modal-footer-fixed {
+    background-color: #ffffff;
+    padding: 14px 24px 18px 24px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+.btn-cancel-pill {
+    padding: 8px 20px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-cancel-pill:hover {
+    background-color: #f8fafc;
+}
+
+.btn-submit-task-pill {
+    padding: 8px 22px;
+    background-color: #71717a;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-submit-task-pill:hover {
+    background-color: #52525b;
+}

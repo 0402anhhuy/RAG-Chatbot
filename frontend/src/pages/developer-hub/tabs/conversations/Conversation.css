@@ -1,63 +1,232 @@
-.table-responsive-wrapper {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-top: 14px;
+.vibe-conversations-viewport {
+    max-width: 1420px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 24px;
 }
 
-.vibe-records-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8rem;
-    text-align: left;
+/* Header Banner */
+.conversations-top-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.vibe-records-table th {
-    padding: 10px 14px;
-    background-color: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+.banner-title-col h2 {
+    margin: 0 0 2px;
+    font-size: 1.28rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.banner-title-col span {
+    font-size: 0.78rem;
     color: #64748b;
-    font-weight: 600;
 }
 
-.vibe-records-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #f8fafc;
+.btn-refresh-convo {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    transition:
+        background-color 0.12s ease,
+        color 0.12s ease;
+}
+
+.btn-refresh-convo:hover {
+    background-color: #f1f5f9;
     color: #0f172a;
 }
 
-.cell-convo-identity {
+/* Thanh Filter Controls */
+.conversations-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+/* Ô tìm kiếm viên thuốc đồng bộ */
+.search-pill-container {
+    width: 320px;
     display: flex;
     align-items: center;
     gap: 8px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 6px 14px;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
 }
 
-.convo-table-icon {
+.search-pill-container:focus-within {
+    border-color: #059669;
+}
+
+.search-glyph-muted {
     color: #94a3b8;
     flex-shrink: 0;
 }
 
-.model-chip-tag {
-    font-family: monospace;
-    font-size: 0.72rem;
-    background-color: #f1f5f9;
-    padding: 2px 6px;
-    border-radius: 4px;
+.search-pill-container input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.78rem;
+    color: #0f172a;
+    width: 100%;
+}
+
+.filter-select-pill {
+    padding: 6px 16px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: #334155;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.filter-select-pill:hover {
+    border-color: #94a3b8;
+}
+
+/* Khung bọc bảng Table */
+.conversations-table-wrapper {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+.vibe-convo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.vibe-convo-table th {
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 11px 16px;
+    color: #475569;
+    font-weight: 600;
+    user-select: none;
+}
+
+.vibe-convo-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.convo-table-row {
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.convo-table-row:hover td {
+    background-color: #fafbfc;
+}
+
+/* Các ô Cell chi tiết */
+.td-status {
+    width: 44px;
+}
+
+.glyph-status-success {
+    color: #10b981;
+}
+
+.glyph-status-idle {
+    color: #94a3b8;
+}
+
+.td-title {
+    max-width: 340px;
+}
+
+.convo-title-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.convo-flag-glyph {
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.convo-title-cell strong {
+    font-weight: 500;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.td-project span {
     color: #475569;
 }
 
-.actions-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.td-model span {
+    color: #64748b;
+    font-size: 0.74rem;
 }
 
-.action-row-glyph {
+.td-tokens span {
+    color: #475569;
+}
+
+.td-activity span {
+    color: #64748b;
+}
+
+/* Cột Actions cuối */
+.th-actions {
+    text-align: right;
+}
+
+.td-actions {
+    text-align: right;
+}
+
+.actions-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-action-glyph {
+    background: transparent;
+    border: none;
     color: #94a3b8;
     cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    transition: all 0.12s ease;
 }
 
-.action-row-glyph.danger:hover {
-    color: #ef4444;
+.btn-action-glyph:hover {
+    color: #0f172a;
+    background-color: #f1f5f9;
 }

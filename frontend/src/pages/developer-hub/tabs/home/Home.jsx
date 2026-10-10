@@ -1,176 +1,267 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
-    ArrowRight,
-    CheckSquare,
-    DollarSign,
-    FolderKanban,
-    GitBranch,
-    MessageSquare,
+    Folder,
+    Star,
     Play,
     Plus,
+    MessageSquare,
     Terminal,
+    CheckSquare,
+    ChevronRight,
+    Heart,
+    Crown,
+    Archive,
 } from "lucide-react";
 import "./Home.css";
 
-const Home = ({ onNavigateTab }) => {
-    const navigate = useNavigate();
+const PINNED_PROJECTS = [
+    {
+        id: "dms-ai-hub",
+        name: "DMS AI Hub",
+        type: "Local Project",
+        status: "Active",
+        tasks: 0,
+        members: 1,
+    },
+    {
+        id: "aivibecode",
+        name: "aivibecode",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 0,
+        members: 1,
+    },
+    {
+        id: "about-vibeflow",
+        name: "About Vibeflow",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 0,
+        members: 1,
+    },
+    {
+        id: "jira-skill",
+        name: "jira-skill",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 0,
+        members: 1,
+    },
+];
 
-    const metrics = [
-        { label: "Active sandboxes", val: "0", note: "none idle", icon: Terminal },
-        { label: "Open tasks", val: "0", note: "assigned to you", icon: CheckSquare },
-        { label: "My projects", val: "2", note: "active", icon: FolderKanban },
-        { label: "Cost this month", val: "$1.75", note: "1.9M tokens", icon: DollarSign },
-        {
-            label: "Lines this month",
-            val: "+64 -0",
-            note: "across your runs",
-            icon: GitBranch,
-            color: "#10b981",
-        },
-        { label: "Conversations", val: "2", note: "agent chats", icon: MessageSquare },
-    ];
+const ALL_PROJECTS = [
+    {
+        id: "webapp",
+        name: "WebApp",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 1,
+        members: 1,
+    },
+    {
+        id: "shoestore",
+        name: "ShoeStore",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 2,
+        members: 5,
+    },
+];
 
-    const recentConversations = [
-        {
-            id: 1,
-            title: "Why isEdit=false users can link/unlink tools",
-            date: "2d ago",
-            model: "gemini-1.5-flash",
-        },
-        {
-            id: 2,
-            title: "DMS AI Hub reuse analysis for SyteLine",
-            date: "4d ago",
-            model: "DeepSeek-V4-Flash",
-        },
-        { id: 3, title: "Locating aside component in code", date: "8/26/2026", model: "GLM-4.2" },
-        {
-            id: 4,
-            title: "Greeting & Architecture Setup",
-            date: "8/24/2026",
-            model: "DeepSeek-V4-Flash",
-        },
-    ];
-
+const Home = ({ onNavigateTab, onOpenProject, onNewProjectClick }) => {
     return (
-        <div className="tab-body-container">
-            {/* Top Resume Banner */}
-            <div className="home-resume-hero">
-                <div className="resume-hero-left">
-                    <div className="resume-icon-badge">
-                        <Play size={18} />
-                    </div>
-                    <div className="resume-copy">
-                        <span className="resume-eyebrow">WELCOME BACK, HUY</span>
-                        <h3>Continue "Main" in dmsaihub</h3>
-                        <p>Pick up your most recent working sandbox, right where you left it.</p>
-                    </div>
+        <div className="vibeflow-home-viewport">
+            {/* 1. Hero Banner: VibeFlow loves */}
+            <div className="home-loves-hero-banner">
+                <div className="loves-hero-title-group">
+                    <span className="loves-wave-glyph">〜</span>
+                    <h1>VibeFlow loves</h1>
                 </div>
-                <button
-                    type="button"
-                    className="btn-continue-work"
-                    onClick={() => navigate("/chat?tool=code_review")}
-                >
-                    <span>Continue</span>
-                    <ArrowRight size={14} />
-                </button>
+                <div className="loves-badge-pill">
+                    <Crown size={16} className="crown-glyph" />
+                    <span className="badge-wave">~</span>
+                    <Heart size={16} className="heart-glyph" />
+                </div>
             </div>
 
-            {/* Metrics KPI Grid */}
-            <div className="home-kpi-grid">
-                {metrics.map((m, idx) => {
-                    const Icon = m.icon;
-                    return (
-                        <div key={idx} className="kpi-metric-card">
-                            <div className="kpi-card-header">
-                                <span className="kpi-label">{m.label}</span>
-                                <Icon size={14} className="kpi-icon-muted" />
-                            </div>
-                            <div className="kpi-value" style={m.color ? { color: m.color } : {}}>
-                                {m.val}
-                            </div>
-                            <span className="kpi-sub-note">{m.note}</span>
-                        </div>
-                    );
-                })}
+            {/* 2. Dải khung Skeleton phụ bên dưới Banner */}
+            <div className="home-hero-sub-slot" />
+
+            {/* 3. Khối 6 ô Skeleton tóm lược */}
+            <div className="home-summary-slots-grid">
+                {[...Array(6)].map((_, idx) => (
+                    <div key={idx} className="summary-slot-card" />
+                ))}
             </div>
 
-            {/* 3-Column Activities Stream */}
-            <div className="home-three-stream-grid">
-                {/* Conversations Column */}
-                <div className="stream-column-card">
-                    <div className="stream-header-row">
-                        <div className="stream-title-group">
-                            <MessageSquare size={14} />
+            {/* 4. Hàng 3 Widget: Conversations, Sandboxes, Tasks */}
+            <div className="home-widgets-tri-grid">
+                {/* Conversations Widget */}
+                <div className="home-activity-widget-box">
+                    <div className="widget-box-header">
+                        <div className="widget-header-left">
+                            <MessageSquare size={15} />
                             <strong>Conversations</strong>
-                            <span className="stream-badge-latest">LATEST</span>
                         </div>
                         <button
                             type="button"
-                            className="btn-text-link"
-                            onClick={() => onNavigateTab("conversations")}
+                            className="btn-view-all-text"
+                            onClick={() => onNavigateTab && onNavigateTab("conversations")}
                         >
                             View all →
                         </button>
                     </div>
-                    <div className="stream-items-list">
-                        {recentConversations.map((item) => (
-                            <div
-                                key={item.id}
-                                className="stream-convo-item"
-                                onClick={() => navigate("/chat?tool=knowledge_assistant")}
-                            >
-                                <span className="convo-bullet" />
-                                <div className="convo-meta-wrap">
-                                    <strong className="convo-title-line">{item.title}</strong>
-                                    <div className="convo-sub-line">
-                                        <span>{item.date}</span>
-                                        <span>·</span>
-                                        <small>{item.model}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    <div className="widget-bar-slot" />
+                    <div className="widget-bar-slot" />
                 </div>
 
-                {/* Sandboxes Column */}
-                <div className="stream-column-card">
-                    <div className="stream-header-row">
-                        <div className="stream-title-group">
-                            <Terminal size={14} />
+                {/* Sandboxes Widget */}
+                <div className="home-activity-widget-box">
+                    <div className="widget-box-header">
+                        <div className="widget-header-left">
+                            <Terminal size={15} />
                             <strong>Sandboxes</strong>
                         </div>
                         <button
                             type="button"
-                            className="btn-text-link"
-                            onClick={() => onNavigateTab("sandboxes")}
+                            className="btn-view-all-text"
+                            onClick={() => onNavigateTab && onNavigateTab("sandboxes")}
                         >
                             View all →
                         </button>
                     </div>
-                    <div className="stream-empty-fill">
-                        <span>No sandboxes active.</span>
-                    </div>
+                    <div className="widget-bar-slot" />
+                    <div className="widget-bar-slot" />
                 </div>
 
-                {/* Tasks Column */}
-                <div className="stream-column-card">
-                    <div className="stream-header-row">
-                        <div className="stream-title-group">
-                            <CheckSquare size={14} />
+                {/* Tasks Widget */}
+                <div className="home-activity-widget-box">
+                    <div className="widget-box-header">
+                        <div className="widget-header-left">
+                            <CheckSquare size={15} />
                             <strong>Tasks</strong>
                         </div>
                         <button
                             type="button"
-                            className="btn-text-link"
-                            onClick={() => onNavigateTab("tasks")}
+                            className="btn-view-all-text"
+                            onClick={() => onNavigateTab && onNavigateTab("tasks")}
                         >
                             View all →
                         </button>
                     </div>
-                    <div className="stream-empty-fill">
-                        <span>No open tasks assigned to you.</span>
+                    <div className="widget-bar-slot" />
+                    <div className="widget-bar-slot" />
+                </div>
+            </div>
+
+            {/* 5. Nhóm Pinned Projects */}
+            <div className="home-section-projects-block">
+                <div className="projects-group-header-row">
+                    <div className="group-header-title">
+                        <Star size={14} className="star-gold-glyph" />
+                        <span>Pinned</span>
+                    </div>
+                    <button
+                        type="button"
+                        className="btn-view-all-text"
+                        onClick={() => onNavigateTab && onNavigateTab("projects")}
+                    >
+                        View all 11 <ChevronRight size={13} />
+                    </button>
+                </div>
+
+                <div className="projects-cards-three-col">
+                    {PINNED_PROJECTS.map((project) => (
+                        <div key={project.id} className="project-card-surface">
+                            <div className="project-card-top-bar">
+                                <div className="project-identity-wrap">
+                                    <Folder size={17} className="project-folder-icon" />
+                                    <strong>{project.name}</strong>
+                                </div>
+                                <div className="project-top-indicators">
+                                    <Star size={13} className="star-gold-glyph" />
+                                    <Archive size={13} className="archive-icon-glyph" />
+                                    <span
+                                        className={`status-tag-chip ${project.status.toLowerCase()}`}
+                                    >
+                                        {project.status === "Active" ? (
+                                            <Play size={9} fill="currentColor" />
+                                        ) : (
+                                            "○"
+                                        )}
+                                        <span>{project.status}</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <span className="project-location-type">{project.type}</span>
+
+                            <div className="project-stats-subline">
+                                <span>{project.tasks} tasks</span>
+                                <span>{project.members} member</span>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="btn-open-project-action"
+                                onClick={() => onOpenProject && onOpenProject(project)}
+                            >
+                                Open Project
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* 6. Nhóm All Projects */}
+            <div className="home-section-projects-block bottom-spacing">
+                <div className="projects-group-header-row">
+                    <div className="group-header-title">
+                        <span>All Projects</span>
+                    </div>
+                </div>
+
+                <div className="projects-cards-three-col">
+                    {ALL_PROJECTS.map((project) => (
+                        <div key={project.id} className="project-card-surface">
+                            <div className="project-card-top-bar">
+                                <div className="project-identity-wrap">
+                                    <Folder size={17} className="project-folder-icon" />
+                                    <strong>{project.name}</strong>
+                                </div>
+                                <div className="project-top-indicators">
+                                    <Star size={13} className="star-muted-glyph" />
+                                    <Archive size={13} className="archive-icon-glyph" />
+                                    <span className="status-tag-chip idle">
+                                        ○ <span>{project.status}</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <span className="project-location-type">{project.type}</span>
+
+                            <div className="project-stats-subline">
+                                <span>{project.tasks} task</span>
+                                <span>{project.members} members</span>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="btn-open-project-action"
+                                onClick={() => onOpenProject && onOpenProject(project)}
+                            >
+                                Open Project
+                            </button>
+                        </div>
+                    ))}
+
+                    {/* Thẻ tạo nhanh dự án */}
+                    <div
+                        className="project-card-surface card-new-project-dashed"
+                        onClick={onNewProjectClick}
+                    >
+                        <Plus size={20} />
+                        <span>New Project</span>
                     </div>
                 </div>
             </div>

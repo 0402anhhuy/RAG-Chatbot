@@ -1,0 +1,284 @@
+.vibe-sidebar {
+    width: 220px;
+    background-color: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 10px;
+    flex-shrink: 0;
+    height: 100%;
+    position: relative;
+    transition:
+        width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        padding 0.2s ease;
+    z-index: 20;
+    box-sizing: border-box;
+}
+
+/* Dạng thu nhỏ Rail: Căn giữa toàn bộ các items */
+.vibe-sidebar.collapsed-rail {
+    width: 58px;
+    padding: 12px 0;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* Nút Toggle Menu trên cùng */
+.sidebar-brand-line {
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.btn-toggle-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    width: 100%;
+    height: 36px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.12s ease;
+}
+
+.btn-toggle-menu:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+
+/* Ô Search */
+.sidebar-search-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #64748b;
+    font-size: 0.78rem;
+    cursor: pointer;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    transition: all 0.12s ease;
+}
+
+.sidebar-search-pill:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.sidebar-search-pill span {
+    flex: 1;
+    text-align: left;
+}
+
+.sidebar-search-pill kbd {
+    font-size: 0.65rem;
+    background-color: #ffffff;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid #cbd5e1;
+    font-family: monospace;
+}
+
+/* Ô search căn giữa khi thu nhỏ */
+.sidebar-search-mini {
+    width: 38px;
+    height: 38px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    transition: all 0.12s ease;
+}
+
+.sidebar-search-mini:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+/* Danh mục Menu điều hướng */
+.sidebar-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    width: 100%;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    height: 36px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+    transition:
+        background-color 0.12s ease,
+        color 0.12s ease;
+}
+
+/* Căn giữa tuyệt đối từng icon tab khi thu nhỏ */
+.collapsed-rail .sidebar-nav-item {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.collapsed-rail .sidebar-nav-item .nav-glyph {
+    margin: 0 auto;
+    display: block;
+}
+
+.sidebar-nav-item:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+/* Active tab VibeFlow: Nền xám nhạt bo viền mềm */
+.sidebar-nav-item.active {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.nav-glyph {
+    flex-shrink: 0;
+}
+
+/* Footer Group */
+.sidebar-footer-cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 10px;
+    width: 100%;
+    align-items: center;
+}
+
+.footer-action-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.76rem;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 100%;
+    transition: background-color 0.12s ease;
+}
+
+.footer-action-row:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.sidebar-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px;
+    border-radius: 6px;
+    width: 100%;
+    margin-top: 4px;
+    box-sizing: border-box;
+}
+
+/* Avatar căn giữa tuyệt đối khi thu nhỏ */
+.collapsed-rail .sidebar-profile-card {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.user-initials-chip {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.user-text-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.user-text-info strong {
+    font-size: 0.76rem;
+    color: #0f172a;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.user-text-info small {
+    font-size: 0.65rem;
+    color: #94a3b8;
+}
+
+.collapsed-rail .btn-toggle-menu,
+.collapsed-rail .sidebar-menu-toggle {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* 3. Danh sách Menu & Thẻ bọc Item */
+.collapsed-rail .sidebar-nav-list,
+.collapsed-rail .sidebar-nav-menu {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Ép mọi item vào giữa */
+    gap: 4px;
+}

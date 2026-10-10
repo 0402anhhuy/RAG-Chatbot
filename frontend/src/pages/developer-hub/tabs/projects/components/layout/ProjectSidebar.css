@@ -1,0 +1,271 @@
+.project-sidebar {
+    width: 220px;
+    background-color: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 10px;
+    flex-shrink: 0;
+    height: calc(100vh - 48px);
+    position: sticky;
+    transition:
+        width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        padding 0.2s ease;
+    z-index: 20;
+    box-sizing: border-box;
+}
+
+/* Khi thu nhỏ thành Rail 58px: Căn giữa tuyệt đối */
+.project-sidebar.collapsed-rail {
+    width: 58px !important;
+    padding: 12px 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+}
+
+.project-sidebar .sidebar-brand-line {
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.project-sidebar .btn-toggle-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    width: 100%;
+    height: 36px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.12s ease;
+}
+
+.project-sidebar .btn-toggle-menu:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.project-sidebar.collapsed-rail .sidebar-brand-line {
+    display: flex;
+    justify-content: center;
+}
+
+.project-sidebar.collapsed-rail .btn-toggle-menu {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+/* Ô Search */
+.project-sidebar .sidebar-search-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #64748b;
+    font-size: 0.78rem;
+    cursor: pointer;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+    transition: all 0.12s ease;
+}
+
+.project-sidebar .sidebar-search-pill:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.project-sidebar .sidebar-search-pill span {
+    flex: 1;
+    text-align: left;
+}
+
+.project-sidebar .sidebar-search-pill kbd {
+    font-size: 0.65rem;
+    background-color: #ffffff;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid #cbd5e1;
+    font-family: monospace;
+}
+
+.project-sidebar .sidebar-search-mini {
+    width: 38px !important;
+    height: 38px !important;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #64748b;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    margin: 0 auto 14px auto !important;
+    transition: all 0.12s ease;
+}
+
+.project-sidebar .sidebar-search-mini:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+/* Nav Menu */
+.project-sidebar .sidebar-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    width: 100%;
+}
+
+.project-sidebar.collapsed-rail .sidebar-nav-list {
+    align-items: center;
+}
+
+.project-sidebar .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    height: 36px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+    transition:
+        background-color 0.12s ease,
+        color 0.12s ease;
+}
+
+.project-sidebar.collapsed-rail .sidebar-nav-item {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.project-sidebar.collapsed-rail .sidebar-nav-item .nav-glyph {
+    margin: 0 !important;
+    display: block !important;
+}
+
+.project-sidebar .sidebar-nav-item:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.project-sidebar .sidebar-nav-item.active {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Footer */
+.project-sidebar .sidebar-footer-cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 10px;
+    width: 100%;
+    align-items: center;
+}
+
+.project-sidebar .footer-action-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.76rem;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 100%;
+    transition: background-color 0.12s ease;
+}
+
+.project-sidebar .footer-action-row:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.project-sidebar .sidebar-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    width: 100%;
+    margin-top: 4px;
+    box-sizing: border-box;
+}
+
+.project-sidebar.collapsed-rail .sidebar-profile-card {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.project-sidebar .user-initials-chip {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.project-sidebar .user-text-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.project-sidebar .user-text-info strong {
+    font-size: 0.76rem;
+    color: #0f172a;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.project-sidebar .user-text-info small {
+    font-size: 0.65rem;
+    color: #94a3b8;
+}

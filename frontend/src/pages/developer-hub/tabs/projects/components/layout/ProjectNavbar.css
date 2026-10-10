@@ -1,0 +1,124 @@
+.vibe-project-navbar {
+    height: 48px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-sizing: border-box;
+}
+
+.navbar-breadcrumb-cluster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+}
+
+.crumb-brand {
+    color: #0f172a;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.crumb-slash {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+}
+
+.crumb-project-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    padding: 3px 6px;
+    border-radius: 5px;
+    color: #0f172a;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.crumb-project-dropdown:hover {
+    background-color: #f1f5f9;
+}
+
+.dropdown-caret {
+    color: #64748b;
+}
+
+.crumb-page-active {
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Controls bên phải */
+.navbar-actions-cluster {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.navbar-shortcuts-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shortcut-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.shortcut-tag:hover {
+    color: #0f172a;
+}
+
+.shortcut-tag.mini-kbd {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 1px 4px;
+    background-color: #f8fafc;
+}
+
+.sandbox-control-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sandbox-stopped-label {
+    font-size: 0.76rem;
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.btn-resume-sandbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: transparent;
+    border: none;
+    color: #059669;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 6px;
+    transition: background-color 0.12s ease;
+}
+
+.btn-resume-sandbox:hover {
+    background-color: #ecfdf5;
+}

@@ -1,241 +1,322 @@
-.home-resume-hero {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 20px 24px;
+.vibeflow-home-viewport {
+    max-width: 1420px;
+    margin: 0 auto;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     gap: 18px;
-    margin-bottom: 20px;
+    padding-bottom: 24px;
 }
 
-.resume-hero-left {
+/* 1. Hero Banner: VibeFlow loves */
+.home-loves-hero-banner {
+    background: linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%);
+    border: 1px solid #fecdd3;
+    border-radius: 12px;
+    padding: 34px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.loves-hero-title-group {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
 }
 
-.resume-icon-badge {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background-color: #ecfdf5;
-    color: #10b981;
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
+.loves-wave-glyph {
+    font-size: 2.1rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #06b6d4, #ec4899);
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
 }
 
-.resume-eyebrow {
-    font-size: 0.65rem;
+.loves-hero-title-group h1 {
+    margin: 0;
+    font-size: 2.2rem;
     font-weight: 700;
-    color: #10b981;
-    letter-spacing: 0.08em;
+    color: #0f172a;
+    letter-spacing: -0.03em;
 }
 
-.resume-copy h3 {
-    margin: 2px 0 4px;
-    font-size: 1.05rem;
-    font-weight: 600;
+.loves-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid #fda4af;
+    border-radius: 20px;
+    padding: 5px 18px;
+    color: #e11d48;
+}
+
+.crown-glyph {
     color: #0f172a;
 }
 
-.resume-copy p {
-    margin: 0;
-    font-size: 0.8rem;
-    color: #64748b;
+.badge-wave {
+    color: #e11d48;
+    font-size: 0.95rem;
+    font-weight: 700;
 }
 
-.btn-continue-work {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 18px;
-    background-color: #10b981;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.84rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
+.heart-glyph {
+    color: #e11d48;
+    fill: #e11d48;
 }
 
-.btn-continue-work:hover {
-    background-color: #059669;
+/* 2. Dải khung phụ dưới Hero Banner */
+.home-hero-sub-slot {
+    height: 70px;
+    background-color: #f1f5f9;
+    border-radius: 10px;
 }
 
-/* KPI Cards */
-.home-kpi-grid {
+/* 3. Khối 6 ô tóm lược */
+.home-summary-slots-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 12px;
-    margin-bottom: 24px;
 }
 
-.kpi-metric-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+.summary-slot-card {
+    height: 60px;
+    background-color: #f1f5f9;
     border-radius: 8px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
 }
 
-.kpi-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.kpi-label {
-    font-size: 0.74rem;
-    color: #64748b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.kpi-icon-muted {
-    color: #94a3b8;
-}
-
-.kpi-value {
-    font-size: 1.35rem;
-    font-weight: 600;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-    margin-bottom: 2px;
-}
-
-.kpi-sub-note {
-    font-size: 0.68rem;
-    color: #94a3b8;
-}
-
-/* 3 Streams */
-.home-three-stream-grid {
+/* 4. Hàng 3 Widget: Conversations, Sandboxes, Tasks */
+.home-widgets-tri-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 }
 
-.stream-column-card {
+.home-activity-widget-box {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 9px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    min-height: 280px;
+    gap: 8px;
 }
 
-.stream-header-row {
+.widget-box-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f8fafc;
+    margin-bottom: 2px;
 }
 
-.stream-title-group {
+.widget-header-left {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.84rem;
+    gap: 7px;
+    font-size: 0.82rem;
     color: #0f172a;
 }
 
-.stream-badge-latest {
-    font-size: 0.6rem;
-    font-weight: 700;
-    background-color: #f1f5f9;
-    color: #475569;
-    padding: 1px 5px;
-    border-radius: 3px;
-}
-
-.btn-text-link {
+.btn-view-all-text {
     background: transparent;
     border: none;
+    font-size: 0.72rem;
     color: #64748b;
-    font-size: 0.74rem;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    transition: color 0.12s ease;
 }
 
-.btn-text-link:hover {
-    color: #0284c7;
-}
-
-.stream-items-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.stream-convo-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.12s ease;
-}
-
-.stream-convo-item:hover {
-    background-color: #f8fafc;
-}
-
-.convo-bullet {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: #0284c7;
-    margin-top: 6px;
-    flex-shrink: 0;
-}
-
-.convo-meta-wrap {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.convo-title-line {
-    font-size: 0.78rem;
+.btn-view-all-text:hover {
     color: #0f172a;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-.convo-sub-line {
+.widget-bar-slot {
+    height: 32px;
+    background-color: #f1f5f9;
+    border-radius: 6px;
+}
+
+/* 5 & 6. Khối Projects (Pinned & All Projects) */
+.home-section-projects-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.projects-group-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.group-header-title {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.68rem;
-    color: #94a3b8;
-    margin-top: 2px;
 }
 
-.stream-empty-fill {
-    flex: 1;
+.star-gold-glyph {
+    color: #eab308;
+    fill: #eab308;
+}
+
+.star-muted-glyph {
+    color: #94a3b8;
+}
+
+.archive-icon-glyph {
+    color: #94a3b8;
+}
+
+/* Lưới Cards Projects 3 cột */
+.projects-cards-three-col {
     display: grid;
-    place-items: center;
-    color: #94a3b8;
-    font-size: 0.8rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
 }
 
-@media (max-width: 1120px) {
-    .home-kpi-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    .home-three-stream-grid {
+.project-card-surface {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.project-card-surface:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.06);
+}
+
+.project-card-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.project-identity-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.project-identity-wrap strong {
+    font-size: 0.94rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.project-folder-icon {
+    color: #64748b;
+}
+
+.project-top-indicators {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.status-tag-chip.active {
+    color: #059669;
+    border-color: #a7f3d0;
+    background-color: #ecfdf5;
+    font-weight: 600;
+}
+
+.status-tag-chip.idle {
+    color: #64748b;
+    background-color: #f8fafc;
+}
+
+.project-location-type {
+    font-size: 0.76rem;
+    color: #64748b;
+}
+
+.project-stats-subline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.74rem;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.btn-open-project-action {
+    width: 100%;
+    padding: 8px 0;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-open-project-action:hover {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+}
+
+/* Thẻ tạo nhanh New Project nét đứt */
+.card-new-project-dashed {
+    border: 2px dashed #cbd5e1;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.85rem;
+    gap: 6px;
+    min-height: 140px;
+}
+
+.card-new-project-dashed:hover {
+    background-color: #ffffff;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.bottom-spacing {
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1100px) {
+    .projects-cards-three-col,
+    .home-widgets-tri-grid {
         grid-template-columns: 1fr;
+    }
+
+    .home-summary-slots-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
