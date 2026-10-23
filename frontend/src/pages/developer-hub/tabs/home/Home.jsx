@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     Folder,
     Star,
@@ -12,54 +12,63 @@ import {
     Crown,
     Archive,
 } from "lucide-react";
-import { projectApi } from "../../../../api";
 import "./Home.css";
 
-const getOwnerId = () => {
-    try {
-        return JSON.parse(localStorage.getItem("rag_session") || "{}")?.user?.id;
-    } catch {
-        return null;
-    }
-};
+const PINNED_PROJECTS = [
+    {
+        id: "dms-ai-hub",
+        name: "DMS AI Hub",
+        type: "Local Project",
+        status: "Active",
+        tasks: 0,
+        members: 1,
+    },
+    {
+        id: "aivibecode",
+        name: "aivibecode",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 0,
+        members: 1,
+    },
+    {
+        id: "about-vibeflow",
+        name: "About Vibeflow",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 0,
+        members: 1,
+    },
+    {
+        id: "jira-skill",
+        name: "jira-skill",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 0,
+        members: 1,
+    },
+];
 
-const toProjectViewModel = (project) => ({
-    ...project,
-    type: project.type === "REMOTE" ? project.repositoryUrl || "Remote Repository" : "Local Project",
-    status: project.status === "ACTIVE" ? "Active" : project.status === "ARCHIVED" ? "Archived" : "Idle",
-});
+const ALL_PROJECTS = [
+    {
+        id: "webapp",
+        name: "WebApp",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 1,
+        members: 1,
+    },
+    {
+        id: "shoestore",
+        name: "ShoeStore",
+        type: "Local Project",
+        status: "Idle",
+        tasks: 2,
+        members: 5,
+    },
+];
 
-const Home = ({ onNavigateTab, onOpenProject, onNewProjectClick, refreshKey = 0 }) => {
-    const [projects, setProjects] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    useEffect(() => {
-        let cancelled = false;
-        const loadProjects = async () => {
-            try {
-                setLoading(true);
-                setError("");
-                const data = await projectApi.list({ ownerId: getOwnerId() });
-                if (!cancelled) setProjects((data || []).map(toProjectViewModel));
-            } catch (err) {
-                if (!cancelled) {
-                    setProjects([]);
-                    setError(err.message || "Unable to load projects.");
-                }
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        };
-        loadProjects();
-        return () => {
-            cancelled = true;
-        };
-    }, [refreshKey]);
-
-    const pinnedProjects = projects.filter((project) => project.pinned);
-    const allProjects = projects.filter((project) => !project.pinned);
-
+const Home = ({ onNavigateTab, onOpenProject, onNewProjectClick }) => {
     return (
         <div className="vibeflow-home-viewport">
             {/* 1. Hero Banner: VibeFlow loves */}
@@ -147,8 +156,6 @@ const Home = ({ onNavigateTab, onOpenProject, onNewProjectClick, refreshKey = 0 
 
             {/* 5. Nhóm Pinned Projects */}
             <div className="home-section-projects-block">
-                {loading && <p>Loading projects...</p>}
-                {!loading && error && <p role="alert">{error}</p>}
                 <div className="projects-group-header-row">
                     <div className="group-header-title">
                         <Star size={14} className="star-gold-glyph" />
@@ -159,12 +166,12 @@ const Home = ({ onNavigateTab, onOpenProject, onNewProjectClick, refreshKey = 0 
                         className="btn-view-all-text"
                         onClick={() => onNavigateTab && onNavigateTab("projects")}
                     >
-                        View all {projects.length} <ChevronRight size={13} />
+                        View all 11 <ChevronRight size={13} />
                     </button>
                 </div>
 
                 <div className="projects-cards-three-col">
-                    {pinnedProjects.map((project) => (
+                    {PINNED_PROJECTS.map((project) => (
                         <div key={project.id} className="project-card-surface">
                             <div className="project-card-top-bar">
                                 <div className="project-identity-wrap">
@@ -215,7 +222,7 @@ const Home = ({ onNavigateTab, onOpenProject, onNewProjectClick, refreshKey = 0 
                 </div>
 
                 <div className="projects-cards-three-col">
-                    {allProjects.map((project) => (
+                    {ALL_PROJECTS.map((project) => (
                         <div key={project.id} className="project-card-surface">
                             <div className="project-card-top-bar">
                                 <div className="project-identity-wrap">

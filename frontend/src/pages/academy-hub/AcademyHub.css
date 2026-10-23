@@ -2,19 +2,11 @@
     display: flex;
     width: 100vw;
     height: 100dvh;
-    flex-direction: column;
     background-color: #f8fafc;
     color: #0f172a;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
-}
-
-.edu-app-body {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
 }
 
 .edu-main-viewport {

@@ -10,6 +10,4 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
     List<Document> findByWorkspaceIdOrderByCreatedAtDesc(UUID workspaceId);
     List<Document> findByWorkspaceIdAndStatus(UUID workspaceId, DocumentStatus status);
     List<Document> findByWorkspaceId(UUID workspaceId);
-    List<Document> findByWorkspaceIdAndCourseCodeOrderByCreatedAtDesc(UUID workspaceId, String courseCode);
-    List<Document> findByWorkspaceIdAndFileTypeOrderByCreatedAtDesc(UUID workspaceId, String fileType);
 }

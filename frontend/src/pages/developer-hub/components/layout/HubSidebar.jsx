@@ -1,34 +1,35 @@
-import { useState } from "react";
 import {
     Home,
     FolderKanban,
     MessageSquare,
-    Terminal,
+    Box,
     CheckSquare,
     Settings,
-    Shield,
+    Menu,
     Search,
     Globe,
     Sun,
-    Menu,
 } from "lucide-react";
 import "./HubSidebar.css";
 
-const NAV_ITEMS = [
+const HUB_NAV_ITEMS = [
     { id: "home", label: "Home", icon: Home },
     { id: "projects", label: "Projects", icon: FolderKanban },
     { id: "conversations", label: "Conversations", icon: MessageSquare },
-    { id: "sandboxes", label: "Sandboxes", icon: Terminal },
+    { id: "sandboxes", label: "Sandboxes", icon: Box },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "settings", label: "Settings", icon: Settings },
-    //{ id: "tools", label: "Tools", icon: Terminal, isToolParent: true },
-    //{ id: "admin", label: "Admin", icon: Shield },
 ];
 
-const HubSidebar = ({ activeTab, onTabChange, session, isCollapsed = false, onToggleCollapse }) => {
+const HubSidebar = ({
+    activeTab = "home",
+    onTabChange,
+    session,
+    isCollapsed = false,
+    onToggleCollapse,
+}) => {
     return (
         <aside className={`vibe-sidebar ${isCollapsed ? "collapsed-rail" : ""}`}>
-            {/* Header Brand */}
             <div className="sidebar-brand-line">
                 <button
                     type="button"
@@ -41,31 +42,20 @@ const HubSidebar = ({ activeTab, onTabChange, session, isCollapsed = false, onTo
                 </button>
             </div>
 
-            {/* Ô tìm kiếm nhanh */}
             {!isCollapsed ? (
-                <button
-                    type="button"
-                    className="sidebar-search-pill"
-                    onClick={() => onTabChange("projects")}
-                >
+                <button type="button" className="sidebar-search-pill" onClick={() => {}}>
                     <Search size={14} />
                     <span>Search</span>
                     <kbd>Ctrl+K</kbd>
                 </button>
             ) : (
-                <button
-                    type="button"
-                    className="sidebar-search-mini"
-                    onClick={() => onTabChange("projects")}
-                    title="Search (Ctrl+K)"
-                >
+                <button type="button" className="sidebar-search-mini" title="Search (Ctrl+K)">
                     <Search size={15} />
                 </button>
             )}
 
-            {/* Menu điều hướng chính */}
             <nav className="sidebar-nav-list">
-                {NAV_ITEMS.map((item) => {
+                {HUB_NAV_ITEMS.map((item) => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
 
@@ -74,7 +64,7 @@ const HubSidebar = ({ activeTab, onTabChange, session, isCollapsed = false, onTo
                             key={item.id}
                             type="button"
                             className={`sidebar-nav-item ${isActive ? "active" : ""}`}
-                            onClick={() => onTabChange(item.id)}
+                            onClick={() => onTabChange && onTabChange(item.id)}
                             title={isCollapsed ? item.label : undefined}
                         >
                             <Icon size={16} className="nav-glyph" />
@@ -84,7 +74,6 @@ const HubSidebar = ({ activeTab, onTabChange, session, isCollapsed = false, onTo
                 })}
             </nav>
 
-            {/* Footer chân trang */}
             <div className="sidebar-footer-cluster">
                 {!isCollapsed && (
                     <>
@@ -99,14 +88,14 @@ const HubSidebar = ({ activeTab, onTabChange, session, isCollapsed = false, onTo
                     </>
                 )}
 
-                <div className="sidebar-profile-card" title={session?.name || "Huy Tran Anh"}>
+                <div className="sidebar-profile-card">
                     <div className="user-initials-chip">
                         {(session?.name || "HT").slice(0, 2).toUpperCase()}
                     </div>
                     {!isCollapsed && (
                         <div className="user-text-info">
                             <strong>{session?.name || "Huy Tran Anh"}</strong>
-                            <small>v1.0.0-rc-50-min</small>
+                            <small>{session?.email || "huy@prismstudio.dev"}</small>
                         </div>
                     )}
                 </div>

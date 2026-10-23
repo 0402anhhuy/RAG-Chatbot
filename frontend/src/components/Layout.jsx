@@ -15,7 +15,6 @@ import {
     Users,
     Zap,
 } from "lucide-react";
-import { gsap } from "gsap";
 import "./Layout.css";
 
 const Layout = () => {
@@ -24,7 +23,6 @@ const Layout = () => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const sidebarRef = useRef(null);
-    const isInitialMount = useRef(true);
 
     const session = JSON.parse(
         localStorage.getItem("rag_session") ||
@@ -44,52 +42,8 @@ const Layout = () => {
     };
 
     useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            return;
-        }
-
-        const ctx = gsap.context(() => {
-            const targetWidth = isExpanded ? 244 : 64;
-            const textTargets = ".sidebar-expand-target";
-
-            gsap.killTweensOf(sidebarRef.current);
-            gsap.killTweensOf(textTargets);
-
-            gsap.to(sidebarRef.current, {
-                width: targetWidth,
-                duration: 0.28,
-                ease: "power2.out",
-            });
-
-            if (isExpanded) {
-                gsap.fromTo(
-                    textTargets,
-                    { opacity: 0, x: -6, display: "none" },
-                    {
-                        opacity: 1,
-                        x: 0,
-                        display: "inline-block",
-                        duration: 0.2,
-                        delay: 0.08,
-                        stagger: 0.015,
-                        ease: "power1.out",
-                    },
-                );
-            } else {
-                gsap.to(textTargets, {
-                    opacity: 0,
-                    x: -6,
-                    duration: 0.12,
-                    ease: "power1.in",
-                    onComplete: () => {
-                        gsap.set(textTargets, { display: "none" });
-                    },
-                });
-            }
-        }, sidebarRef);
-
-        return () => ctx.revert();
+        if (!sidebarRef.current) return;
+        sidebarRef.current.style.width = isExpanded ? "244px" : "64px";
     }, [isExpanded]);
 
     return (

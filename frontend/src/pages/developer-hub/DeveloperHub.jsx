@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { projectApi } from "../../api";
 
 // Global Layout Components
 import HubSidebar from "./components/layout/HubSidebar";
@@ -44,7 +43,6 @@ const DeveloperHub = () => {
     const [activeSubTool, setActiveSubTool] = useState(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [projectsRefreshKey, setProjectsRefreshKey] = useState(0);
 
     const session = JSON.parse(
         localStorage.getItem("rag_session") ||
@@ -172,14 +170,10 @@ const DeveloperHub = () => {
                                     <HomeTab
                                         onNavigateTab={setActiveTab}
                                         onOpenProject={handleOpenProject}
-                                        refreshKey={projectsRefreshKey}
                                     />
                                 )}
                                 {activeTab === "projects" && (
-                                    <ProjectsTab
-                                        onOpenProject={handleOpenProject}
-                                        refreshKey={projectsRefreshKey}
-                                    />
+                                    <ProjectsTab onOpenProject={handleOpenProject} />
                                 )}
                                 {activeTab === "conversations" && <ConversationsTab />}
                                 {activeTab === "sandboxes" && <SandboxesTab />}
@@ -194,23 +188,7 @@ const DeveloperHub = () => {
             <NewWorkspaceModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
-                onCreate={async (newProject) => {
-                    const ownerId = session?.user?.id;
-                    if (!ownerId) {
-                        alert("Unable to create project: no signed-in user was found.");
-                        return;
-                    }
-                    try {
-                        await projectApi.create(ownerId, {
-                            name: newProject.name,
-                            type: newProject.type === "Git Repository (HTTPS)" ? "REMOTE" : "LOCAL",
-                            status: "IDLE",
-                        });
-                        setProjectsRefreshKey((key) => key + 1);
-                    } catch (error) {
-                        alert(error.message || "Unable to create project.");
-                    }
-                }}
+                onCreate={(newProject) => alert(`Created: ${newProject.name}`)}
             />
         </div>
     );

@@ -1,0 +1,5 @@
+{
+  "name": "Prism Knowledge & Code Review Hub",
+  "description": "Multi-model AI Code Review and Hybrid RAG Document Intelligence Platform supporting Google Gemini and Groq.",
+  "requestFramePermissions": []
+}

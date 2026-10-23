@@ -1,8 +1,0 @@
-{
-  "baseline_hallucination_rate": 0.0,
-  "optimized_hallucination_rate": 0.0,
-  "reduction_percentage": 0.0,
-  "summary": "Giảm hallucination rate từ 0.0% xuống 0.0% (~0%)",
-  "baseline_valid_questions": 0,
-  "optimized_valid_questions": 0
-}

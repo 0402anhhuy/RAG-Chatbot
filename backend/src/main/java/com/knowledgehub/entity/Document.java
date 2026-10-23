@@ -21,20 +21,8 @@ public class Document {
     @Column(nullable = false, length = 255)
     private String filename;
 
-    @Column(name = "file_type", length = 20)
-    private String fileType;
-
-    @Column(name = "file_size_bytes")
-    private Long fileSizeBytes;
-
-    @Column(name = "file_size_formatted", length = 30)
-    private String fileSizeFormatted;
-
     @Column(name = "storage_path", columnDefinition = "TEXT")
     private String storagePath;
-
-    @Column(name = "course_code", length = 50)
-    private String courseCode = "GEN";
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "workspace_id", nullable = false)
@@ -51,12 +39,5 @@ public class Document {
     private Instant createdAt;
 
     @PrePersist
-    void onCreate() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
-        if (courseCode == null || courseCode.isBlank()) {
-            courseCode = "GEN";
-        }
-    }
+    void onCreate() { createdAt = Instant.now(); }
 }

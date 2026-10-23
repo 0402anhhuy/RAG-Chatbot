@@ -1,66 +1,54 @@
 .edu-sidebar {
     width: 228px;
-    background-color: #f8fafc;
+    background-color: #ffffff;
     border-right: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
-    padding: 12px 10px;
+    padding: 14px 10px;
     flex-shrink: 0;
     height: 100%;
     transition:
         width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-        padding 0.2s ease,
-        background-color 0.15s ease;
+        padding 0.2s ease;
     z-index: 20;
     box-sizing: border-box;
 }
 
-/* Khi Sidebar thu nhỏ thành dạng Rail (58px) */
+/* Khi Sidebar thu nhỏ thành dạng Rail */
 .edu-sidebar.collapsed-rail {
     width: 58px;
-    padding: 12px 0;
+    padding: 14px 6px;
     align-items: center;
+}
+
+/* Header Brand Logo: Kiêm nút Toggle thu nhỏ / mở rộng */
+.edu-sidebar .sidebar-brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px 14px;
+    width: 100%;
+    min-height: 42px;
+    border-radius: 6px;
+    transition: background-color 0.12s ease;
+    box-sizing: border-box;
+}
+
+.edu-sidebar .clickable-brand-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.edu-sidebar .clickable-brand-toggle:hover {
     background-color: #f8fafc;
 }
 
-/* Nút Menu điều khiển sidebar */
-.edu-sidebar .sidebar-menu-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 10px;
-    width: 100%;
-    height: 36px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: #475569;
-    font-size: 0.82rem;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: left;
-    box-sizing: border-box;
-    margin-bottom: 8px;
-    transition:
-        background-color 0.12s ease,
-        color 0.12s ease;
-}
-
-/* Hover đậm màu hơn */
-.edu-sidebar .sidebar-menu-toggle:hover {
-    background-color: #e2e8f0;
-    color: #0f172a;
-}
-
-.edu-sidebar.collapsed-rail .sidebar-menu-toggle {
-    width: 38px;
-    height: 38px;
-    padding: 0;
+.edu-sidebar.collapsed-rail .sidebar-brand-header {
     justify-content: center;
-    margin-bottom: 8px;
+    padding: 6px 0 14px;
 }
 
-/* Badge EDU */
+/* Badge EDU màu xanh ngọc */
 .edu-sidebar .sidebar-hub-tag.edu-badge {
     font-size: 0.6rem;
     font-weight: 700;
@@ -78,9 +66,8 @@
     align-items: center;
     gap: 8px;
     width: 100%;
-    height: 34px;
-    padding: 0 10px;
-    background-color: #ffffff;
+    padding: 7px 10px;
+    background-color: #f1f5f9;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     color: #64748b;
@@ -88,12 +75,11 @@
     cursor: pointer;
     margin-bottom: 12px;
     box-sizing: border-box;
-    transition: all 0.12s ease;
+    transition: background-color 0.12s ease;
 }
 
 .edu-sidebar .sidebar-search-btn:hover {
     background-color: #e2e8f0;
-    border-color: #cbd5e1;
     color: #0f172a;
 }
 
@@ -107,18 +93,17 @@
 
 .edu-sidebar .sidebar-search-btn kbd {
     font-size: 0.65rem;
-    background-color: #f8fafc;
+    background-color: #ffffff;
     padding: 1px 5px;
     border-radius: 3px;
     border: 1px solid #cbd5e1;
     font-family: monospace;
 }
 
-/* Nút search dạng mini khi thu nhỏ */
 .edu-sidebar .sidebar-search-btn-mini {
-    width: 38px;
-    height: 38px;
-    background-color: #ffffff;
+    width: 36px;
+    height: 34px;
+    background-color: #f1f5f9;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     color: #64748b;
@@ -127,14 +112,11 @@
     justify-content: center;
     cursor: pointer;
     margin-bottom: 12px;
-    padding: 0;
-    box-sizing: border-box;
-    transition: all 0.12s ease;
+    transition: background-color 0.12s ease;
 }
 
 .edu-sidebar .sidebar-search-btn-mini:hover {
     background-color: #e2e8f0;
-    border-color: #cbd5e1;
     color: #0f172a;
 }
 
@@ -151,15 +133,13 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    align-items: center;
 }
 
 .edu-sidebar .nav-menu-item {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 7px 10px;
-    height: 36px;
+    padding: 8px 10px;
     border-radius: 6px;
     border: none;
     background: transparent;
@@ -176,19 +156,16 @@
 }
 
 .edu-sidebar.collapsed-rail .nav-menu-item {
-    width: 38px;
-    height: 38px;
-    padding: 0;
     justify-content: center;
+    padding: 9px 0;
 }
 
-/* Hover các tab đậm rõ nét */
 .edu-sidebar .nav-menu-item:hover {
-    background-color: #e2e8f0;
+    background-color: #f1f5f9;
     color: #0f172a;
 }
 
-/* Trạng thái tab đang Active */
+/* Trạng thái tab đang Active: Viền & tone xanh lá ngọc */
 .edu-sidebar .nav-menu-item.active {
     background-color: #ecfdf5;
     color: #065f46;
@@ -213,8 +190,6 @@
     padding-left: 12px;
     margin: 3px 0 6px 16px;
     border-left: 2px solid #a7f3d0;
-    width: calc(100% - 16px);
-    box-sizing: border-box;
 }
 
 .edu-sidebar .sub-tool-item {
@@ -222,7 +197,6 @@
     align-items: center;
     gap: 8px;
     padding: 6px 10px;
-    height: 32px;
     border-radius: 5px;
     border: none;
     background: transparent;
@@ -238,7 +212,7 @@
 
 .edu-sidebar .sub-tool-item:hover {
     color: #0f172a;
-    background-color: #e2e8f0;
+    background-color: #f8fafc;
 }
 
 .edu-sidebar .sub-tool-item.active {
@@ -252,17 +226,16 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #f1f5f9;
     padding-top: 10px;
     width: 100%;
-    align-items: center;
 }
 
 .edu-sidebar .sidebar-user-pill {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 6px 8px;
+    padding: 6px 4px;
     border-radius: 6px;
     width: 100%;
     cursor: pointer;
@@ -271,14 +244,12 @@
 }
 
 .edu-sidebar .sidebar-user-pill:hover {
-    background-color: #e2e8f0;
+    background-color: #f8fafc;
 }
 
 .edu-sidebar.collapsed-rail .sidebar-user-pill {
-    width: 38px;
-    height: 38px;
-    padding: 0;
     justify-content: center;
+    padding: 6px 0;
 }
 
 .edu-sidebar .user-avatar-tag.edu-avatar {

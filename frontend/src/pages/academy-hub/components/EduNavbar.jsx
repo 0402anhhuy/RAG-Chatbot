@@ -1,21 +1,18 @@
-import { BookOpen, Flame, UploadCloud } from "lucide-react";
-import BrandLogo from "../../../components/common/logo/BrandLogo";
+import { BookOpen, Flame, GraduationCap, Plus, UploadCloud } from "lucide-react";
 import "./EduNavbar.css";
 
-const EduNavbar = ({ activeTabName, onUploadClick, hideControls = false }) => {
+const EduNavbar = ({ activeTabName, onUploadClick }) => {
     return (
         <header className="edu-navbar">
-            <div className="navbar-identity">
-                <BrandLogo size="md" showText title="Prism Studio" />
-                <div className="navbar-breadcrumb">
-                    <span className="crumb-separator">/</span>
-                    <span className="crumb-hub">Academy Hub</span>
-                    <span className="crumb-separator">/</span>
-                    <span className="crumb-current">{activeTabName}</span>
-                </div>
+            <div className="navbar-breadcrumb">
+                <span className="crumb-root">Prism Studio</span>
+                <span className="crumb-separator">/</span>
+                <span className="crumb-hub">Academy Hub</span>
+                <span className="crumb-separator">/</span>
+                <span className="crumb-current">{activeTabName}</span>
             </div>
 
-            {!hideControls && <div className="navbar-controls-cluster">
+            <div className="navbar-controls-cluster">
                 {/* Streak Counter */}
                 <div className="navbar-metric-chip streak-chip">
                     <Flame size={14} color="#f59e0b" />
@@ -31,7 +28,7 @@ const EduNavbar = ({ activeTabName, onUploadClick, hideControls = false }) => {
                     <UploadCloud size={14} />
                     <span>Upload Courseware</span>
                 </button>
-            </div>}
+            </div>
         </header>
     );
 };
