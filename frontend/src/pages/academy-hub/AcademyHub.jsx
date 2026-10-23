@@ -57,25 +57,25 @@ const AcademyHub = () => {
 
     return (
         <div className="vibe-edu-layout">
-            <EduSidebar
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                session={session}
-                isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
-                activeSubTool={activeSubTool}
-                onSelectSubTool={(toolId) => setActiveSubTool(toolId)}
+            <EduNavbar
+                activeTabName={activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                onUploadClick={() => alert("Open Upload Courseware PDF Modal")}
+                hideControls={Boolean(activeSubTool)}
             />
 
-            <div className="edu-main-viewport">
-                {!activeSubTool && (
-                    <EduNavbar
-                        activeTabName={activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                        onUploadClick={() => alert("Open Upload Courseware PDF Modal")}
-                    />
-                )}
+            <div className="edu-app-body">
+                <EduSidebar
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    session={session}
+                    isCollapsed={isSidebarCollapsed}
+                    onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+                    activeSubTool={activeSubTool}
+                    onSelectSubTool={(toolId) => setActiveSubTool(toolId)}
+                />
 
-                <main className={`edu-canvas-body ${activeSubTool ? "no-padding-full" : ""}`}>
+                <div className="edu-main-viewport">
+                    <main className={`edu-canvas-body ${activeSubTool ? "no-padding-full" : ""}`}>
                     {activeTab === "home" && (
                         <EduHome
                             onNavigateTab={setActiveTab}
@@ -135,7 +135,8 @@ const AcademyHub = () => {
                     {activeSubTool === "courseware" && (
                         <CoursewareRAGWorkspace onBackToHub={handleBackToEduHub} />
                     )}
-                </main>
+                    </main>
+                </div>
             </div>
         </div>
     );

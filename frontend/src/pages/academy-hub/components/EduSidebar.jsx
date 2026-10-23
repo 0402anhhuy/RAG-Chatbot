@@ -9,6 +9,7 @@ import {
     GraduationCap,
     Home,
     Library,
+    Menu,
     Search,
     Settings,
     Sparkles,
@@ -16,7 +17,6 @@ import {
     Wrench,
     MessageSquare,
 } from "lucide-react";
-import BrandLogo from "../../../components/common/logo/BrandLogo";
 import "./EduSidebar.css";
 
 const EDU_SUB_TOOLS = [
@@ -67,15 +67,15 @@ const EduSidebar = ({
 
     return (
         <aside className={`edu-sidebar ${isCollapsed ? "collapsed-rail" : ""}`}>
-            {/* Logo click toggle */}
-            <div
-                className="sidebar-brand-header clickable-brand-toggle"
+            <button
+                type="button"
+                className="sidebar-menu-toggle"
                 onClick={onToggleCollapse}
                 title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-                <BrandLogo size="md" showText={!isCollapsed} title="Prism Studio" />
-                {!isCollapsed && <span className="sidebar-hub-tag edu-badge">EDU</span>}
-            </div>
+                <Menu size={16} />
+                {!isCollapsed && <span>Menu</span>}
+            </button>
 
             {/* Quick Search */}
             {!isCollapsed ? (

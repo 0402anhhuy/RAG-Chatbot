@@ -1,3 +1,74 @@
+# React + Spring Boot + FastAPI migration
+
+> **Current architecture:** React/Vite is the primary UI, Spring Boot is the
+> application backend, and FastAPI is the internal RAG service. The old
+> Streamlit app is available under `legacy/` for comparison only.
+
+The React UI calls Spring Boot under the `/api` prefix. Spring Boot proxies
+RAG requests to FastAPI.
+
+## Run locally
+
+From the repository root, start the API:
+
+```powershell
+python -m uvicorn rag_fastapi.app.main:app --reload --host 0.0.0.0 --port 8000
+
+Start Spring Boot in another terminal (requires Maven):
+
+```powershell
+Set-Location backend
+mvn spring-boot:run
+```
+
+Alternatively, run `docker compose up --build` after starting Docker Desktop;
+the backend image compiles Spring Boot with Maven automatically.
+```
+
+Then start the frontend in a second terminal:
+
+```powershell
+Set-Location frontend
+npm run dev
+```
+
+The frontend uses `http://localhost:8080/api` by default. Override it with:
+
+```env
+VITE_API_BASE_URL=http://localhost:8080/api
+```
+
+Spring health check: `http://localhost:8080/api/health`
+FastAPI health check: `http://localhost:8000/api/health`
+
+The first API phase supports PDF upload/indexing, chat sessions, RAG answers,
+flashcard generation, and exam generation. The current document/session store
+is in-memory and should be replaced with persistent storage before production.
+
+## Repository structure
+
+```text
+frontend/       React/Vite application
+backend/        Spring Boot application service and PostgreSQL boundary
+rag_fastapi/    FastAPI RAG service
+rag_core/       Standalone loaders, retrieval, generation, prompts, evaluation
+data/           Local uploads and vector-store cache (ignored by git)
+scripts/        Manual ingestion/evaluation scripts
+tests/          Backend and RAG-core tests
+legacy/         Streamlit application kept for migration comparison
+```
+
+Install backend dependencies into the project virtual environment:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+```
+
+Run the optional legacy Streamlit app with:
+
+```powershell
+streamlit run legacy/app.py --server.port=8501
+```
 # ☁️ Enterprise Cloud-Native RAG AI Platform
 
 ### _Infrastructure, SRE & Cloud Operations Architecture_
@@ -25,7 +96,7 @@ The platform bridges the gap between software development and core cloud infrast
 +-----------------------------------------------------------------------------------+
 |                        EXTERNAL CLIENTS / API CONSUMERS                           |
 +-----------------------------------------------------------------------------------+
-                                         │  HTTP / HTTPS (Port 8501)
+                                         │  HTTP / HTTPS (Port 8000)
                                          ▼
 +-----------------------------------------------------------------------------------+
 |               NETWORKING & LOAD BALANCING LAYER (OpenStack Octavia / Nginx)       |
@@ -97,7 +168,9 @@ The platform bridges the gap between software development and core cloud infrast
 
 ## 🐳 Containerized Deployment (Docker & IaC - Recommended)
 
-This project provides production-ready Dockerfile and Docker Compose manifests structured according to **Infrastructure as Code (IaC)** best practices.
+This project provides Dockerfile and Docker Compose manifests for the FastAPI
+backend. Streamlit remains available through the optional `legacy` compose
+profile during migration.
 
 ### Prerequisites
 
@@ -141,7 +214,7 @@ docker compose logs -f --tail=50
 docker stats rag-chatbot-prod
 ```
 
-🌐 **Access the application interface at:** `http://localhost:8501`
+🌐 **Access the FastAPI service at:** `http://localhost:8000/api/health`
 
 ### 4️⃣ Lifecycle & Container Management
 
