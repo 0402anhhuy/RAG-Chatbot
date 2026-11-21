@@ -1,50 +1,87 @@
-import { useState, useRef, useEffect } from "react";
-import { X, Search, ChevronDown, Check } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { X, Search, Loader2, UserPlus } from "lucide-react";
+import { projectMemberApi } from "../../../../../../../api/projectMembers";
+import CustomSelector from "../../../../../../../components/common/selector/CustomSelector";
 import "./AddMemberModal.css";
 
-const ROLE_OPTIONS = ["Project Manager", "Team Lead", "Member"];
+const ROLE_OPTIONS = [
+    { value: "PROJECT_MANAGER", label: "Project Manager" },
+    { value: "TEAM_LEAD", label: "Team Lead" },
+    { value: "MEMBER", label: "Member" },
+];
 
-const AddMemberModal = ({ isOpen, onClose, onAdd }) => {
-    const [searchEmail, setSearchEmail] = useState("");
-    const [selectedRole, setSelectedRole] = useState("Member");
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);
+const initialsOf = (name, email) => (name || email || "?").trim().slice(0, 2).toUpperCase();
 
-    // Đóng dropdown khi click ra ngoài
+const AddMemberModal = ({ isOpen, projectId, memberIds = [], onClose, onAdded }) => {
+    const [searchText, setSearchText] = useState("");
+    const [candidates, setCandidates] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedRole, setSelectedRole] = useState("MEMBER");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [searchError, setSearchError] = useState("");
+    const [submitError, setSubmitError] = useState("");
+
+    const existingIds = useMemo(() => new Set(memberIds.filter(Boolean)), [memberIds]);
+
+    // Reset state mỗi lần mở modal
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsDropdownOpen(false);
+        if (!isOpen) return;
+        setSearchText("");
+        setCandidates([]);
+        setSelectedUser(null);
+        setSelectedRole("MEMBER");
+        setIsSubmitting(false);
+        setSearchError("");
+        setSubmitError("");
+    }, [isOpen]);
+
+    // Tìm user trên BE (debounce 300ms), loại bỏ những người đã là member
+    useEffect(() => {
+        if (!isOpen || !projectId) return undefined;
+        let cancelled = false;
+        const timer = setTimeout(async () => {
+            try {
+                setIsSearching(true);
+                setSearchError("");
+                const data = await projectMemberApi.searchCandidates(projectId, searchText.trim());
+                if (!cancelled) {
+                    setCandidates((data || []).filter((user) => !existingIds.has(user.id)));
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    setCandidates([]);
+                    setSearchError(err.message || "Unable to search users.");
+                }
+            } finally {
+                if (!cancelled) setIsSearching(false);
             }
+        }, 300);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [isOpen, projectId, searchText, existingIds]);
 
     if (!isOpen) return null;
 
-    const handleSelectRole = (role) => {
-        setSelectedRole(role);
-        setIsDropdownOpen(false);
-    };
-
-    const handleFormSubmit = (e) => {
-        e.preventDefault();
-        if (!searchEmail.trim()) return;
-
-        // Giả lập lấy tên từ tiền tố email
-        const generatedName =
-            searchEmail.split("@")[0].charAt(0).toUpperCase() + searchEmail.split("@")[0].slice(1);
-
-        onAdd({
-            name: generatedName,
-            email: searchEmail.trim(),
-            role: selectedRole,
-        });
-
-        setSearchEmail("");
-        setSelectedRole("Member");
-        onClose();
+    const handleAdd = async () => {
+        if (!projectId || !selectedUser || isSubmitting) return;
+        setIsSubmitting(true);
+        setSubmitError("");
+        try {
+            const created = await projectMemberApi.add(projectId, {
+                userId: selectedUser.id,
+                role: selectedRole,
+            });
+            onAdded?.(created);
+            onClose();
+        } catch (err) {
+            setSubmitError(err.message || "Unable to add this member.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -62,8 +99,8 @@ const AddMemberModal = ({ isOpen, onClose, onAdd }) => {
                 </div>
 
                 {/* Form Body */}
-                <form onSubmit={handleFormSubmit} className="add-member-form">
-                    {/* User email */}
+                <div className="add-member-form">
+                    {/* User search + kết quả */}
                     <div className="modal-input-group">
                         <label className="input-group-label">User email</label>
                         <div className="search-email-pill-box">
@@ -71,50 +108,92 @@ const AddMemberModal = ({ isOpen, onClose, onAdd }) => {
                             <input
                                 type="text"
                                 placeholder="Search users by name or email..."
-                                value={searchEmail}
-                                onChange={(e) => setSearchEmail(e.target.value)}
+                                value={searchText}
+                                onChange={(e) => {
+                                    setSearchText(e.target.value);
+                                    setSelectedUser(null);
+                                }}
                                 autoFocus
                             />
-                        </div>
-                    </div>
-
-                    {/* Role dropdown custom */}
-                    <div className="modal-input-group" ref={dropdownRef}>
-                        <label className="input-group-label">Role</label>
-                        <div
-                            className="role-pill-selector-box"
-                            onClick={() => setIsDropdownOpen((prev) => !prev)}
-                        >
-                            <span>{selectedRole}</span>
-                            <ChevronDown size={15} className="selector-caret" />
+                            {isSearching && (
+                                <Loader2 size={14} className="search-glyph-icon members-spin" />
+                            )}
                         </div>
 
-                        {/* Dropdown Menu với dấu check */}
-                        {isDropdownOpen && (
-                            <div className="custom-role-dropdown-menu">
-                                {ROLE_OPTIONS.map((role) => (
-                                    <div
-                                        key={role}
-                                        className={`dropdown-role-option-row ${
-                                            selectedRole === role ? "active" : ""
-                                        }`}
-                                        onClick={() => handleSelectRole(role)}
+                        <div className="member-candidate-list">
+                            {searchError && (
+                                <p className="add-member-error-text" role="alert">
+                                    {searchError}
+                                </p>
+                            )}
+
+                            {!searchError && !isSearching && candidates.length === 0 && (
+                                <p className="add-member-hint-text">
+                                    {searchText.trim()
+                                        ? "No matching user found."
+                                        : "Type a name or email to search."}
+                                </p>
+                            )}
+
+                            {candidates.map((user) => {
+                                const isSelected = selectedUser?.id === user.id;
+                                return (
+                                    <button
+                                        key={user.id}
+                                        type="button"
+                                        className={`member-candidate-row ${isSelected ? "selected" : ""}`}
+                                        onClick={() => setSelectedUser(isSelected ? null : user)}
                                     >
-                                        <span>{role}</span>
-                                        {selectedRole === role && (
-                                            <Check size={14} className="check-mark-glyph" />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                        <span className="member-candidate-avatar">
+                                            {initialsOf(user.name, user.email)}
+                                        </span>
+                                        <span className="member-candidate-texts">
+                                            <strong>{user.name || user.email}</strong>
+                                            <span>{user.email}</span>
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
-                    {/* Nút Submit ngầm hoặc nhấn Enter */}
-                    <button type="submit" style={{ display: "none" }}>
-                        Submit
-                    </button>
-                </form>
+                    {/* Role selector dùng CustomSelector chung */}
+                    <div className="modal-input-group">
+                        <label className="input-group-label">Role</label>
+                        <CustomSelector
+                            className="add-member-role-selector"
+                            options={ROLE_OPTIONS}
+                            value={selectedRole}
+                            onChange={(value) => setSelectedRole(value)}
+                            placeholder="Select role"
+                        />
+                    </div>
+
+                    {submitError && (
+                        <p className="add-member-error-text" role="alert">
+                            {submitError}
+                        </p>
+                    )}
+
+                    <div className="add-member-footer-row">
+                        <button type="button" className="btn-footer-close-pill" onClick={onClose}>
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className="btn-add-member-pill"
+                            disabled={!selectedUser || isSubmitting}
+                            onClick={handleAdd}
+                        >
+                            {isSubmitting ? (
+                                <Loader2 size={14} className="members-spin" />
+                            ) : (
+                                <UserPlus size={14} />
+                            )}
+                            <span>{isSubmitting ? "Adding..." : "Add Member"}</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -6,9 +6,7 @@ import {
     ChevronRight,
     Code2,
     Download,
-    FileSpreadsheet,
     FileText,
-    FileType,
     Filter,
     FolderOpen,
     Eye,
@@ -44,8 +42,35 @@ import { renderAsync } from "docx-preview";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { documentApi } from "../../../../api/documents";
+import DocumentTypeIcon from "../../../../components/common/document-icon/DocumentTypeIcon";
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../context/ToastContext";
 import "./Documents.css";
+
+// Định dạng được duyệt và mở ngay trong trang (null = chưa hỗ trợ xem trước).
+const VIEWER_BY_EXT = {
+    pdf: "pdf",
+    doc: "word",
+    docx: "word",
+    xls: "excel",
+    xlsx: "excel",
+    csv: "excel",
+    ppt: "slides",
+    pptx: "slides",
+    md: "markdown",
+    markdown: "markdown",
+    txt: "text",
+};
+
+// Nhãn hiển thị cho từng loại (dùng cho filter và tooltip).
+const FORMAT_LABELS = {
+    pdf: "PDF",
+    word: "Word",
+    excel: "Excel",
+    slides: "PowerPoint",
+    markdown: "Markdown",
+    text: "Text",
+};
 
 // Danh sách các loại ghi chú học tập
 const NOTE_TYPES = [
@@ -56,11 +81,28 @@ const NOTE_TYPES = [
     { id: "question", label: "Cần hỏi lại", color: "rose" },
 ];
 
+/**
+ * Lấy phần mở rộng của tài liệu: ưu tiên fileType do BE trả về, rồi tới tên file
+ * (fileType có thể null với dữ liệu cũ), rồi tới title.
+ */
+const extOf = (doc) => {
+    if (!doc) return "";
+    const direct = (doc.fileType || doc.type || "").toString().trim().toLowerCase();
+    if (direct) return direct.replace(/^\./, "");
+    const name = doc.filename || doc.title || "";
+    const dot = name.lastIndexOf(".");
+    return dot > 0 ? name.slice(dot + 1).toLowerCase() : "";
+};
+
+const viewerOf = (ext) => VIEWER_BY_EXT[ext] || null;
+
 const Documents = ({
     workspaceId = "00000000-0000-0000-0000-000000000001",
     onLaunchTool,
     onAskTutor,
 }) => {
+    const { showToast } = useToast();
+
     // --- STATE TÀI LIỆU (GIỮ NGUYÊN) ---
     const [documents, setDocuments] = useState([]);
     const [selectedDoc, setSelectedDoc] = useState(null);
@@ -71,6 +113,7 @@ const Documents = ({
     const [isUploading, setIsUploading] = useState(false);
     const [previewContent, setPreviewContent] = useState("");
     const [loadingPreview, setLoadingPreview] = useState(false);
+    const [pdfPreviewUrl, setPdfPreviewUrl] = useState("");
     const [loadingDocx, setLoadingDocx] = useState(false);
 
     // Office Previews (Excel & PPTX)
@@ -353,11 +396,11 @@ const Documents = ({
             return;
         }
 
-        const ext = (selectedDoc.type || selectedDoc.fileType || "").toLowerCase();
-        if (["md", "txt"].includes(ext)) {
+        const ext = extOf(selectedDoc);
+        if (["md", "markdown", "txt"].includes(ext)) {
             setLoadingPreview(true);
-            fetch(documentApi.getPreviewUrl(selectedDoc.id))
-                .then((res) => (res.ok ? res.text() : "No preview available."))
+            documentApi.getPreview(selectedDoc.id)
+                .then((blob) => blob.text())
                 .then((text) => setPreviewContent(text))
                 .catch(() => setPreviewContent("Error loading preview."))
                 .finally(() => setLoadingPreview(false));
@@ -366,6 +409,30 @@ const Documents = ({
         }
         setMarkdownViewMode("preview");
     }, [selectedDoc]);
+
+    useEffect(() => {
+        let cancelled = false;
+        let objectUrl = "";
+        setPdfPreviewUrl("");
+        if (extOf(selectedDoc) !== "pdf") {
+            return () => {
+                cancelled = true;
+            };
+        }
+        documentApi.getPreview(selectedDoc.id)
+            .then((blob) => {
+                objectUrl = URL.createObjectURL(blob);
+                if (cancelled) URL.revokeObjectURL(objectUrl);
+                else setPdfPreviewUrl(objectUrl);
+            })
+            .catch((error) => {
+                if (!cancelled) showToast(error.message || "Unable to preview this document.", "error");
+            });
+        return () => {
+            cancelled = true;
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        };
+    }, [selectedDoc, showToast]);
 
     // 3. Render file DOCX
     const renderDocxBlob = (blob, containerRef) => {
@@ -383,14 +450,10 @@ const Documents = ({
 
     useEffect(() => {
         if (!selectedDoc) return;
-        const ext = (selectedDoc.type || selectedDoc.fileType || "").toLowerCase();
+        const ext = extOf(selectedDoc);
         if (ext === "docx" || ext === "doc") {
             setLoadingDocx(true);
-            fetch(documentApi.getDownloadUrl(selectedDoc.id))
-                .then((res) => {
-                    if (!res.ok) throw new Error("Failed to load document file");
-                    return res.blob();
-                })
+            documentApi.getDownload(selectedDoc.id)
                 .then((blob) => {
                     renderDocxBlob(blob, docxContainerRef);
                     if (isNotesModalOpen) renderDocxBlob(blob, modalDocxContainerRef);
@@ -405,18 +468,15 @@ const Documents = ({
     // 4. Render Excel & PPTX
     useEffect(() => {
         if (!selectedDoc) return;
-        const ext = (selectedDoc.type || selectedDoc.fileType || "").toLowerCase();
+        const ext = extOf(selectedDoc);
 
         if (["xls", "xlsx", "csv"].includes(ext)) {
             setLoadingOfficePreview(true);
             setOfficePreviewError("");
             setSpreadsheetSheets([]);
 
-            fetch(documentApi.getDownloadUrl(selectedDoc.id))
-                .then((res) => {
-                    if (!res.ok) throw new Error("Không thể tải tệp bảng tính.");
-                    return res.arrayBuffer();
-                })
+            documentApi.getDownload(selectedDoc.id)
+                .then((blob) => blob.arrayBuffer())
                 .then((buffer) => {
                     const workbook = XLSX.read(buffer, { type: "array" });
                     const parsedSheets = workbook.SheetNames.map((name) => {
@@ -438,13 +498,9 @@ const Documents = ({
             setPresentationSlides([]);
             setActivePptxSlide(0);
 
-            fetch(documentApi.getDownloadUrl(selectedDoc.id))
-                .then((res) => {
-                    if (!res.ok) throw new Error("Không thể tải tệp bản trình bày.");
-                    return res.arrayBuffer();
-                })
-                .then(async (buffer) => {
-                    const zip = await JSZip.loadAsync(buffer);
+            documentApi.getDownload(selectedDoc.id)
+                .then(async (blob) => {
+                    const zip = await JSZip.loadAsync(blob);
                     const slideFiles = Object.keys(zip.files).filter((path) =>
                         path.match(/^ppt\/slides\/slide\d+\.xml$/i),
                     );
@@ -480,23 +536,26 @@ const Documents = ({
         }
     }, [selectedDoc]);
 
-    const getDocIcon = (type) => {
-        switch ((type || "").toLowerCase()) {
-            case "pdf":
-                return <FileText size={16} className="file-type-icon pdf" />;
-            case "docx":
-            case "doc":
-                return <FileType size={16} className="file-type-icon docx" />;
-            case "xlsx":
-            case "csv":
-                return <FileSpreadsheet size={16} className="file-type-icon xlsx" />;
-            case "pptx":
-                return <Presentation size={16} className="file-type-icon pptx" />;
-            case "md":
-                return <BookOpen size={16} className="file-type-icon md" />;
-            default:
-                return <FileText size={16} className="file-type-icon default" />;
-        }
+    /**
+     * Icon theo đúng định dạng tài liệu, dùng logo dạng app (Word xanh dương,
+     * Excel xanh lá, PowerPoint cam, PDF đỏ) để nhận ra ngay như trên máy tính.
+     * Extension lạ (vd .zip) dùng badge trung tính.
+     */
+    const getDocIcon = (typeOrExt, size = 22) => (
+        <DocumentTypeIcon
+            ext={(typeOrExt || "").toLowerCase()}
+            size={size}
+            className="file-type-icon"
+        />
+    );
+
+    // Nhãn định dạng hiển thị cạnh kích thước file: "PDF", "Word (DOCX)"...
+    const formatLabelOf = (doc) => {
+        const ext = extOf(doc).toUpperCase();
+        const viewer = viewerOf(extOf(doc));
+        if (!viewer) return ext || "File";
+        const label = FORMAT_LABELS[viewer].toUpperCase();
+        return ext && ext !== label ? `${label} (${ext})` : label;
     };
 
     const availableCourses = [...new Set(documents.map((doc) => doc.courseCode).filter(Boolean))];
@@ -606,7 +665,7 @@ const Documents = ({
             if (uploadedDoc) setSelectedDoc(uploadedDoc);
             showActionNotice(`Đã thêm ${files.length} tài liệu học tập.`);
         } catch (err) {
-            alert("Upload failed: " + (err.message || "Server error"));
+            showToast(err.message || "Upload failed. Please try again.", "error");
         } finally {
             setIsUploading(false);
             if (fileUploadRef.current) fileUploadRef.current.value = "";
@@ -615,6 +674,22 @@ const Documents = ({
 
     const handleFileUpload = async (e) => {
         await handleFilesUpload(e.target.files);
+    };
+
+    const handleDownloadDocument = async (doc) => {
+        try {
+            const blob = await documentApi.getDownload(doc.id);
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = objectUrl;
+            link.download = doc.filename || doc.title || "document";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        } catch (error) {
+            showToast(error.message || "Unable to download this document.", "error");
+        }
     };
 
     const handleDrop = async (e) => {
@@ -631,7 +706,7 @@ const Documents = ({
             await fetchDocuments();
             showActionNotice("Đã xóa tài liệu.");
         } catch (err) {
-            alert("Delete failed: " + err.message);
+            showToast(err.message || "Delete failed. Please try again.", "error");
         }
     };
 
@@ -654,7 +729,7 @@ const Documents = ({
             await fetchDocuments();
             showActionNotice("Các tài liệu đã chọn đã được xóa.");
         } catch (err) {
-            alert("Bulk delete failed: " + err.message);
+            showToast(err.message || "Bulk delete failed. Please try again.", "error");
         }
     };
 
@@ -767,7 +842,10 @@ const Documents = ({
             return <p key={`paragraph-${index}`}>{renderInlineMarkdown(line)}</p>;
         });
 
-    const currentExt = (selectedDoc?.type || selectedDoc?.fileType || "").toLowerCase();
+    const currentExt = extOf(selectedDoc);
+    const currentViewer = viewerOf(currentExt);
+    // .ppt là định dạng nhị phân cũ: trình duyệt không đọc được, phải tải về.
+    const isLegacyPpt = currentExt === "ppt";
     const shouldCompactDocumentTools = true;
     const isCurrentDocCompleted = selectedDoc && completedDocIds.has(selectedDoc.id);
 
@@ -785,12 +863,12 @@ const Documents = ({
 
     // Hàm render khung đọc tài liệu
     const renderDocumentViewer = (isInsideModal = false) => (
-        <div className={`preview-scroll-viewport ${currentExt === "pdf" ? "pdf-mode" : ""}`}>
+        <div className={`preview-scroll-viewport ${currentViewer === "pdf" ? "pdf-mode" : ""}`}>
             {/* 1. PDF */}
-            {currentExt === "pdf" && (
+            {currentViewer === "pdf" && (
                 <div className="pdf-iframe-container">
                     <iframe
-                        src={documentApi.getPreviewUrl(selectedDoc.id)}
+                        src={pdfPreviewUrl ? `${pdfPreviewUrl}#scrollbar=0` : undefined}
                         title={selectedDoc.filename || selectedDoc.title}
                         className="pdf-iframe-view"
                     />
@@ -798,7 +876,7 @@ const Documents = ({
             )}
 
             {/* 2. DOCX */}
-            {(currentExt === "docx" || currentExt === "doc") && (
+            {currentViewer === "word" && (
                 <div
                     className="docx-outer-wrapper"
                     style={{
@@ -820,8 +898,8 @@ const Documents = ({
                 </div>
             )}
 
-            {/* 3. MARKDOWN / TXT */}
-            {["md", "txt"].includes(currentExt) && (
+            {/* 3. MARKDOWN / TXT — .md được render, .txt giữ nguyên xuống dòng */}
+            {["markdown", "text"].includes(currentViewer) && (
                 <div
                     className="preview-paper-sheet"
                     style={{
@@ -837,10 +915,14 @@ const Documents = ({
                                 <Loader2 size={20} className="spin-animate" />
                                 <span>Loading text notes...</span>
                             </div>
-                        ) : markdownViewMode === "code" ? (
+                        ) : markdownViewMode === "code" || currentViewer === "text" ? (
                             <pre className="md-code-raw markdown-source-editor">
                                 <code>
-                                    {renderMarkdownCode(previewContent || "Empty file content")}
+                                    {currentViewer === "text"
+                                        ? previewContent || "Empty file content"
+                                        : renderMarkdownCode(
+                                              previewContent || "Empty file content",
+                                          )}
                                 </code>
                             </pre>
                         ) : (
@@ -853,7 +935,7 @@ const Documents = ({
             )}
 
             {/* 4. EXCEL */}
-            {["xls", "xlsx", "csv"].includes(currentExt) && (
+            {currentViewer === "excel" && (
                 <div className="office-preview-shell">
                     {loadingOfficePreview ? (
                         <div className="docs-loading-placeholder">
@@ -862,7 +944,7 @@ const Documents = ({
                         </div>
                     ) : officePreviewError ? (
                         <div className="office-preview-empty">
-                            <FileSpreadsheet size={30} />
+                            {getDocIcon(currentExt, 40)}
                             <strong>Spreadsheet preview unavailable</strong>
                             <span>{officePreviewError}</span>
                         </div>
@@ -935,8 +1017,8 @@ const Documents = ({
                 </div>
             )}
 
-            {/* 5. PPTX */}
-            {currentExt === "pptx" && (
+            {/* 5. PPTX — trích xuất text từng slide trong file OOXML */}
+            {currentViewer === "slides" && !isLegacyPpt && (
                 <div className="office-preview-shell">
                     {loadingOfficePreview ? (
                         <div className="docs-loading-placeholder">
@@ -945,7 +1027,7 @@ const Documents = ({
                         </div>
                     ) : officePreviewError ? (
                         <div className="office-preview-empty">
-                            <Presentation size={30} />
+                            {getDocIcon("pptx", 40)}
                             <strong>Presentation preview unavailable</strong>
                             <span>{officePreviewError}</span>
                         </div>
@@ -1011,36 +1093,41 @@ const Documents = ({
                         </div>
                     ) : (
                         <div className="office-preview-empty">
-                            <Presentation size={30} />
+                            {getDocIcon("pptx", 40)}
                             <span>No slides found in this presentation.</span>
                         </div>
                     )}
                 </div>
             )}
 
-            {/* 6. Binary Types */}
-            {!["pdf", "docx", "doc", "md", "txt", "xls", "xlsx", "csv", "pptx"].includes(
-                currentExt,
-            ) && (
+            {/* 6. Không xem trước được (ppt cũ, zip, ảnh không hỗ trợ...): tải về */}
+            {!currentViewer || isLegacyPpt ? (
                 <div className="preview-paper-sheet">
                     <div className="binary-doc-preview-card">
                         <div className="binary-card-glyph">
-                            {getDocIcon(selectedDoc.type || selectedDoc.fileType)}
+                            {getDocIcon(currentExt, 48)}
                         </div>
                         <h3>{selectedDoc.title || selectedDoc.filename}</h3>
-                        <p>This file format is ready for download and offline review.</p>
+                        <p>
+                            {isLegacyPpt
+                                ? ".ppt is a legacy binary format — convert it to .pptx or download it to view the slides."
+                                : `${
+                                      formatLabelOf(selectedDoc) || "This format"
+                                  } cannot be rendered in the browser. Download the file to review offline.`}
+                        </p>
                         <div className="binary-action-row">
-                            <a
-                                href={documentApi.getDownloadUrl(selectedDoc.id)}
+                            <button
+                                type="button"
+                                onClick={() => handleDownloadDocument(selectedDoc)}
                                 className="btn-download-primary"
                             >
                                 <Download size={14} />
                                 <span>Download File</span>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 
@@ -1112,7 +1199,7 @@ const Documents = ({
                         ref={fileUploadRef}
                         type="file"
                         multiple
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.md,.txt"
+                        accept=".pdf,.txt,.md,.markdown,.rst,.log,.json,.csv"
                         hidden
                         onChange={handleFileUpload}
                     />
@@ -1202,16 +1289,37 @@ const Documents = ({
                     )}
 
                     <div className="docs-type-filters">
-                        {["all", "pdf", "docx", "xlsx", "pptx", "md"].map((type) => (
-                            <button
-                                key={type}
-                                type="button"
-                                className={`type-pill ${typeFilter === type ? "active" : ""}`}
-                                onClick={() => setTypeFilter(type)}
-                            >
-                                {type.toUpperCase()}
-                            </button>
-                        ))}
+                        {["all", "pdf", "docx", "xlsx", "pptx", "md"].map((type) => {
+                            const label =
+                                type === "all"
+                                    ? "ALL"
+                                    : type === "docx"
+                                      ? "WORD"
+                                      : type === "md"
+                                        ? "MD"
+                                        : type.toUpperCase();
+                            return (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    className={`type-pill ${typeFilter === type ? "active" : ""}`}
+                                    onClick={() => setTypeFilter(type)}
+                                    title={
+                                        type === "docx"
+                                            ? "Word documents (.doc, .docx)"
+                                            : type === "xlsx"
+                                              ? "Spreadsheets (.xls, .xlsx, .csv)"
+                                              : type === "pptx"
+                                                ? "Presentations (.ppt, .pptx)"
+                                                : type === "md"
+                                                  ? "Markdown"
+                                                  : undefined
+                                    }
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     <div className="docs-scroll-track">
@@ -1228,7 +1336,7 @@ const Documents = ({
                         ) : (
                             filteredDocs.map((doc) => {
                                 const isSelected = selectedDoc?.id === doc.id;
-                                const docType = doc.type || doc.fileType;
+                                const docType = extOf(doc);
                                 const docTitle = doc.title || doc.filename;
                                 const docSize = doc.size || doc.fileSizeFormatted;
                                 const isCompleted = completedDocIds.has(doc.id);
@@ -1247,8 +1355,8 @@ const Documents = ({
                                             onClick={(e) => e.stopPropagation()}
                                             aria-label={`Select ${docTitle}`}
                                         />
-                                        <div className="doc-icon-wrapper">
-                                            {getDocIcon(docType)}
+                                        <div className="doc-icon-wrapper" title={formatLabelOf(doc)}>
+                                            {getDocIcon(docType, 26)}
                                         </div>
                                         <div className="doc-meta-column">
                                             <div className="doc-title-row">
@@ -1259,6 +1367,9 @@ const Documents = ({
                                             <div className="doc-sub-details">
                                                 <span className="doc-course-tag">
                                                     {doc.courseCode || "GEN"}
+                                                </span>
+                                                <span className="doc-format-tag">
+                                                    {formatLabelOf(doc)}
                                                 </span>
                                                 <span>{docSize}</span>
                                                 <span>•</span>
@@ -1316,7 +1427,7 @@ const Documents = ({
                         <>
                             <div className="preview-top-toolbar">
                                 <div className="preview-file-identity">
-                                    {getDocIcon(selectedDoc.type || selectedDoc.fileType)}
+                                    {getDocIcon(currentExt, 24)}
                                     <div>
                                         <strong>{selectedDoc.title || selectedDoc.filename}</strong>
                                         <small>
@@ -1417,14 +1528,14 @@ const Documents = ({
                                         <Maximize2 size={14} />
                                     </button>
 
-                                    <a
-                                        href={documentApi.getDownloadUrl(selectedDoc.id)}
-                                        download
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDownloadDocument(selectedDoc)}
                                         className="btn-toolbar-glyph"
                                         title="Download Material"
                                     >
                                         <Download size={14} />
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
 
@@ -1462,7 +1573,7 @@ const Documents = ({
                                     )}
                                 </div>
 
-                                {currentExt === "md" && (
+                                {currentViewer === "markdown" && (
                                     <div
                                         className="markdown-view-toggle"
                                         role="group"
@@ -1577,7 +1688,7 @@ const Documents = ({
                         {/* Thanh Topbar của Modal */}
                         <div className="notes-modal-topbar">
                             <div className="modal-doc-identity">
-                                {getDocIcon(selectedDoc.type || selectedDoc.fileType)}
+                                {getDocIcon(currentExt, 22)}
                                 <strong>{selectedDoc.title || selectedDoc.filename}</strong>
                                 <span className="modal-course-badge">
                                     {selectedDoc.courseCode || "GEN"}

@@ -4,6 +4,8 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    padding-bottom: 30px;
+    box-sizing: border-box;
 }
 
 /* 1. Header Banner */
@@ -29,19 +31,152 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 7px 14px;
+    padding: 8px 16px;
     background-color: #059669;
     color: #ffffff;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.btn-add-course:hover {
+    background-color: #047857;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+/* ======================================================== */
+/* FORM JOIN COURSE (INLINE PANEL)                          */
+/* ======================================================== */
+.courses-join-panel {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    box-sizing: border-box;
+    animation: fadeInDown 0.15s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.join-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+}
+
+.join-panel-header strong {
+    font-size: 0.95rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.join-form-grid {
+    display: grid;
+    grid-template-columns: 140px 1.5fr 1fr 100px 160px;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.join-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.join-field-group label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.join-input-control {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    padding: 7px 10px;
+    font-size: 0.78rem;
+    color: #0f172a;
+    outline: none;
+    box-sizing: border-box;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.join-input-control:focus {
+    border-color: #059669;
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.1);
+}
+
+.join-panel-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 4px;
+}
+
+.btn-join-cancel {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-join-cancel:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.btn-join-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 16px;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.15s ease;
 }
 
-.btn-add-course:hover {
+.btn-join-save:hover:not(:disabled) {
     background-color: #047857;
+}
+
+.btn-join-save:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 /* 2. Filter & Search Bar */
@@ -58,8 +193,8 @@
     gap: 8px;
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 6px 12px;
+    border-radius: 8px;
+    padding: 7px 12px;
     flex: 1;
     max-width: 360px;
 }
@@ -84,8 +219,8 @@
 }
 
 .filter-pill {
-    padding: 5px 12px;
-    border-radius: 5px;
+    padding: 6px 12px;
+    border-radius: 6px;
     border: 1px solid #e2e8f0;
     background-color: #ffffff;
     font-size: 0.74rem;
@@ -107,6 +242,16 @@
     font-weight: 600;
 }
 
+.courses-empty-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
 /* 3. Split Grid Layout */
 .courses-split-grid {
     display: grid;
@@ -125,7 +270,7 @@
 .course-item-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 14px;
     display: flex;
     flex-direction: column;
@@ -228,7 +373,7 @@
 .course-detail-view {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 9px;
+    border-radius: 12px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -312,7 +457,7 @@
     background-color: #fef3c7;
 }
 
-/* 4. Thẻ tóm tắt học tập (Thay thế cho Vector Metric cũ) */
+/* Thẻ tóm tắt học tập */
 .course-summary-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -370,7 +515,7 @@
     font-weight: 600;
 }
 
-/* 5. Danh sách tài liệu khóa học */
+/* Danh sách tài liệu khóa học */
 .courseware-files-section {
     display: flex;
     flex-direction: column;
@@ -394,7 +539,7 @@
     gap: 6px;
     background: transparent;
     border: 1px dashed #cbd5e1;
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 5px 10px;
     font-size: 0.74rem;
     color: #059669;
@@ -408,11 +553,17 @@
     border-color: #059669;
 }
 
+.no-materials-text {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin: 8px 0;
+}
+
 .syllabus-file-table {
     display: flex;
     flex-direction: column;
     border: 1px solid #e2e8f0;
-    border-radius: 7px;
+    border-radius: 8px;
     overflow: hidden;
 }
 
@@ -459,11 +610,9 @@
 .file-badge-icon {
     width: 26px;
     height: 26px;
-    border-radius: 5px;
-    background-color: #ecfdf5;
-    color: #059669;
     display: grid;
     place-items: center;
+    flex-shrink: 0;
 }
 
 .file-action-buttons {
@@ -488,4 +637,34 @@
 .btn-table-action:hover {
     color: #0f172a;
     background-color: #e2e8f0;
+}
+
+.detail-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 6px;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+    .join-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .courses-split-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .join-form-grid {
+        grid-template-columns: 1fr;
+    }
+    .courses-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-course-box {
+        max-width: 100%;
+    }
 }

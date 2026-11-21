@@ -146,7 +146,7 @@
     color: #64748b;
 }
 
-/* Custom dropdown menu */
+/* Custom dropdown menu (không còn dùng: role dùng CustomSelector chung) */
 .custom-role-dropdown-menu {
     position: absolute;
     top: calc(100% + 4px);
@@ -187,4 +187,147 @@
 
 .check-mark-glyph {
     color: #0f172a;
+}
+
+/* Selector role dùng CustomSelector chung */
+.add-member-role-selector {
+    display: block;
+    width: 100%;
+}
+
+.add-member-role-selector .custom-select-trigger {
+    width: 100%;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.add-member-role-selector .custom-select-menu {
+    width: 100%;
+}
+
+/* Danh sách user tìm được */
+.member-candidate-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-top: 2px;
+}
+
+.member-candidate-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    background-color: #ffffff;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.12s ease;
+}
+
+.member-candidate-row:hover {
+    background-color: #f8fafc;
+}
+
+.member-candidate-row.selected {
+    background-color: #ecfdf5;
+    border-color: #a7f3d0;
+}
+
+.member-candidate-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.member-candidate-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.member-candidate-texts strong {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.member-candidate-texts span {
+    font-size: 0.72rem;
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.add-member-hint-text,
+.add-member-error-text {
+    margin: 2px 0 0 2px;
+    font-size: 0.74rem;
+    color: #64748b;
+}
+
+.add-member-error-text {
+    color: #b91c1c;
+}
+
+/* Footer modal */
+.add-member-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.btn-footer-close-pill {
+    padding: 7px 16px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-footer-close-pill:hover {
+    background-color: #f8fafc;
+}
+
+.add-member-footer-row .btn-add-member-pill:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.members-spin {
+    animation: membersSpin 0.9s linear infinite;
+}
+
+@keyframes membersSpin {
+    to {
+        transform: rotate(360deg);
+    }
 }

@@ -4,11 +4,16 @@ import com.knowledgehub.dto.request.ProjectCreateRequest;
 import com.knowledgehub.dto.request.ProjectUpdateRequest;
 import com.knowledgehub.dto.response.ProjectResponse;
 import com.knowledgehub.entity.Project;
+import com.knowledgehub.entity.ProjectMember;
+import com.knowledgehub.entity.ProjectMemberRole;
 import com.knowledgehub.entity.ProjectStatus;
 import com.knowledgehub.entity.ProjectType;
+import com.knowledgehub.entity.Task;
 import com.knowledgehub.entity.User;
 import com.knowledgehub.mapper.EntityMapper;
+import com.knowledgehub.repository.ProjectMemberRepository;
 import com.knowledgehub.repository.ProjectRepository;
+import com.knowledgehub.repository.TaskRepository;
 import com.knowledgehub.repository.UserRepository;
 import com.knowledgehub.service.exception.ServiceEntityNotFoundException;
 import com.knowledgehub.service.interfaces.ProjectService;
@@ -24,21 +29,39 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
+    private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final EntityMapper entityMapper;
 
     @Override
     public ProjectResponse create(ProjectCreateRequest request, UUID ownerId) {
         User owner = findOwner(ownerId);
+        if (request.ownerName() != null && !request.ownerName().isBlank()
+                && !request.ownerName().trim().equalsIgnoreCase(owner.getName())) {
+            // Cho phép đặt tên hiển thị khác tên tài khoản ngay khi tạo dự án
+            owner.setName(request.ownerName().trim());
+            userRepository.save(owner);
+        }
         Project project = new Project();
         project.setName(request.name().trim());
         project.setDescription(request.description());
         project.setType(request.type() != null ? request.type() : ProjectType.LOCAL);
-        project.setStatus(request.status() != null ? request.status() : ProjectStatus.IDLE);
-        project.setPinned(Boolean.TRUE.equals(request.pinned()));
         project.setRepositoryUrl(request.repositoryUrl());
+        project.setStatus(request.status() != null ? request.status() : ProjectStatus.ACTIVE);
+        project.setPinned(Boolean.TRUE.equals(request.pinned()));
         project.setOwner(owner);
-        return entityMapper.toProjectResponse(projectRepository.save(project));
+        project.setMemberCount(1);
+        Project saved = projectRepository.save(project);
+
+        // Người tạo project mặc định trở thành viên với role Project Manager
+        ProjectMember membership = new ProjectMember();
+        membership.setProject(saved);
+        membership.setUser(owner);
+        membership.setRole(ProjectMemberRole.PROJECT_MANAGER);
+        projectMemberRepository.save(membership);
+
+        return entityMapper.toProjectResponse(saved);
     }
 
     @Override
@@ -57,6 +80,7 @@ public class ProjectServiceImpl implements ProjectService {
                     : projectRepository.findByOwnerIdAndStatusOrderByUpdatedAtDesc(ownerId, status);
 
         String normalizedSearch = search == null ? "" : search.trim().toLowerCase();
+        syncTaskCountForLocalProjects(projects);
         return projects.stream()
                 .filter(project -> normalizedSearch.isEmpty()
                         || project.getName().toLowerCase().contains(normalizedSearch))
@@ -85,12 +109,31 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void delete(UUID id) {
-        projectRepository.delete(findProject(id));
+        Project project = findProject(id);
+        // Xoá toàn bộ task thuộc project trước khi xoá project (tránh vi phạm khoá ngoại)
+        taskRepository.deleteByProjectId(id);
+        projectRepository.delete(project);
     }
 
     private Project findProject(UUID id) {
         return projectRepository.findById(id)
                 .orElseThrow(() -> new ServiceEntityNotFoundException("Project not found: " + id));
+    }
+
+    private void syncTaskCountForLocalProjects(List<Project> projects) {
+        List<Project> drifted = projects.stream()
+                .filter(project -> project.getType() == ProjectType.LOCAL)
+                .filter(project -> taskRepository.countByProjectIdAndArchivedFalse(project.getId())
+                        != project.getTaskCount())
+                .toList();
+
+        if (drifted.isEmpty()) {
+            return;
+        }
+
+        drifted.forEach(project -> project.setTaskCount(
+                (int) taskRepository.countByProjectIdAndArchivedFalse(project.getId())));
+        projectRepository.saveAll(drifted);
     }
 
     private User findOwner(UUID ownerId) {

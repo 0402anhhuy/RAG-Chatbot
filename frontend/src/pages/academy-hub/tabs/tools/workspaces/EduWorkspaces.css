@@ -557,3 +557,195 @@
     color: #475569;
     cursor: pointer;
 }
+
+/* ============================================================
+   Trạng thái thật cho workspace (dữ liệu từ API)
+   ============================================================ */
+
+.ws-spinner {
+    animation: ws-spin 0.9s linear infinite;
+}
+
+@keyframes ws-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Khối rỗng / đang tải */
+.ws-empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 40px 24px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.ws-inline-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 0.72rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+/* Danh sách nguồn trong pane trái của tutor */
+.ws-source-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.ws-source-selector .custom-select-container {
+    width: 100%;
+}
+
+.ws-source-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+.ws-source-facts > div {
+    background-color: #f8fafc;
+    border: 1px solid #eef2f6;
+    border-radius: 7px;
+    padding: 9px 11px;
+}
+
+.ws-source-facts dt {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 3px;
+}
+
+.ws-source-facts dd {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #0f172a;
+    word-break: break-word;
+}
+
+/* Gợi ý trong khung chat */
+.ws-chat-hint {
+    padding: 12px 14px;
+    border: 1px dashed #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    font-size: 0.74rem;
+    line-height: 1.55;
+    color: #64748b;
+}
+
+/* Các bước tutor trích từ tài liệu */
+.ws-step-list {
+    margin: 10px 0 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ws-step-list li {
+    font-size: 0.76rem;
+    line-height: 1.55;
+}
+
+.ws-step-list p {
+    margin: 0 0 3px;
+}
+
+.ws-step-list span {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.ws-typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+}
+
+/* Form của tool chấm bài */
+.ws-grade-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
+    overflow-y: auto;
+}
+
+/* Vòng trạng thái chờ chấm: không giả là điểm số */
+.score-ring.ws-score-ring-pending {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    min-height: 46px;
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+/* Kết quả exam prep */
+.ws-result-block {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: #334155;
+    line-height: 1.6;
+}
+
+.ws-result-block p {
+    margin: 0;
+}
+
+/* Tổng kết tìm kiếm courseware */
+.ws-rag-summary {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 7px;
+    background-color: #f5f3ff;
+    border: 1px solid #ede9fe;
+    color: #5b21b6;
+    font-size: 0.76rem;
+}
+
+.ws-term-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: #f3e8ff;
+    color: #6d28d9;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+/* Nút bị vô hiệu hoá trên toàn workspace */
+.edu-workspace-root .btn-vector-query:disabled,
+.edu-workspace-root .btn-primary-generate:disabled,
+.edu-workspace-root .btn-trigger-grade:disabled,
+.edu-workspace-root .btn-send-agent:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

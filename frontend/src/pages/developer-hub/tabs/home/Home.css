@@ -1,322 +1,405 @@
-.vibeflow-home-viewport {
-    max-width: 1420px;
+.edu-home-bounds {
+    max-width: 1280px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    padding-bottom: 24px;
-}
-
-/* 1. Hero Banner: VibeFlow loves */
-.home-loves-hero-banner {
-    background: linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%);
-    border: 1px solid #fecdd3;
-    border-radius: 12px;
-    padding: 34px 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-}
-
-.loves-hero-title-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.loves-wave-glyph {
-    font-size: 2.1rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #06b6d4, #ec4899);
-    -webkit-text-fill-color: transparent;
-    line-height: 1;
-}
-
-.loves-hero-title-group h1 {
-    margin: 0;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #0f172a;
-    letter-spacing: -0.03em;
-}
-
-.loves-badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background-color: rgba(255, 255, 255, 0.7);
-    border: 1px solid #fda4af;
-    border-radius: 20px;
-    padding: 5px 18px;
-    color: #e11d48;
-}
-
-.crown-glyph {
-    color: #0f172a;
-}
-
-.badge-wave {
-    color: #e11d48;
-    font-size: 0.95rem;
-    font-weight: 700;
-}
-
-.heart-glyph {
-    color: #e11d48;
-    fill: #e11d48;
-}
-
-/* 2. Dải khung phụ dưới Hero Banner */
-.home-hero-sub-slot {
-    height: 70px;
-    background-color: #f1f5f9;
-    border-radius: 10px;
-}
-
-/* 3. Khối 6 ô tóm lược */
-.home-summary-slots-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 12px;
-}
-
-.summary-slot-card {
-    height: 60px;
-    background-color: #f1f5f9;
-    border-radius: 8px;
-}
-
-/* 4. Hàng 3 Widget: Conversations, Sandboxes, Tasks */
-.home-widgets-tri-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
+    padding-bottom: 30px;
+    box-sizing: border-box;
 }
 
-.home-activity-widget-box {
+/* ======================================================== */
+/* 1. HERO RESUME STUDY BANNER                              */
+/* ======================================================== */
+.edu-resume-hero {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 14px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.widget-box-header {
+    border-radius: 12px;
+    padding: 18px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 2px;
+    gap: 20px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    box-sizing: border-box;
 }
 
-.widget-header-left {
+.resume-hero-left {
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 0.82rem;
-    color: #0f172a;
+    gap: 16px;
+    min-width: 0;
+    flex: 1;
 }
 
-.btn-view-all-text {
+.edu-resume-hero .resume-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.edu-resume-hero .resume-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.edu-resume-hero .resume-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #059669;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.edu-resume-hero .resume-copy h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edu-resume-hero .resume-copy p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Controls bên phải Hero: Sắp xếp ngay ngắn, không đè nhau */
+.resume-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.time-range-toggles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 3px 6px;
+}
+
+.btn-reload-icon {
     background: transparent;
     border: none;
-    font-size: 0.72rem;
     color: #64748b;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    transition: color 0.12s ease;
+    padding: 4px;
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+    transition: all 0.15s ease;
 }
 
-.btn-view-all-text:hover {
+.btn-reload-icon:hover:not(:disabled) {
+    background-color: #e2e8f0;
     color: #0f172a;
 }
 
-.widget-bar-slot {
-    height: 32px;
-    background-color: #f1f5f9;
-    border-radius: 6px;
+.btn-reload-icon:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-/* 5 & 6. Khối Projects (Pinned & All Projects) */
-.home-section-projects-block {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.projects-group-header-row {
-    display: flex;
+.btn-continue-edu {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    font-size: 0.82rem;
+    gap: 8px;
+    padding: 9px 18px;
+    background-color: #059669;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.84rem;
     font-weight: 600;
-    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
-.group-header-title {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.btn-continue-edu:hover {
+    background-color: #047857;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
 }
 
-.star-gold-glyph {
-    color: #eab308;
-    fill: #eab308;
-}
-
-.star-muted-glyph {
-    color: #94a3b8;
-}
-
-.archive-icon-glyph {
-    color: #94a3b8;
-}
-
-/* Lưới Cards Projects 3 cột */
-.projects-cards-three-col {
+/* ======================================================== */
+/* 2. KPI METRICS GRID (4 CỘT)                              */
+/* ======================================================== */
+.edu-kpi-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.project-card-surface {
+.edu-kpi-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 16px 18px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    min-height: 104px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    box-sizing: border-box;
     transition:
         transform 0.15s ease,
         box-shadow 0.15s ease;
 }
 
-.project-card-surface:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.06);
+.edu-kpi-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
-.project-card-top-bar {
+.edu-kpi-card .kpi-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.edu-kpi-card .kpi-label {
+    font-size: 0.76rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.edu-kpi-card .kpi-icon-muted {
+    color: #94a3b8;
+}
+
+.edu-kpi-card .kpi-value {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.edu-kpi-card .kpi-sub-note {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+
+/* ======================================================== */
+/* 3. SPLIT SECTIONS (COURSES PROGRESS & AI DRILLS)         */
+/* ======================================================== */
+.edu-split-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.courses-progress-card,
+.ai-recs-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    min-height: 180px;
+    box-sizing: border-box;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.section-title-row strong {
+    font-size: 0.92rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.btn-text-link {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.76rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.12s ease;
+    padding: 0;
+}
+
+.btn-text-link:hover {
+    color: #059669;
+}
+
+/* Trạng thái rỗng chuẩn form */
+.section-empty-feedback {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 8px 0;
+}
+
+.ai-rec-intro {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 0 0 12px;
+    line-height: 1.45;
+}
+
+/* Course Items */
+.course-progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.course-progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    background-color: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+}
+
+.course-meta-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.project-identity-wrap {
+.course-title-unit {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.project-identity-wrap strong {
-    font-size: 0.94rem;
-    color: #0f172a;
-    font-weight: 600;
-}
-
-.project-folder-icon {
-    color: #64748b;
-}
-
-.project-top-indicators {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.status-tag-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+.course-title-unit code {
     font-size: 0.7rem;
-    padding: 2px 7px;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
-}
-
-.status-tag-chip.active {
-    color: #059669;
-    border-color: #a7f3d0;
+    font-weight: 700;
     background-color: #ecfdf5;
-    font-weight: 600;
+    color: #059669;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
 }
 
-.status-tag-chip.idle {
-    color: #64748b;
-    background-color: #f8fafc;
-}
-
-.project-location-type {
-    font-size: 0.76rem;
-    color: #64748b;
-}
-
-.project-stats-subline {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.74rem;
-    color: #64748b;
-    margin-bottom: 6px;
-}
-
-.btn-open-project-action {
-    width: 100%;
-    padding: 8px 0;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
+.course-title-unit strong {
+    font-size: 0.82rem;
     color: #1e293b;
+}
+
+.progress-percent {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.progress-bar-track {
+    width: 100%;
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #059669;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.course-next-row small {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+/* Drill boxes */
+.drill-action-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.drill-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #fcfdfe;
     cursor: pointer;
     transition: all 0.15s ease;
 }
 
-.btn-open-project-action:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
+.drill-box:hover {
+    border-color: #059669;
+    background-color: #f0fdf4;
+    transform: translateY(-1px);
 }
 
-/* Thẻ tạo nhanh New Project nét đứt */
-.card-new-project-dashed {
-    border: 2px dashed #cbd5e1;
-    background-color: transparent;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #64748b;
-    font-weight: 600;
-    font-size: 0.85rem;
-    gap: 6px;
-    min-height: 140px;
-}
-
-.card-new-project-dashed:hover {
-    background-color: #ffffff;
-    border-color: #94a3b8;
+.drill-box strong {
+    display: block;
+    font-size: 0.82rem;
     color: #0f172a;
+    margin-bottom: 2px;
 }
 
-.bottom-spacing {
-    margin-bottom: 24px;
+.drill-box small {
+    font-size: 0.72rem;
+    color: #64748b;
 }
 
-@media (max-width: 1100px) {
-    .projects-cards-three-col,
-    .home-widgets-tri-grid {
+/* Responsive */
+@media (max-width: 1024px) {
+    .edu-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .edu-split-sections {
         grid-template-columns: 1fr;
     }
+}
 
-    .home-summary-slots-grid {
-        grid-template-columns: repeat(3, 1fr);
+@media (max-width: 768px) {
+    .edu-resume-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .resume-hero-actions {
+        width: 100%;
+        justify-content: space-between;
     }
 }

@@ -5,14 +5,18 @@ import com.knowledgehub.dto.request.RegisterRequest;
 import com.knowledgehub.dto.request.SendOtpRequest;
 import com.knowledgehub.dto.request.VerifyOtpRequest;
 import com.knowledgehub.dto.response.ApiResponse;
+import com.knowledgehub.dto.response.AuthMeResponse;
 import com.knowledgehub.dto.response.AuthResponse;
 import com.knowledgehub.dto.response.UserResponse;
+import com.knowledgehub.entity.User;
 import com.knowledgehub.service.interfaces.AuthService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @AllArgsConstructor
@@ -56,6 +60,14 @@ public class AuthController {
                 .success(true)
                 .message("Login successful")
                 .data(response)
+                .build());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<AuthMeResponse>> me(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(ApiResponse.<AuthMeResponse>builder()
+                .success(true)
+                .data(authService.me(user.getId()))
                 .build());
     }
 }

@@ -1,0 +1,20 @@
+/* Icon "app" cho loại tài liệu (Word / Excel / PowerPoint / PDF / MD / TXT).
+   Kích thước khung do prop size quyết định, ở đây chỉ xử lý hiển thị.
+   Component render <img> khi có ảnh thương hiệu và <svg> cho loại chưa có. */
+.document-type-icon {
+    display: block;
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+/* Ảnh PNG 48x48: ép khung vuông của prop size nhưng giữ tỉ lệ gốc */
+img.document-type-icon {
+    object-fit: contain;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+/* Giấy nền và ô thương hiệu có bóng nhẹ để nổi khối như icon ứng dụng */
+.document-type-icon .dti-sheet {
+    filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.08));
+}

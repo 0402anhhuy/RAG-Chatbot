@@ -1,31 +1,39 @@
 import { useState, useEffect } from "react";
-import { X, Sparkles, User, ChevronDown } from "lucide-react";
+import { X, Sparkles, User } from "lucide-react";
+import CustomSelector from "../../../../../../../components/common/selector/CustomSelector";
 import "./CreateTaskModal.css";
 
 const STATUS_OPTIONS = [
-    { id: "backlog", label: "Backlog", dotClass: "dot-backlog" },
-    { id: "in_progress", label: "In Progress", dotClass: "dot-in-progress" },
-    { id: "review", label: "Review", dotClass: "dot-review" },
-    { id: "completed", label: "Completed", dotClass: "dot-completed" },
+    { id: "BACKLOG", label: "Backlog", dotClass: "dot-backlog" },
+    { id: "IN_PROGRESS", label: "In Progress", dotClass: "dot-in-progress" },
+    { id: "REVIEW", label: "Review", dotClass: "dot-review" },
+    { id: "COMPLETED", label: "Completed", dotClass: "dot-completed" },
 ];
 
-const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
+const PRIORITY_OPTIONS = [
+    { id: "LOW", label: "Low" },
+    { id: "MEDIUM", label: "Medium" },
+    { id: "HIGH", label: "High" },
+    { id: "URGENT", label: "Urgent" },
+];
 
 const CreateTaskModal = ({
     isOpen,
     onClose,
     onCreate,
-    initialStatus = "in_progress",
+    initialStatus = "BACKLOG",
+    members = [],
 }) => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [labels, setLabels] = useState("");
     const [storyPoints, setStoryPoints] = useState("");
-    const [originalEstimate, setOriginalEstimate] = useState("3w 4d 12h");
-    const [remainingEstimate, setRemainingEstimate] = useState("3w 4d 12h");
+    const [originalEstimate, setOriginalEstimate] = useState("");
+    const [remainingEstimate, setRemainingEstimate] = useState("");
     const [status, setStatus] = useState(initialStatus);
-    const [priority, setPriority] = useState("Medium");
-    const [assignee, setAssignee] = useState("");
+    const [priority, setPriority] = useState("MEDIUM");
+    const [assigneeEmail, setAssigneeEmail] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Đồng bộ lại status khi modal được mở từ một cột cụ thể
     useEffect(() => {
@@ -35,57 +43,66 @@ const CreateTaskModal = ({
             setDescription("");
             setLabels("");
             setStoryPoints("");
-            setOriginalEstimate("3w 4d 12h");
-            setRemainingEstimate("3w 4d 12h");
-            setPriority("Medium");
-            setAssignee("");
+            setOriginalEstimate("");
+            setRemainingEstimate("");
+            setPriority("MEDIUM");
+            setAssigneeEmail("");
+            setIsSubmitting(false);
         }
     }, [isOpen, initialStatus]);
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!title.trim()) return;
+    // Member của project lấy từ BE, không còn danh sách cứng
+    const assigneeOptions = [
+        { value: "", label: "Assign to..." },
+        ...members
+            .filter((member) => member.email)
+            .map((member) => ({ value: member.email, label: member.name || member.email })),
+    ];
 
-        const newTask = {
-            id: `task-${Date.now()}`,
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!title.trim() || isSubmitting) return;
+
+        setIsSubmitting(true);
+        await onCreate({
             title: title.trim(),
             description,
-            labels: labels ? labels.split(",").map((l) => l.trim()).filter(Boolean) : [],
+            labels: labels
+                ? labels
+                      .split(",")
+                      .map((l) => l.trim())
+                      .filter(Boolean)
+                : [],
             storyPoints,
             originalEstimate,
             remainingEstimate,
             status,
             priority,
-            assignee: assignee || "Huy Tran Anh",
-        };
-
-        if (onCreate) onCreate(newTask);
-        onClose();
+            assigneeEmail: assigneeEmail || null,
+        });
+        setIsSubmitting(false);
     };
 
     return (
         <div className="new-task-modal-overlay" onClick={onClose}>
-            <div
-                className="new-task-modal-card"
-                onClick={(e) => e.stopPropagation()}
-            >
+            <div className="new-task-modal-card" onClick={(e) => e.stopPropagation()}>
                 {/* 1. HEADER CỐ ĐỊNH (Không bị cuộn) */}
                 <div className="modal-header-fixed">
                     <h3>Create New Task</h3>
-                    <button
-                        type="button"
-                        className="btn-modal-close"
-                        onClick={onClose}
-                    >
+                    <button type="button" className="btn-modal-close" onClick={onClose}>
                         <X size={18} />
                     </button>
                 </div>
 
                 {/* 2. BODY CUỘN RIÊNG Ở GIỮA */}
                 <div className="modal-body-scrollable">
-                    <form id="create-new-task-form" onSubmit={handleSubmit} className="modal-form-fields">
+                    <form
+                        id="create-new-task-form"
+                        onSubmit={handleSubmit}
+                        className="modal-form-fields"
+                    >
                         {/* Title */}
                         <div className="form-field-group">
                             <label className="field-label">Title</label>
@@ -109,7 +126,7 @@ const CreateTaskModal = ({
                                         setDescription(
                                             title
                                                 ? `Implement and verify: ${title}`
-                                                : "Generated task requirements and scope."
+                                                : "Generated task requirements and scope.",
                                         )
                                     }
                                 >
@@ -134,7 +151,7 @@ const CreateTaskModal = ({
                                 className="input-default-pill"
                                 value={labels}
                                 onChange={(e) => setLabels(e.target.value)}
-                                placeholder="Add label (press Enter to add)"
+                                placeholder="Comma separated, e.g. backend, bug"
                             />
                         </div>
 
@@ -204,14 +221,14 @@ const CreateTaskModal = ({
                                 <div className="priority-options-row">
                                     {PRIORITY_OPTIONS.map((p) => (
                                         <button
-                                            key={p}
+                                            key={p.id}
                                             type="button"
                                             className={`btn-priority-item ${
-                                                priority === p ? "selected" : ""
+                                                priority === p.id ? "selected" : ""
                                             }`}
-                                            onClick={() => setPriority(p)}
+                                            onClick={() => setPriority(p.id)}
                                         >
-                                            {p}
+                                            {p.label}
                                         </button>
                                     ))}
                                 </div>
@@ -223,15 +240,13 @@ const CreateTaskModal = ({
                             <label className="field-label">Assignee</label>
                             <div className="assignee-select-pill-wrap">
                                 <User size={15} className="assignee-glyph-muted" />
-                                <select
-                                    className="assignee-native-select"
-                                    value={assignee}
-                                    onChange={(e) => setAssignee(e.target.value)}
-                                >
-                                    <option value="">Assign to...</option>
-                                    <option value="Huy Tran Anh">Huy Tran Anh</option>
-                                </select>
-                                <ChevronDown size={14} className="assignee-caret-glyph" />
+                                <CustomSelector
+                                    className="kanban-modal-selector"
+                                    options={assigneeOptions}
+                                    value={assigneeEmail}
+                                    onChange={(value) => setAssigneeEmail(value)}
+                                    placeholder="Assign to..."
+                                />
                             </div>
                         </div>
                     </form>
@@ -239,19 +254,16 @@ const CreateTaskModal = ({
 
                 {/* 3. FOOTER CỐ ĐỊNH (Không bị cuộn) */}
                 <div className="modal-footer-fixed">
-                    <button
-                        type="button"
-                        className="btn-cancel-pill"
-                        onClick={onClose}
-                    >
+                    <button type="button" className="btn-cancel-pill" onClick={onClose}>
                         Cancel
                     </button>
                     <button
                         type="submit"
                         form="create-new-task-form"
                         className="btn-submit-task-pill"
+                        disabled={isSubmitting}
                     >
-                        Create Task
+                        {isSubmitting ? "Creating..." : "Create Task"}
                     </button>
                 </div>
             </div>

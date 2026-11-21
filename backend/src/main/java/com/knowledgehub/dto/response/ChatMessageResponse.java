@@ -10,5 +10,7 @@ public record ChatMessageResponse(
         MessageRole role,
         String content,
         String sources,
+        long tokens,
+        double cost,
         Instant createdAt) {
 }

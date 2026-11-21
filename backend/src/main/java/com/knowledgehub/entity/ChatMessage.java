@@ -32,6 +32,12 @@ public class ChatMessage {
     @Column(columnDefinition = "TEXT")
     private String sources;
 
+    @Column(name = "token_count", nullable = false)
+    private long tokenCount;
+
+    @Column(name = "cost", nullable = false)
+    private double cost;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

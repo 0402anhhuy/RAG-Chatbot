@@ -1,4 +1,4 @@
-import { Compass, HelpCircle, BookOpen, Play, ChevronsUpDown, Terminal, Plus } from "lucide-react";
+import { Compass, HelpCircle, BookOpen, ChevronsUpDown } from "lucide-react";
 import "./ProjectNavbar.css";
 
 const ProjectNavbar = ({
@@ -40,15 +40,6 @@ const ProjectNavbar = ({
                     <span className="shortcut-tag">
                         <BookOpen size={13} /> Ctrl H
                     </span>
-                </div>
-
-                {/* Trạng thái Sandbox */}
-                <div className="sandbox-control-cluster">
-                    <span className="sandbox-stopped-label">Stopped</span>
-                    <button type="button" className="btn-resume-sandbox">
-                        <Play size={12} fill="currentColor" />
-                        <span>Resume Sandbox</span>
-                    </button>
                 </div>
             </div>
         </header>

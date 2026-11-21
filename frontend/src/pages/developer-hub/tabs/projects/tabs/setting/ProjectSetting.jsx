@@ -1,133 +1,262 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     Sliders,
     Sparkles,
-    Terminal,
     Archive,
     Folder,
     Save,
-    RotateCcw,
     Plus,
     Eye,
     EyeOff,
-    Check,
     ArchiveRestore,
+    Loader2,
+    Trash2,
 } from "lucide-react";
+import { projectSettingApi } from "../../../../../../api";
+import CustomSelector from "../../../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../../../context/ToastContext";
 import "./ProjectSetting.css";
 
-const EXCLUDED_PATHS_DEFAULT = `node_modules
-bower_components
-vendor
-jspm_packages
-dist
-build
-.next
-.git`;
-
-const ARCHIVED_TASKS_DATA = [
-    { id: "a1", title: "EE (Sep) < Norm", status: "completed", date: "Archived 10/6/2026" },
-    {
-        id: "a2",
-        title: "[Admin] Modal kết quả Add Users không handle overflow khi danh sách user quá dài",
-        status: "in_progress",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a3",
-        title: "[Planning Task] Define Project Config",
-        status: "completed",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a4",
-        title: "[Planning Task] Resource Allocation",
-        status: "completed",
-        date: "Archived 10/6/2026",
-    },
-    { id: "a5", title: "Management", status: "in_progress", date: "Archived 10/6/2026" },
-    {
-        id: "a6",
-        title: "[Localization] Một số nội dung luôn hiển thị bằng English khi chuyển Language sang Tiếng Việt hoặc 日本語",
-        status: "in_progress",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a7",
-        title: "[Network Issue][Upload File] Upload file failed in VibeFlow",
-        status: "in_progress",
-        date: "Archived 10/6/2026",
-    },
-    { id: "a8", title: "kkhoan < norm", status: "in_progress", date: "Archived 10/6/2026" },
-    {
-        id: "a9",
-        title: "[Workbench IDE] Không hiển thị cảnh báo khi tạo file trùng tên trong cùng folder",
-        status: "in_progress",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a10",
-        title: "[Planning Task] Define Project Productivity",
-        status: "completed",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a11",
-        title: "[Project] Opening Archived Project Redirects User to Home Page",
-        status: "in_progress",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a12",
-        title: "[Conversation List] Archive icon/button is incorrectly displayed for archived conversations",
-        status: "in_progress",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a13",
-        title: "[Workbench Change] Commit Fail nhưng mà vẫn ẩn file trong Workbench change",
-        status: "in_progress",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a14",
-        title: '[IDE] Xóa file thành công nhưng hệ thống hiển thị thông báo lỗi "Delete failed HTTP 404"',
-        status: "in_progress",
-        date: "Archived 10/6/2026",
-    },
-    {
-        id: "a15",
-        title: "[Planning Task] Hold Project KickOff Meeting",
-        status: "completed",
-        date: "Archived 10/6/2026",
-    },
+// Provider mà người dùng có thể thêm key cho project (khớp ProviderType của BE).
+const PROVIDER_OPTIONS = [
+    { value: "GOOGLE", label: "Google Gemini" },
+    { value: "OPENAI", label: "OpenAI" },
+    { value: "ANTHROPIC", label: "Anthropic Claude" },
+    { value: "FPT_CLOUD", label: "FPT Cloud" },
 ];
 
-const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
-    const [subTab, setSubTab] = useState("general"); // "general" | "llm" | "sandboxes" | "archived"
+// Giá trị mặc định giữ chỗ trong lúc tải settings; BE luôn trả về số thật.
+const EMPTY_FORM = {
+    name: "",
+    description: "",
+    excludedPaths: "",
+    hoursPerDay: 8,
+    daysPerMonth: 20,
+    referenceRate: 2000,
+};
+
+const ProjectSetting = ({ project = null }) => {
+    const projectId = project?.id || null;
+    const { showToast } = useToast();
+
+    const [subTab, setSubTab] = useState("general"); // "general" | "llm" | "archived"
+
+    const [loading, setLoading] = useState(false);
+    const [savingGeneral, setSavingGeneral] = useState(false);
+    const [savingBudget, setSavingBudget] = useState(false);
+    const [addingProvider, setAddingProvider] = useState(false);
+    const [restoringTaskId, setRestoringTaskId] = useState(null);
 
     // Form General
-    const [name, setName] = useState(projectName);
-    const [description, setDescription] = useState("");
-    const [excludedPaths, setExcludedPaths] = useState(EXCLUDED_PATHS_DEFAULT);
-    const [hoursPerDay, setHoursPerDay] = useState(8);
-    const [daysPerMonth, setDaysPerMonth] = useState(20);
-    const [referenceRate, setReferenceRate] = useState(2000);
+    const [form, setForm] = useState(EMPTY_FORM);
+    const [projectType, setProjectType] = useState("LOCAL");
+    const [savedForm, setSavedForm] = useState(EMPTY_FORM);
 
-    // Form LLM + Budget
+    // LLM + Budget
     const [isAddingProvider, setIsAddingProvider] = useState(false);
-    const [providerType, setProviderType] = useState("Google Gemini");
+    const [providerType, setProviderType] = useState("GOOGLE");
     const [apiKey, setApiKey] = useState("");
     const [showApiKey, setShowApiKey] = useState(false);
+    const [providers, setProviders] = useState([]);
     const [allowStarterKit, setAllowStarterKit] = useState(true);
     const [allowPersonalProviders, setAllowPersonalProviders] = useState(true);
     const [enableBudgetTracking, setEnableBudgetTracking] = useState(false);
+    const [budgetLimit, setBudgetLimit] = useState("");
 
     // Danh sách Archived
-    const [archivedTasks, setArchivedTasks] = useState(ARCHIVED_TASKS_DATA);
+    const [archivedTasks, setArchivedTasks] = useState([]);
+    const [archivedLoading, setArchivedLoading] = useState(false);
 
-    const handleUnarchive = (taskId) => {
-        setArchivedTasks((prev) => prev.filter((t) => t.id !== taskId));
+    const applySettings = (data) => {
+        if (!data) return;
+        const nextForm = {
+            name: data.name ?? "",
+            description: data.description ?? "",
+            excludedPaths: data.excludedPaths ?? "",
+            hoursPerDay: data.hoursPerDay ?? 8,
+            daysPerMonth: data.daysPerMonth ?? 20,
+            referenceRate: data.referenceRate ?? 0,
+        };
+        setForm(nextForm);
+        setSavedForm(nextForm);
+        setProjectType(data.projectType || "LOCAL");
+        setProviders(data.providers || []);
+        setAllowStarterKit(Boolean(data.allowStarterKit));
+        setAllowPersonalProviders(Boolean(data.allowPersonalProviders));
+        setEnableBudgetTracking(Boolean(data.budgetTrackingEnabled));
+        setBudgetLimit(
+            data.monthlyBudgetLimit === null || data.monthlyBudgetLimit === undefined
+                ? ""
+                : String(data.monthlyBudgetLimit),
+        );
     };
+
+    const loadSettings = useCallback(
+        async (signal) => {
+            if (!projectId) {
+                setForm(EMPTY_FORM);
+                return;
+            }
+            try {
+                setLoading(true);
+                const data = await projectSettingApi.get(projectId);
+                if (!signal?.cancelled) applySettings(data);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                showToast(err.message || "Unable to load project settings.", "error");
+            } finally {
+                if (!signal?.cancelled) setLoading(false);
+            }
+        },
+        [projectId, showToast],
+    );
+
+    useEffect(() => {
+        const signal = { cancelled: false };
+        loadSettings(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [loadSettings]);
+
+    const loadArchivedTasks = useCallback(
+        async (signal) => {
+            if (!projectId) {
+                setArchivedTasks([]);
+                return;
+            }
+            try {
+                setArchivedLoading(true);
+                const data = await projectSettingApi.listArchivedTasks(projectId);
+                if (!signal?.cancelled) setArchivedTasks(data || []);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                setArchivedTasks([]);
+                showToast(err.message || "Unable to load archived tasks.", "error");
+            } finally {
+                if (!signal?.cancelled) setArchivedLoading(false);
+            }
+        },
+        [projectId, showToast],
+    );
+
+    useEffect(() => {
+        if (subTab !== "archived") return undefined;
+        const signal = { cancelled: false };
+        loadArchivedTasks(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [subTab, loadArchivedTasks]);
+
+    const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+    const handleSaveGeneral = async () => {
+        if (!projectId) return;
+        if (!form.name.trim()) {
+            showToast("Project name is required.", "info");
+            return;
+        }
+        try {
+            setSavingGeneral(true);
+            const saved = await projectSettingApi.update(projectId, {
+                name: form.name.trim(),
+                description: form.description,
+                excludedPaths: form.excludedPaths,
+                hoursPerDay: Number(form.hoursPerDay) || 1,
+                daysPerMonth: Number(form.daysPerMonth) || 1,
+                referenceRate: Number(form.referenceRate) || 0,
+            });
+            applySettings(saved);
+            showToast("Project settings saved.", "success");
+        } catch (err) {
+            showToast(err.message || "Unable to save project settings.", "error");
+        } finally {
+            setSavingGeneral(false);
+        }
+    };
+
+    const handleCancelGeneral = () => {
+        setForm(savedForm);
+        showToast("Changes discarded.", "info");
+    };
+
+    const handleAddProvider = async () => {
+        if (!projectId) return;
+        if (!apiKey.trim()) {
+            showToast("Enter an API key first.", "info");
+            return;
+        }
+        try {
+            setAddingProvider(true);
+            const saved = await projectSettingApi.addProvider(projectId, {
+                provider: providerType,
+                apiKey: apiKey.trim(),
+            });
+            applySettings(saved);
+            setApiKey("");
+            setIsAddingProvider(false);
+            showToast("Provider added and verified.", "success");
+        } catch (err) {
+            showToast(err.message || "Unable to add the provider.", "error");
+        } finally {
+            setAddingProvider(false);
+        }
+    };
+
+    const handleRemoveProvider = async (credential) => {
+        if (!projectId) return;
+        try {
+            const saved = await projectSettingApi.removeProvider(projectId, credential.id);
+            applySettings(saved);
+            showToast("Provider removed.", "success");
+        } catch (err) {
+            showToast(err.message || "Unable to remove the provider.", "error");
+        }
+    };
+
+    const handleSaveBudget = async () => {
+        if (!projectId) return;
+        try {
+            setSavingBudget(true);
+            const saved = await projectSettingApi.update(projectId, {
+                allowStarterKit,
+                allowPersonalProviders,
+                budgetTrackingEnabled: enableBudgetTracking,
+                monthlyBudgetLimit: budgetLimit === "" ? null : Number(budgetLimit),
+            });
+            applySettings(saved);
+            showToast("Budget settings saved.", "success");
+        } catch (err) {
+            showToast(err.message || "Unable to save budget settings.", "error");
+        } finally {
+            setSavingBudget(false);
+        }
+    };
+
+    const handleUnarchive = async (taskId) => {
+        if (!projectId) return;
+        try {
+            setRestoringTaskId(taskId);
+            await projectSettingApi.unarchiveTask(projectId, taskId);
+            setArchivedTasks((prev) => prev.filter((task) => task.id !== taskId));
+            showToast("Task restored to the board.", "success");
+        } catch (err) {
+            showToast(err.message || "Unable to restore the task.", "error");
+        } finally {
+            setRestoringTaskId(null);
+        }
+    };
+
+    if (!projectId) {
+        return (
+            <div className="vibe-settings-page-viewport">
+                <div className="settings-surface-card">
+                    <p role="alert">Open a project first to manage its settings.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="vibe-settings-page-viewport">
@@ -140,6 +269,7 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                 >
                     <Sliders size={14} />
                     <span>General</span>
+                    {loading && <Loader2 size={12} className="settings-spinner" />}
                 </button>
                 <button
                     type="button"
@@ -149,14 +279,7 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                     <Sparkles size={14} />
                     <span>LLM + Budget</span>
                 </button>
-                <button
-                    type="button"
-                    className={`btn-settings-subtab ${subTab === "sandboxes" ? "active" : ""}`}
-                    onClick={() => setSubTab("sandboxes")}
-                >
-                    <Terminal size={14} />
-                    <span>Sandboxes</span>
-                </button>
+
                 <button
                     type="button"
                     className={`btn-settings-subtab ${subTab === "archived" ? "active" : ""}`}
@@ -183,7 +306,9 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                             <label className="settings-label">Project Type</label>
                             <div className="project-type-row">
                                 <Folder size={15} className="folder-glyph" />
-                                <span>Local Project</span>
+                                <span>
+                                    {projectType === "REMOTE" ? "Remote Project" : "Local Project"}
+                                </span>
                             </div>
                         </div>
 
@@ -195,8 +320,8 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                             <input
                                 type="text"
                                 className="input-settings-pill"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                value={form.name}
+                                onChange={(e) => setField("name", e.target.value)}
                             />
                         </div>
 
@@ -207,8 +332,8 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                                 className="textarea-settings-box"
                                 rows={3}
                                 placeholder="A brief description of your project..."
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                value={form.description}
+                                onChange={(e) => setField("description", e.target.value)}
                             />
                         </div>
 
@@ -221,7 +346,25 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                                 <button
                                     type="button"
                                     className="btn-restore-default"
-                                    onClick={() => setExcludedPaths(EXCLUDED_PATHS_DEFAULT)}
+                                    onClick={async () => {
+                                        // Lấy lại đúng danh sách mặc định từ BE
+                                        try {
+                                            const saved = await projectSettingApi.update(
+                                                projectId,
+                                                {
+                                                    excludedPaths: null,
+                                                },
+                                            );
+                                            setField("excludedPaths", saved.excludedPaths);
+                                            showToast("Default list restored.", "success");
+                                        } catch (err) {
+                                            showToast(
+                                                err.message ||
+                                                    "Unable to restore the default list.",
+                                                "error",
+                                            );
+                                        }
+                                    }}
                                 >
                                     Restore default
                                 </button>
@@ -229,8 +372,8 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                             <textarea
                                 className="textarea-excluded-paths"
                                 rows={6}
-                                value={excludedPaths}
-                                onChange={(e) => setExcludedPaths(e.target.value)}
+                                value={form.excludedPaths}
+                                onChange={(e) => setField("excludedPaths", e.target.value)}
                             />
                             <p className="excluded-paths-explain-text">
                                 One path segment per line — this starts as the built-in list; add or
@@ -262,8 +405,10 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                                     <div className="constant-pill-input-wrap">
                                         <input
                                             type="number"
-                                            value={hoursPerDay}
-                                            onChange={(e) => setHoursPerDay(e.target.value)}
+                                            value={form.hoursPerDay}
+                                            onChange={(e) =>
+                                                setField("hoursPerDay", e.target.value)
+                                            }
                                         />
                                         <span className="unit-label">h</span>
                                     </div>
@@ -280,8 +425,10 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                                     <div className="constant-pill-input-wrap">
                                         <input
                                             type="number"
-                                            value={daysPerMonth}
-                                            onChange={(e) => setDaysPerMonth(e.target.value)}
+                                            value={form.daysPerMonth}
+                                            onChange={(e) =>
+                                                setField("daysPerMonth", e.target.value)
+                                            }
                                         />
                                         <span className="unit-label">d</span>
                                     </div>
@@ -298,8 +445,10 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                                     <div className="constant-pill-input-wrap">
                                         <input
                                             type="number"
-                                            value={referenceRate}
-                                            onChange={(e) => setReferenceRate(e.target.value)}
+                                            value={form.referenceRate}
+                                            onChange={(e) =>
+                                                setField("referenceRate", e.target.value)
+                                            }
                                         />
                                         <span className="unit-label">$</span>
                                     </div>
@@ -312,18 +461,32 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                             <div className="constants-footer-calc">
                                 <span>
                                     Hours per man-month:{" "}
-                                    {Number(hoursPerDay) * Number(daysPerMonth)}
+                                    {Number(form.hoursPerDay) * Number(form.daysPerMonth)}
                                 </span>
                             </div>
                         </div>
 
                         {/* Footer Actions */}
                         <div className="settings-footer-action-bar">
-                            <button type="button" className="btn-cancel-settings-pill">
+                            <button
+                                type="button"
+                                className="btn-cancel-settings-pill"
+                                onClick={handleCancelGeneral}
+                                disabled={savingGeneral}
+                            >
                                 Cancel
                             </button>
-                            <button type="button" className="btn-save-settings-pill">
-                                <Save size={14} />
+                            <button
+                                type="button"
+                                className="btn-save-settings-pill"
+                                onClick={handleSaveGeneral}
+                                disabled={savingGeneral}
+                            >
+                                {savingGeneral ? (
+                                    <Loader2 size={14} className="settings-spinner" />
+                                ) : (
+                                    <Save size={14} />
+                                )}
                                 <span>Save</span>
                             </button>
                         </div>
@@ -358,6 +521,39 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                         )}
                     </div>
 
+                    {/* Danh sách provider đã cấu hình cho project */}
+                    {providers.length > 0 && (
+                        <div className="settings-archived-viewport">
+                            {providers.map((provider) => (
+                                <div key={provider.id} className="archived-task-row-card">
+                                    <div className="archived-task-info">
+                                        <strong className="archived-task-title">
+                                            {PROVIDER_OPTIONS.find(
+                                                (option) => option.value === provider.providerType,
+                                            )?.label || provider.providerType}
+                                        </strong>
+                                        <div className="archived-meta-badges">
+                                            <span className="archived-status-tag completed">
+                                                {provider.verified ? "verified" : "unverified"}
+                                            </span>
+                                            <span className="archived-date-text">
+                                                {provider.apiKeyMasked}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="btn-unarchive-pill"
+                                        onClick={() => handleRemoveProvider(provider)}
+                                    >
+                                        <Trash2 size={14} />
+                                        <span>Remove</span>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Form Add Provider hoặc Khung Empty State */}
                     {isAddingProvider ? (
                         <div className="add-provider-form-card">
@@ -365,15 +561,13 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                             <div className="provider-form-fields">
                                 <div className="provider-field-item">
                                     <label>Provider</label>
-                                    <select
-                                        className="select-provider-pill"
+                                    <CustomSelector
+                                        options={PROVIDER_OPTIONS}
                                         value={providerType}
-                                        onChange={(e) => setProviderType(e.target.value)}
-                                    >
-                                        <option value="Google Gemini">Google Gemini</option>
-                                        <option value="OpenAI">OpenAI</option>
-                                        <option value="Anthropic Claude">Anthropic Claude</option>
-                                    </select>
+                                        onChange={setProviderType}
+                                        placeholder="Select provider"
+                                        className="select-provider-pill"
+                                    />
                                 </div>
 
                                 <div className="provider-field-item">
@@ -399,34 +593,44 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                                     <button
                                         type="button"
                                         className="btn-cancel-link"
-                                        onClick={() => setIsAddingProvider(false)}
+                                        onClick={() => {
+                                            setIsAddingProvider(false);
+                                            setApiKey("");
+                                        }}
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="button"
                                         className="btn-add-verify-pill"
-                                        onClick={() => setIsAddingProvider(false)}
+                                        onClick={handleAddProvider}
+                                        disabled={addingProvider}
                                     >
-                                        <Plus size={14} />
+                                        {addingProvider ? (
+                                            <Loader2 size={14} className="settings-spinner" />
+                                        ) : (
+                                            <Plus size={14} />
+                                        )}
                                         <span>Add &amp; Verify</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="empty-llm-provider-card">
-                            <Sparkles size={24} className="empty-sparkle-center" />
-                            <p>No LLM providers configured yet.</p>
-                            <button
-                                type="button"
-                                className="btn-add-provider-center"
-                                onClick={() => setIsAddingProvider(true)}
-                            >
-                                <Plus size={14} />
-                                <span>Add Provider</span>
-                            </button>
-                        </div>
+                        providers.length === 0 && (
+                            <div className="empty-llm-provider-card">
+                                <Sparkles size={24} className="empty-sparkle-center" />
+                                <p>No LLM providers configured yet.</p>
+                                <button
+                                    type="button"
+                                    className="btn-add-provider-center"
+                                    onClick={() => setIsAddingProvider(true)}
+                                >
+                                    <Plus size={14} />
+                                    <span>Add Provider</span>
+                                </button>
+                            </div>
+                        )
                     )}
 
                     {/* Provider Access Switches */}
@@ -436,8 +640,8 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                             <p>
                                 Choose which credential sources this project may use. When both are
                                 off, only the providers configured above can be used — members whose
-                                only access is a personal key or the Starter Kit will not be able to
-                                start a sandbox on this project.
+                                only access is a personal key or the Starter Kit will have no model
+                                available for this project.
                             </p>
                         </div>
 
@@ -476,11 +680,6 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                                 <span className="toggle-slider" />
                             </label>
                         </div>
-
-                        <small className="access-footer-subhint">
-                            Applies to new sandboxes. A running sandbox keeps its current providers
-                            until it is restarted or refreshed.
-                        </small>
                     </div>
 
                     {/* Budget Settings */}
@@ -511,9 +710,37 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                             </label>
                         </div>
 
+                        {enableBudgetTracking && (
+                            <div className="toggle-switch-line">
+                                <div className="switch-text-meta">
+                                    <strong>Monthly limit</strong>
+                                    <span>Spending cap in USD for the current billing month.</span>
+                                </div>
+                                <div className="constant-pill-input-wrap">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={budgetLimit}
+                                        onChange={(e) => setBudgetLimit(e.target.value)}
+                                    />
+                                    <span className="unit-label">$</span>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="budget-footer-action">
-                            <button type="button" className="btn-save-budget-pill">
-                                <Save size={14} />
+                            <button
+                                type="button"
+                                className="btn-save-budget-pill"
+                                onClick={handleSaveBudget}
+                                disabled={savingBudget}
+                            >
+                                {savingBudget ? (
+                                    <Loader2 size={14} className="settings-spinner" />
+                                ) : (
+                                    <Save size={14} />
+                                )}
                                 <span>Save Settings</span>
                             </button>
                         </div>
@@ -522,64 +749,7 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
             )}
 
             {/* ======================================================== */}
-            {/* 3. VIEW: SANDBOXES                                       */}
-            {/* ======================================================== */}
-            {subTab === "sandboxes" && (
-                <div className="settings-sandboxes-viewport">
-                    <div className="sandboxes-table-wrapper">
-                        <table className="sandboxes-data-table">
-                            <thead>
-                                <tr>
-                                    <th>STATUS</th>
-                                    <th>USER</th>
-                                    <th>START / END</th>
-                                    <th>DURATION</th>
-                                    <th>CONVERSATIONS</th>
-                                    <th>PROMPTS</th>
-                                    <th>ID</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <div className="sandbox-status-stopped">
-                                            <span className="stopped-square-glyph">■</span>
-                                            <span>Stopped</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="sandbox-user-row">
-                                            <div className="user-avatar-tiny">HT</div>
-                                            <strong>Huy Tran Anh</strong>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="sandbox-time-column">
-                                            <span>
-                                                Yesterday <strong>09:41:52 PM</strong>
-                                            </span>
-                                            <small>— 10:45:09 PM</small>
-                                        </div>
-                                    </td>
-                                    <td>1h 3m</td>
-                                    <td>
-                                        <span className="metric-glyph-count">💬 0</span>
-                                    </td>
-                                    <td>
-                                        <span className="metric-glyph-count">⚡ 0</span>
-                                    </td>
-                                    <td>
-                                        <code className="sandbox-id-code">9d73c570</code>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {/* ======================================================== */}
-            {/* 4. VIEW: ARCHIVED                                        */}
+            {/* 3. VIEW: ARCHIVED                                        */}
             {/* ======================================================== */}
             {subTab === "archived" && (
                 <div className="settings-archived-viewport">
@@ -588,28 +758,41 @@ const ProjectSetting = ({ projectName = "DMS AI Hub" }) => {
                     </div>
 
                     <div className="archived-tasks-list">
-                        {archivedTasks.map((item) => (
-                            <div key={item.id} className="archived-task-row-card">
-                                <div className="archived-task-info">
-                                    <strong className="archived-task-title">{item.title}</strong>
-                                    <div className="archived-meta-badges">
-                                        <span className={`archived-status-tag ${item.status}`}>
-                                            {item.status}
-                                        </span>
-                                        <span className="archived-date-text">{item.date}</span>
+                        {archivedLoading ? (
+                            <p>Loading archived tasks...</p>
+                        ) : archivedTasks.length === 0 ? (
+                            <p>No archived tasks in this project.</p>
+                        ) : (
+                            archivedTasks.map((item) => (
+                                <div key={item.id} className="archived-task-row-card">
+                                    <div className="archived-task-info">
+                                        <strong className="archived-task-title">
+                                            {item.title}
+                                        </strong>
+                                        <div className="archived-meta-badges">
+                                            <span
+                                                className={`archived-status-tag ${item.statusLabel}`}
+                                            >
+                                                {item.statusLabel}
+                                            </span>
+                                            <span className="archived-date-text">
+                                                {item.archivedLabel}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <button
-                                    type="button"
-                                    className="btn-unarchive-pill"
-                                    onClick={() => handleUnarchive(item.id)}
-                                >
-                                    <ArchiveRestore size={14} />
-                                    <span>Unarchive</span>
-                                </button>
-                            </div>
-                        ))}
+                                    <button
+                                        type="button"
+                                        className="btn-unarchive-pill"
+                                        onClick={() => handleUnarchive(item.id)}
+                                        disabled={restoringTaskId === item.id}
+                                    >
+                                        <ArchiveRestore size={14} />
+                                        <span>Unarchive</span>
+                                    </button>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             )}

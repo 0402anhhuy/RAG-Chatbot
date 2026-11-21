@@ -11,6 +11,7 @@ public interface UserService {
     UserResponse getById(UUID id);
     UserResponse getByEmail(String email);
     List<UserResponse> getAll();
+    List<UserResponse> getAllByIds(List<UUID> ids);
     UserResponse update(UUID id, UserUpdateRequest changes);
     UserResponse setActive(UUID id, boolean active);
     void delete(UUID id);

@@ -309,6 +309,38 @@
     margin-right: 8px;
 }
 
+/* CustomSelector dùng trong modal: chiếm hết chiều ngang pill */
+.kanban-modal-selector {
+    display: block;
+    flex: 1;
+    min-width: 0;
+}
+
+.kanban-modal-selector .custom-select-container {
+    display: block;
+    width: 100%;
+}
+
+.kanban-modal-selector .custom-select-trigger {
+    width: 100%;
+    justify-content: space-between;
+    height: 36px;
+    padding: 0 2px;
+    border: none;
+    background: transparent;
+    font-size: 0.78rem;
+    color: #334155;
+}
+
+.kanban-modal-selector .custom-select-trigger:hover {
+    background: transparent;
+    border: none;
+}
+
+.kanban-modal-selector .custom-select-trigger.open {
+    box-shadow: none;
+}
+
 .assignee-native-select {
     width: 100%;
     height: 100%;
@@ -371,4 +403,9 @@
 
 .btn-submit-task-pill:hover {
     background-color: #52525b;
+}
+
+.btn-submit-task-pill:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
 }

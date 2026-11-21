@@ -13,10 +13,12 @@ import { SocraticTutorWorkspace } from "./tabs/tools/workspaces/SocraticTutorWor
 import { ExamPrepWorkspace } from "./tabs/tools/workspaces/ExamPrepWorkspace";
 import { AssignmentGraderWorkspace } from "./tabs/tools/workspaces/AssignmentGraderWorkspace";
 import { CoursewareRAGWorkspace } from "./tabs/tools/workspaces/CoursewareRAGWorkspace";
+import { useToast } from "../../context/ToastContext";
 
 import "./AcademyHub.css";
 
 const AcademyHub = () => {
+    const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState("home");
     const [activeSubTool, setActiveSubTool] = useState(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -55,11 +57,18 @@ const AcademyHub = () => {
         }
     };
 
+    // Upload đi qua tab Documents (đúng luồng upload có sẵn) thay vì alert.
+    const handleUploadCourseware = () => {
+        handleTabChange("documents");
+        showToast("Choose a file in Documents to upload your courseware.", "info");
+    };
+
     return (
         <div className="vibe-edu-layout">
             <EduNavbar
                 activeTabName={activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                onUploadClick={() => alert("Open Upload Courseware PDF Modal")}
+                workspaceId={currentWorkspaceId}
+                onUploadClick={handleUploadCourseware}
                 hideControls={Boolean(activeSubTool)}
             />
 
@@ -78,6 +87,7 @@ const AcademyHub = () => {
                     <main className={`edu-canvas-body ${activeSubTool ? "no-padding-full" : ""}`}>
                     {activeTab === "home" && (
                         <EduHome
+                            workspaceId={currentWorkspaceId}
                             onNavigateTab={setActiveTab}
                             onLaunchTool={handleLaunchTool}
                         />

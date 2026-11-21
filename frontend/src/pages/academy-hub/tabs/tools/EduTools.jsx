@@ -1,98 +1,150 @@
-import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Loader2, Sparkles } from "lucide-react";
+import { academyToolApi } from "../../../../api";
+import { useToast } from "../../../../context/ToastContext";
 import "./EduTools.css";
 
-const EDU_TOOLS_CONFIG = [
-    {
-        id: "tutor",
-        title: "Socratic Code Tutor",
-        description:
-            "Line-by-line interactive tutoring breaking down algorithms, data structures, and clean coding principles.",
-        icon: GraduationCap,
-        accent: "#059669",
-        badge: "SOCRATIC AI",
-        metrics: "Module 4 active",
-    },
-    {
-        id: "exam_prep",
-        title: "Exam & Quiz Prep",
-        description:
-            "Generate adaptive mock assessments, multiple-choice questions, and flashcards directly from syllabus slides.",
-        icon: Sparkles,
-        accent: "#d97706",
-        badge: "ADAPTIVE DRILL",
-        metrics: "24 questions in pool",
-    },
-    {
-        id: "grader",
-        title: "Assignment Grader",
-        description:
-            "Automated grading assistant reviewing test cases, time complexity (Big-O), and architectural rubrics.",
-        icon: CheckCircle2,
-        accent: "#0284c7",
-        badge: "AUTO RUBRIC",
-        metrics: "Rubric v3 ready",
-    },
-    {
-        id: "courseware",
-        title: "Courseware RAG Index",
-        description:
-            "Search and query across textbooks, slide decks, lab requirements, and university documentation.",
-        icon: BookOpen,
-        accent: "#7c3aed",
-        badge: "VECTOR RETRIEVAL",
-        metrics: "42 syllabus vectorized",
-    },
-];
+// Icon theo tool id do BE trả về (BE chỉ trả id, FE giữ phần trình bày).
+const TOOL_ICONS = {
+    tutor: GraduationCap,
+    exam_prep: Sparkles,
+    grader: CheckCircle2,
+    courseware: BookOpen,
+};
+
+const getSessionUser = () => {
+    try {
+        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
+        return parsed?.user || parsed || {};
+    } catch {
+        return {};
+    }
+};
 
 const EduTools = ({ onLaunchTool }) => {
+    const sessionUser = getSessionUser();
+    const { showToast } = useToast();
+
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const loadTools = useCallback(
+        async (signal) => {
+            if (!sessionUser?.id) {
+                setData(null);
+                setLoading(false);
+                return;
+            }
+            try {
+                setLoading(true);
+                const response = await academyToolApi.list(sessionUser.id);
+                if (signal?.cancelled) return;
+                setData(response);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                setData(null);
+                showToast(err.message || "Unable to load the tool suite.", "error");
+            } finally {
+                if (!signal?.cancelled) setLoading(false);
+            }
+        },
+        [sessionUser?.id, showToast],
+    );
+
+    useEffect(() => {
+        const signal = { cancelled: false };
+        loadTools(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [loadTools]);
+
+    const tools = data?.tools || [];
+
+    const handleLaunch = (tool) => {
+        // Tool chưa đủ điều kiện vẫn mở được: workspace hiển thị đúng việc cần làm.
+        if (!tool.runnable) {
+            showToast(tool.blockedReason || "This tool needs more setup.", "warning");
+        }
+        onLaunchTool?.(tool.id);
+    };
+
     return (
-        <div className="tab-body-container">
-            <div className="tab-header-banner">
-                <h2>Academy Tool Suite</h2>
-                <span>4 integrated AI learning & tutoring engines</span>
+        <div className="edu-tools-bounds">
+            <div className="edu-tools-header">
+                <div>
+                    <h2>Academy Tool Suite</h2>
+                    <span>
+                        {data
+                            ? `${tools.length} integrated AI learning engines · ${data.documentCount} indexed source${
+                                  data.documentCount === 1 ? "" : "s"
+                              }`
+                            : "Loading your learning engines..."}
+                    </span>
+                </div>
+                {data && (
+                    <span className="edu-tools-active-chip">
+                        {data.activeToolCount}/{tools.length} ready
+                    </span>
+                )}
             </div>
 
-            <div className="tools-matrix-grid">
-                {EDU_TOOLS_CONFIG.map((tool) => {
-                    const Icon = tool.icon;
-                    return (
-                        <div
-                            key={tool.id}
-                            className="dev-tool-surface-card"
-                            onClick={() => onLaunchTool && onLaunchTool(tool.id)}
-                        >
-                            <div className="tool-card-topbar">
-                                <div
-                                    className="tool-glyph-frame"
-                                    style={{
-                                        color: tool.accent,
-                                        backgroundColor: `${tool.accent}14`,
-                                    }}
-                                >
-                                    <Icon size={20} />
+            {loading ? (
+                <div className="edu-tools-state">
+                    <Loader2 size={16} className="edu-tools-spinner" />
+                    <span>Loading tools...</span>
+                </div>
+            ) : tools.length === 0 ? (
+                <div className="edu-tools-state">
+                    <span>
+                        {sessionUser?.id
+                            ? "No tool available yet. Upload course material to get started."
+                            : "Please sign in again to use the tool suite."}
+                    </span>
+                </div>
+            ) : (
+                <div className="tools-matrix-grid">
+                    {tools.map((tool) => {
+                        const Icon = TOOL_ICONS[tool.id] || Sparkles;
+                        return (
+                            <button
+                                key={tool.id}
+                                type="button"
+                                className={`dev-tool-surface-card ${tool.runnable ? "" : "is-blocked"}`}
+                                onClick={() => handleLaunch(tool)}
+                            >
+                                <div className="tool-card-topbar">
+                                    <div
+                                        className="tool-glyph-frame"
+                                        style={{
+                                            color: tool.accent,
+                                            backgroundColor: `${tool.accent}14`,
+                                        }}
+                                    >
+                                        <Icon size={20} />
+                                    </div>
+                                    <span className="tool-category-badge">{tool.badge}</span>
                                 </div>
-                                <span className="tool-category-badge">{tool.badge}</span>
-                            </div>
 
-                            <div className="tool-card-narrative">
-                                <h3>{tool.title}</h3>
-                                <p>{tool.description}</p>
-                            </div>
+                                <div className="tool-card-narrative">
+                                    <h3>{tool.title}</h3>
+                                    <p>{tool.description}</p>
+                                </div>
 
-                            <div className="tool-card-bottom-row">
-                                <span className="tool-health-meta">{tool.metrics}</span>
-                                <button type="button" className="tool-launch-btn">
-                                    <span>Launch</span>
-                                    <ArrowRight size={13} />
-                                </button>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+                                <div className="tool-card-bottom-row">
+                                    <span className="tool-health-meta">{tool.metrics}</span>
+                                    <span className="tool-launch-btn">
+                                        <span>{tool.primaryAction}</span>
+                                        <ArrowRight size={13} />
+                                    </span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 };
 
-// ĐẢM BẢO CÓ DÒNG NÀY ĐỂ HẾT LỖI SyntaxError
 export default EduTools;

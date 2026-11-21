@@ -224,3 +224,62 @@
     color: #0f172a;
     background-color: #f1f5f9;
 }
+
+/* Trạng thái tải / lỗi */
+.tasks-state-text {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.tasks-state-error {
+    color: #dc2626;
+}
+
+/* Dòng trống khi không có task */
+.tasks-empty-cell {
+    text-align: center;
+    color: #94a3b8;
+    padding: 28px 16px;
+}
+
+/* Dòng đã lưu trữ (khi lọc All) */
+.task-table-row.is-archived td {
+    opacity: 0.65;
+}
+
+/* Badge trạng thái theo từng cột Kanban */
+.task-backlog-badge.status-in-progress {
+    color: #1d4ed8;
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.task-backlog-badge.status-review {
+    color: #b45309;
+    background-color: #fffbeb;
+    border-color: #fde68a;
+}
+
+.task-backlog-badge.status-completed {
+    color: #047857;
+    background-color: #ecfdf5;
+    border-color: #a7f3d0;
+}
+
+.btn-action-glyph:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Icon sắp xếp ở header bảng (giống nhau cho Status / Task / Project / Updated) */
+.th-sort-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.th-sort-icon {
+    color: #94a3b8;
+    flex-shrink: 0;
+}

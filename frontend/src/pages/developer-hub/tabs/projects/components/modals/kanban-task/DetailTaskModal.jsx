@@ -1,26 +1,39 @@
 import { useState, useEffect } from "react";
-import { X, Sparkles, Paperclip, UploadCloud, Calendar, Archive, ChevronDown } from "lucide-react";
+import { X, Sparkles, Calendar, Archive } from "lucide-react";
+import CustomSelector from "../../../../../../../components/common/selector/CustomSelector";
 import "./DetailTaskModal.css";
 
 const STATUS_OPTIONS = [
-    { id: "backlog", label: "Backlog", dotClass: "dot-backlog" },
-    { id: "in_progress", label: "In Progress", dotClass: "dot-in-progress" },
-    { id: "review", label: "Review", dotClass: "dot-review" },
-    { id: "completed", label: "Completed", dotClass: "dot-completed" },
+    { id: "BACKLOG", label: "Backlog", dotClass: "dot-backlog" },
+    { id: "IN_PROGRESS", label: "In Progress", dotClass: "dot-in-progress" },
+    { id: "REVIEW", label: "Review", dotClass: "dot-review" },
+    { id: "COMPLETED", label: "Completed", dotClass: "dot-completed" },
 ];
 
-const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Urgent"];
+const PRIORITY_OPTIONS = [
+    { id: "LOW", label: "Low" },
+    { id: "MEDIUM", label: "Medium" },
+    { id: "HIGH", label: "High" },
+    { id: "URGENT", label: "Urgent" },
+];
 
-const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
+const formatDate = (iso) => {
+    if (!iso) return "—";
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
+};
+
+const DetailTaskModal = ({ isOpen, task, members = [], onClose, onSave, onArchive }) => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [labels, setLabels] = useState("");
     const [storyPoints, setStoryPoints] = useState("");
-    const [originalEstimate, setOriginalEstimate] = useState("3w 4d 12h");
-    const [remainingEstimate, setRemainingEstimate] = useState("3w 4d 12h");
-    const [status, setStatus] = useState("in_progress");
-    const [priority, setPriority] = useState("Medium");
-    const [assignee, setAssignee] = useState("Huy Tran Anh");
+    const [originalEstimate, setOriginalEstimate] = useState("");
+    const [remainingEstimate, setRemainingEstimate] = useState("");
+    const [status, setStatus] = useState("BACKLOG");
+    const [priority, setPriority] = useState("MEDIUM");
+    const [assigneeEmail, setAssigneeEmail] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (task) {
@@ -28,31 +41,47 @@ const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
             setDescription(task.description || "");
             setLabels(task.labels ? task.labels.join(", ") : "");
             setStoryPoints(task.storyPoints || "");
-            setOriginalEstimate(task.originalEstimate || "3w 4d 12h");
-            setRemainingEstimate(task.remainingEstimate || "3w 4d 12h");
-            setStatus(task.status || "in_progress");
-            setPriority(task.priority || "Medium");
-            setAssignee(task.assignee || "Huy Tran Anh");
+            setOriginalEstimate(task.originalEstimate || "");
+            setRemainingEstimate(task.remainingEstimate || "");
+            setStatus(task.status || "BACKLOG");
+            setPriority(task.priority || "MEDIUM");
+            setAssigneeEmail(task.assigneeEmail || "");
+            setIsSaving(false);
         }
     }, [task]);
 
     if (!isOpen || !task) return null;
 
-    const handleSave = (e) => {
+    // Member của project lấy từ BE
+    const assigneeOptions = [
+        { value: "", label: "Unassigned" },
+        ...members
+            .filter((member) => member.email)
+            .map((member) => ({ value: member.email, label: member.name || member.email })),
+    ];
+
+    const handleSave = async (e) => {
         e.preventDefault();
-        onSave({
-            ...task,
+        if (isSaving) return;
+        setIsSaving(true);
+        await onSave({
+            id: task.id,
             title,
             description,
-            labels: labels ? labels.split(",").map((l) => l.trim()) : [],
+            labels: labels
+                ? labels
+                      .split(",")
+                      .map((l) => l.trim())
+                      .filter(Boolean)
+                : [],
             storyPoints,
             originalEstimate,
             remainingEstimate,
             status,
             priority,
-            assignee,
+            assigneeEmail: assigneeEmail || null,
         });
-        onClose();
+        setIsSaving(false);
     };
 
     return (
@@ -62,7 +91,7 @@ const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
                 <div className="task-modal-header-fixed">
                     <div className="modal-title-with-tag">
                         <h3>Task Details</h3>
-                        <span className="task-id-badge">#{task.id?.slice(-8) || "2b6a0684"}</span>
+                        <span className="task-id-badge">#{String(task.id).slice(-8)}</span>
                     </div>
                     <button type="button" className="btn-modal-close-round" onClick={onClose}>
                         <X size={17} />
@@ -109,18 +138,6 @@ const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
                             />
                         </div>
 
-                        {/* Attachments */}
-                        <div className="form-input-block">
-                            <div className="field-icon-label-row">
-                                <Paperclip size={14} className="attachment-clip-glyph" />
-                                <label className="field-title-label">Attachments</label>
-                            </div>
-                            <div className="dropzone-dashed-box">
-                                <UploadCloud size={15} />
-                                <span>Drop files here or click to browse (max 50 MB)</span>
-                            </div>
-                        </div>
-
                         {/* Labels */}
                         <div className="form-input-block">
                             <label className="field-title-label">Labels</label>
@@ -129,7 +146,7 @@ const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
                                 className="pill-text-input"
                                 value={labels}
                                 onChange={(e) => setLabels(e.target.value)}
-                                placeholder="Add label (press Enter to add)"
+                                placeholder="Comma separated, e.g. backend, bug"
                             />
                         </div>
 
@@ -193,14 +210,14 @@ const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
                                 <div className="priority-pills-horizontal">
                                     {PRIORITY_OPTIONS.map((p) => (
                                         <button
-                                            key={p}
+                                            key={p.id}
                                             type="button"
                                             className={`btn-priority-toggle ${
-                                                priority === p ? "selected" : ""
+                                                priority === p.id ? "selected" : ""
                                             }`}
-                                            onClick={() => setPriority(p)}
+                                            onClick={() => setPriority(p.id)}
                                         >
-                                            {p}
+                                            {p.label}
                                         </button>
                                     ))}
                                 </div>
@@ -210,24 +227,19 @@ const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
                         {/* Assignee */}
                         <div className="form-input-block">
                             <label className="field-title-label">Assignee</label>
-                            <div className="assignee-pill-container">
-                                <div className="avatar-letter-circle">HT</div>
-                                <span className="assignee-display-name">{assignee}</span>
-                                <div className="assignee-right-controls">
-                                    <X
-                                        size={13}
-                                        className="clear-assignee-glyph"
-                                        onClick={() => setAssignee("")}
-                                    />
-                                    <ChevronDown size={14} className="dropdown-caret-glyph" />
-                                </div>
-                            </div>
+                            <CustomSelector
+                                className="kanban-modal-selector"
+                                options={assigneeOptions}
+                                value={assigneeEmail}
+                                onChange={(value) => setAssigneeEmail(value)}
+                                placeholder="Unassigned"
+                            />
                         </div>
 
                         {/* Ngày tạo Created */}
                         <div className="task-created-date-row">
                             <Calendar size={14} />
-                            <span>Created: 10/10/2026</span>
+                            <span>Created: {formatDate(task.createdAt)}</span>
                         </div>
                     </form>
                 </div>
@@ -237,10 +249,7 @@ const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
                     <button
                         type="button"
                         className="btn-action-archive-left"
-                        onClick={() => {
-                            if (onArchive) onArchive(task.id);
-                            onClose();
-                        }}
+                        onClick={() => onArchive(task.id)}
                     >
                         <Archive size={14} />
                         <span>Archive</span>
@@ -254,8 +263,9 @@ const DetailTaskModal = ({ isOpen, task, onClose, onSave, onArchive }) => {
                             type="submit"
                             form="edit-task-form"
                             className="btn-footer-save-pill"
+                            disabled={isSaving}
                         >
-                            Save Changes
+                            {isSaving ? "Saving..." : "Save Changes"}
                         </button>
                     </div>
                 </div>

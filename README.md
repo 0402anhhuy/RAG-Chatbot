@@ -1,29 +1,60 @@
 # React + Spring Boot + FastAPI migration
 
 > **Current architecture:** React/Vite is the primary UI, Spring Boot is the
-> application backend, and FastAPI is the internal RAG service. The old
-> Streamlit app is available under `legacy/` for comparison only.
+> application backend, and `rag-service` is the internal RAG service. Spring
+> sends all RAG traffic to `rag-service`.
 
-The React UI calls Spring Boot under the `/api` prefix. Spring Boot proxies
-RAG requests to FastAPI.
+The React UI calls Spring Boot under the `/api` prefix. Spring Boot proxies RAG
+requests to `rag-service` under the versioned `/api/v1` contract.
+
+## RAG service
+
+`rag-service/` is the canonical RAG service and the only RAG runtime in the
+stack. Spring talks to it under the versioned `/api/v1` contract.
+
+For setup, configuration, and verification instructions, see
+[rag-service README](./rag-service/README.md) and its
+[phase verification guide](./rag-service/docs/operations/phase-verification-guide.md).
+Deployment and staged-release notes live in the
+[deployment](rag-service/docs/operations/deployment.md) and
+[rollout](rag-service/docs/operations/rollout.md) runbooks.
 
 ## Run locally
 
 From the repository root, start the API:
 
 ```powershell
-python -m uvicorn rag_fastapi.app.main:app --reload --host 0.0.0.0 --port 8000
+Set-Location rag-service
+Copy-Item .env.example .env
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
 
-Start Spring Boot in another terminal (requires Maven):
+Set the same value in `RAG_SERVICE_API_KEY` for Spring and
+`SECURITY__API_KEY` in `rag-service/.env`. In another terminal, start Spring
+Boot with a private signing key in `JWT_SECRET` (at least 32 random bytes;
+never commit it). For a local PowerShell session:
+
+```powershell
+$bytes = New-Object byte[] 32
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$rng.GetBytes($bytes)
+$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+$rng.Dispose()
+```
+
+Spring Boot requires Maven:
 
 ```powershell
 Set-Location backend
 mvn spring-boot:run
 ```
 
+For deployments, configure `CORS_ALLOWED_ORIGINS` with the exact frontend
+origins. `JWT_TTL` defaults to one hour and cannot exceed 24 hours.
+
 Alternatively, run `docker compose up --build` after starting Docker Desktop;
-the backend image compiles Spring Boot with Maven automatically.
-```
+the root stack runs Spring, `rag-service`, and PostgreSQL. An isolated second
+instance of the same service is available with `--profile shadow`.
 
 Then start the frontend in a second terminal:
 
@@ -39,35 +70,32 @@ VITE_API_BASE_URL=http://localhost:8080/api
 ```
 
 Spring health check: `http://localhost:8080/api/health`
-FastAPI health check: `http://localhost:8000/api/health`
+RAG readiness: `http://localhost:8000/api/v1/health/readiness` when running
+uvicorn locally, or `http://localhost:8001/api/v1/health/readiness` in root
+Compose.
 
-The first API phase supports PDF upload/indexing, chat sessions, RAG answers,
-flashcard generation, and exam generation. The current document/session store
-is in-memory and should be replaced with persistent storage before production.
+The new service persists supported document uploads, chunks, ingest jobs, and
+BM25 data; it exposes workspace-filtered chat/retrieval, flashcard, and exam
+endpoints. Local Compose uses mock generation/dummy embeddings; live quality,
+trusted application authentication, and production data migration still need
+verification.
 
 ## Repository structure
 
 ```text
 frontend/       React/Vite application
 backend/        Spring Boot application service and PostgreSQL boundary
-rag_fastapi/    FastAPI RAG service
-rag_core/       Standalone loaders, retrieval, generation, prompts, evaluation
-data/           Local uploads and vector-store cache (ignored by git)
-scripts/        Manual ingestion/evaluation scripts
-tests/          Backend and RAG-core tests
-legacy/         Streamlit application kept for migration comparison
+rag-service/    Canonical FastAPI RAG service plus its own tests
+data/           Local uploads/vector-store cache (runtime data)
 ```
 
-Install backend dependencies into the project virtual environment:
+Install the service dependencies into its own environment:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
-```
-
-Run the optional legacy Streamlit app with:
-
-```powershell
-streamlit run legacy/app.py --server.port=8501
+Set-Location rag-service
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --require-hashes -r requirements.lock
+.\.venv\Scripts\python.exe -m pytest
 ```
 # ☁️ Enterprise Cloud-Native RAG AI Platform
 

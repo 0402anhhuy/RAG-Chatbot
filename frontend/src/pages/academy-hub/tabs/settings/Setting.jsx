@@ -1,15 +1,8 @@
-import { useState } from "react";
-import {
-    User,
-    Bot,
-    Target,
-    Bell,
-    Check,
-    Save,
-    Sparkles,
-    GraduationCap,
-    BookOpen,
-} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { User, Bot, Target, Bell, Check, Save } from "lucide-react";
+import { academySettingApi } from "../../../../api";
+import CustomSelector from "../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../context/ToastContext";
 import "./Setting.css";
 
 const SETTINGS_SECTIONS = [
@@ -19,47 +12,163 @@ const SETTINGS_SECTIONS = [
     { id: "notifications", label: "Reminders & Alerts", icon: Bell },
 ];
 
+// Nhãn cho dropdown "Language & Communication Tone" (CustomSelector dùng chung)
+const TONE_OPTIONS = [
+    { value: "encouraging", label: "Encouraging & Supportive" },
+    { value: "friendly", label: "Friendly & Casual" },
+    { value: "academic", label: "Academic & Formal" },
+];
+
+const MIN_DAILY_TARGET = 15;
+const MAX_DAILY_TARGET = 180;
+
+const getSessionUser = () => {
+    try {
+        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
+        return parsed?.user || parsed || {};
+    } catch {
+        return {};
+    }
+};
+
+// Form chỉ giữ chuỗi/number đúng như UI, chuyển đổi khi gửi BE.
+const EMPTY_FORM = {
+    fullName: "",
+    email: "",
+    university: "",
+    studentId: "",
+    major: "",
+    academicYear: "",
+    responseStyle: "guided",
+    tone: "friendly",
+    autoQuiz: true,
+    dailyStudyTarget: 45,
+    autoFlashcards: true,
+    focusMode: true,
+    dailyReminder: true,
+    assignmentAlerts: true,
+    streakReminder: true,
+    weeklySummary: true,
+};
+
+const toForm = (settings) =>
+    settings
+        ? {
+              ...EMPTY_FORM,
+              ...settings.profile,
+              fullName: settings.profile?.fullName || "",
+              email: settings.profile?.email || "",
+              university: settings.profile?.university || "",
+              studentId: settings.profile?.studentId || "",
+              major: settings.profile?.major || "",
+              academicYear: settings.profile?.academicYear || "",
+              responseStyle: settings.aiTutor?.responseStyle || "guided",
+              tone: settings.aiTutor?.tone || "friendly",
+              autoQuiz: Boolean(settings.aiTutor?.autoQuiz),
+              dailyStudyTarget: settings.studyGoals?.dailyStudyTarget ?? 45,
+              autoFlashcards: Boolean(settings.studyGoals?.autoFlashcards),
+              focusMode: Boolean(settings.studyGoals?.focusMode),
+              dailyReminder: Boolean(settings.notifications?.dailyReminder),
+              assignmentAlerts: Boolean(settings.notifications?.assignmentAlerts),
+              streakReminder: Boolean(settings.notifications?.streakReminder),
+              weeklySummary: Boolean(settings.notifications?.weeklySummary),
+          }
+        : { ...EMPTY_FORM };
+
+const toPayload = (form) => ({
+    fullName: form.fullName.trim(),
+    email: form.email.trim(),
+    university: form.university.trim(),
+    studentId: form.studentId.trim(),
+    major: form.major.trim(),
+    academicYear: form.academicYear.trim(),
+    tutorResponseStyle: form.responseStyle,
+    tutorTone: form.tone,
+    tutorAutoQuiz: form.autoQuiz,
+    dailyStudyTarget: Number(form.dailyStudyTarget),
+    autoFlashcards: form.autoFlashcards,
+    focusMode: form.focusMode,
+    notifyDailyReminder: form.dailyReminder,
+    notifyAssignmentAlerts: form.assignmentAlerts,
+    notifyStreakReminder: form.streakReminder,
+    notifyWeeklySummary: form.weeklySummary,
+});
+
 const Setting = () => {
+    const sessionUser = getSessionUser();
+    const { showToast } = useToast();
+
     const [activeSection, setActiveSection] = useState("profile");
+    const [form, setForm] = useState(EMPTY_FORM);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
 
-    // Profile State
-    const [profile, setProfile] = useState({
-        fullName: "Trần Anh Huy",
-        email: "anhhuyrubic@gmail.com",
-        university: "HCMC University of Technology and Education (HCMUTE)",
-        studentId: "23110042",
-        major: "Information Technology",
-        academicYear: "3rd Year (Class of 2027)",
-    });
+    const patchForm = (changes) => setForm((prev) => ({ ...prev, ...changes }));
 
-    // Tutor State
-    const [tutorSettings, setTutorSettings] = useState({
-        responseStyle: "guided", // 'guided' | 'detailed'
-        tone: "friendly", // 'encouraging' | 'friendly' | 'academic'
-        autoQuiz: true,
-        languagePreference: "bilingual", // 'vi' | 'en' | 'bilingual'
-    });
+    // ------------------------------------------------------------------ load
+    const loadSettings = useCallback(
+        async (signal) => {
+            if (!sessionUser?.id) {
+                setLoading(false);
+                return;
+            }
+            try {
+                setLoading(true);
+                const data = await academySettingApi.get(sessionUser.id);
+                if (signal?.cancelled) return;
+                setForm(toForm(data));
+            } catch (err) {
+                if (signal?.cancelled) return;
+                setForm({ ...EMPTY_FORM });
+                showToast(err.message || "Unable to load your settings.", "error");
+            } finally {
+                if (!signal?.cancelled) setLoading(false);
+            }
+        },
+        [sessionUser?.id, showToast],
+    );
 
-    // Study Goals State
-    const [studyGoals, setStudyGoals] = useState({
-        dailyStudyTarget: 45, // phút
-        weeklyQuizTarget: 3,
-        autoFlashcards: true,
-        focusMode: true,
-    });
+    useEffect(() => {
+        const signal = { cancelled: false };
+        loadSettings(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [loadSettings]);
 
-    // Notifications State
-    const [notifications, setNotifications] = useState({
-        dailyReminder: true,
-        assignmentAlerts: true,
-        streakReminder: true,
-        weeklySummary: true,
-    });
+    // ------------------------------------------------------------------ save
+    const handleSave = async () => {
+        if (!sessionUser?.id) {
+            showToast("Please sign in again to save your settings.", "error");
+            return;
+        }
 
-    const handleSave = () => {
-        setIsSaved(true);
-        setTimeout(() => setIsSaved(false), 2500);
+        const target = Number(form.dailyStudyTarget);
+        if (!Number.isFinite(target) || target < MIN_DAILY_TARGET || target > MAX_DAILY_TARGET) {
+            showToast(
+                `Daily study target must be between ${MIN_DAILY_TARGET} and ${MAX_DAILY_TARGET} minutes.`,
+                "error",
+            );
+            return;
+        }
+        if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+            showToast("Email address is invalid.", "error");
+            return;
+        }
+
+        try {
+            setSaving(true);
+            const saved = await academySettingApi.update(sessionUser.id, toPayload(form));
+            setForm(toForm(saved));
+            setIsSaved(true);
+            setTimeout(() => setIsSaved(false), 2500);
+            showToast("Study preferences saved.", "success");
+        } catch (err) {
+            showToast(err.message || "Unable to save your settings.", "error");
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -76,6 +185,7 @@ const Setting = () => {
                     type="button"
                     className={`btn-save-settings ${isSaved ? "saved" : ""}`}
                     onClick={handleSave}
+                    disabled={loading || saving}
                 >
                     {isSaved ? (
                         <>
@@ -83,7 +193,7 @@ const Setting = () => {
                         </>
                     ) : (
                         <>
-                            <Save size={14} /> Save Changes
+                            <Save size={14} /> {saving ? "Saving..." : "Save Changes"}
                         </>
                     )}
                 </button>
@@ -127,10 +237,8 @@ const Setting = () => {
                                     <label>Full Name</label>
                                     <input
                                         type="text"
-                                        value={profile.fullName}
-                                        onChange={(e) =>
-                                            setProfile({ ...profile, fullName: e.target.value })
-                                        }
+                                        value={form.fullName}
+                                        onChange={(e) => patchForm({ fullName: e.target.value })}
                                     />
                                 </div>
 
@@ -138,10 +246,8 @@ const Setting = () => {
                                     <label>Email Address</label>
                                     <input
                                         type="email"
-                                        value={profile.email}
-                                        onChange={(e) =>
-                                            setProfile({ ...profile, email: e.target.value })
-                                        }
+                                        value={form.email}
+                                        onChange={(e) => patchForm({ email: e.target.value })}
                                     />
                                 </div>
 
@@ -149,10 +255,8 @@ const Setting = () => {
                                     <label>University / College</label>
                                     <input
                                         type="text"
-                                        value={profile.university}
-                                        onChange={(e) =>
-                                            setProfile({ ...profile, university: e.target.value })
-                                        }
+                                        value={form.university}
+                                        onChange={(e) => patchForm({ university: e.target.value })}
                                     />
                                 </div>
 
@@ -160,10 +264,8 @@ const Setting = () => {
                                     <label>Student ID (MSSV)</label>
                                     <input
                                         type="text"
-                                        value={profile.studentId}
-                                        onChange={(e) =>
-                                            setProfile({ ...profile, studentId: e.target.value })
-                                        }
+                                        value={form.studentId}
+                                        onChange={(e) => patchForm({ studentId: e.target.value })}
                                     />
                                 </div>
 
@@ -171,10 +273,8 @@ const Setting = () => {
                                     <label>Major / Specialization</label>
                                     <input
                                         type="text"
-                                        value={profile.major}
-                                        onChange={(e) =>
-                                            setProfile({ ...profile, major: e.target.value })
-                                        }
+                                        value={form.major}
+                                        onChange={(e) => patchForm({ major: e.target.value })}
                                     />
                                 </div>
 
@@ -182,9 +282,9 @@ const Setting = () => {
                                     <label>Academic Standing</label>
                                     <input
                                         type="text"
-                                        value={profile.academicYear}
+                                        value={form.academicYear}
                                         onChange={(e) =>
-                                            setProfile({ ...profile, academicYear: e.target.value })
+                                            patchForm({ academicYear: e.target.value })
                                         }
                                     />
                                 </div>
@@ -207,19 +307,14 @@ const Setting = () => {
                                 <span className="block-title">Explanation Approach</span>
                                 <div className="options-radio-cluster">
                                     <label
-                                        className={`radio-card-choice ${tutorSettings.responseStyle === "guided" ? "selected" : ""}`}
+                                        className={`radio-card-choice ${form.responseStyle === "guided" ? "selected" : ""}`}
                                     >
                                         <input
                                             type="radio"
                                             name="responseStyle"
                                             value="guided"
-                                            checked={tutorSettings.responseStyle === "guided"}
-                                            onChange={() =>
-                                                setTutorSettings({
-                                                    ...tutorSettings,
-                                                    responseStyle: "guided",
-                                                })
-                                            }
+                                            checked={form.responseStyle === "guided"}
+                                            onChange={() => patchForm({ responseStyle: "guided" })}
                                         />
                                         <div>
                                             <strong>Guided Learning (Recommended)</strong>
@@ -231,18 +326,15 @@ const Setting = () => {
                                     </label>
 
                                     <label
-                                        className={`radio-card-choice ${tutorSettings.responseStyle === "detailed" ? "selected" : ""}`}
+                                        className={`radio-card-choice ${form.responseStyle === "detailed" ? "selected" : ""}`}
                                     >
                                         <input
                                             type="radio"
                                             name="responseStyle"
                                             value="detailed"
-                                            checked={tutorSettings.responseStyle === "detailed"}
+                                            checked={form.responseStyle === "detailed"}
                                             onChange={() =>
-                                                setTutorSettings({
-                                                    ...tutorSettings,
-                                                    responseStyle: "detailed",
-                                                })
+                                                patchForm({ responseStyle: "detailed" })
                                             }
                                         />
                                         <div>
@@ -259,21 +351,13 @@ const Setting = () => {
                             <div className="setting-card-block">
                                 <span className="block-title">Language & Communication Tone</span>
                                 <div className="select-dropdown-unit">
-                                    <select
-                                        value={tutorSettings.tone}
-                                        onChange={(e) =>
-                                            setTutorSettings({
-                                                ...tutorSettings,
-                                                tone: e.target.value,
-                                            })
-                                        }
-                                    >
-                                        <option value="encouraging">
-                                            Encouraging & Supportive
-                                        </option>
-                                        <option value="friendly">Friendly & Casual</option>
-                                        <option value="academic">Academic & Formal</option>
-                                    </select>
+                                    {/* Dropdown dùng CustomSelector chung thay cho thẻ select mặc định */}
+                                    <CustomSelector
+                                        options={TONE_OPTIONS}
+                                        value={form.tone}
+                                        onChange={(value) => patchForm({ tone: value })}
+                                        placeholder="Select a tone..."
+                                    />
                                 </div>
                             </div>
 
@@ -288,13 +372,8 @@ const Setting = () => {
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={tutorSettings.autoQuiz}
-                                    onChange={(e) =>
-                                        setTutorSettings({
-                                            ...tutorSettings,
-                                            autoQuiz: e.target.checked,
-                                        })
-                                    }
+                                    checked={form.autoQuiz}
+                                    onChange={(e) => patchForm({ autoQuiz: e.target.checked })}
                                 />
                             </div>
                         </div>
@@ -314,20 +393,17 @@ const Setting = () => {
                                 <div className="range-field-header">
                                     <label>Daily Study Target</label>
                                     <span className="range-metric-chip">
-                                        {studyGoals.dailyStudyTarget} minutes / day
+                                        {form.dailyStudyTarget} minutes / day
                                     </span>
                                 </div>
                                 <input
                                     type="range"
-                                    min="15"
-                                    max="180"
+                                    min={MIN_DAILY_TARGET}
+                                    max={MAX_DAILY_TARGET}
                                     step="15"
-                                    value={studyGoals.dailyStudyTarget}
+                                    value={form.dailyStudyTarget}
                                     onChange={(e) =>
-                                        setStudyGoals({
-                                            ...studyGoals,
-                                            dailyStudyTarget: Number(e.target.value),
-                                        })
+                                        patchForm({ dailyStudyTarget: Number(e.target.value) })
                                     }
                                     className="slider-range-input"
                                 />
@@ -348,12 +424,9 @@ const Setting = () => {
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={studyGoals.autoFlashcards}
+                                    checked={form.autoFlashcards}
                                     onChange={(e) =>
-                                        setStudyGoals({
-                                            ...studyGoals,
-                                            autoFlashcards: e.target.checked,
-                                        })
+                                        patchForm({ autoFlashcards: e.target.checked })
                                     }
                                 />
                             </div>
@@ -369,13 +442,8 @@ const Setting = () => {
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={studyGoals.focusMode}
-                                    onChange={(e) =>
-                                        setStudyGoals({
-                                            ...studyGoals,
-                                            focusMode: e.target.checked,
-                                        })
-                                    }
+                                    checked={form.focusMode}
+                                    onChange={(e) => patchForm({ focusMode: e.target.checked })}
                                 />
                             </div>
                         </div>
@@ -403,13 +471,8 @@ const Setting = () => {
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={notifications.dailyReminder}
-                                    onChange={(e) =>
-                                        setNotifications({
-                                            ...notifications,
-                                            dailyReminder: e.target.checked,
-                                        })
-                                    }
+                                    checked={form.dailyReminder}
+                                    onChange={(e) => patchForm({ dailyReminder: e.target.checked })}
                                 />
                             </div>
 
@@ -424,12 +487,9 @@ const Setting = () => {
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={notifications.assignmentAlerts}
+                                    checked={form.assignmentAlerts}
                                     onChange={(e) =>
-                                        setNotifications({
-                                            ...notifications,
-                                            assignmentAlerts: e.target.checked,
-                                        })
+                                        patchForm({ assignmentAlerts: e.target.checked })
                                     }
                                 />
                             </div>
@@ -445,12 +505,9 @@ const Setting = () => {
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={notifications.streakReminder}
+                                    checked={form.streakReminder}
                                     onChange={(e) =>
-                                        setNotifications({
-                                            ...notifications,
-                                            streakReminder: e.target.checked,
-                                        })
+                                        patchForm({ streakReminder: e.target.checked })
                                     }
                                 />
                             </div>
@@ -466,13 +523,8 @@ const Setting = () => {
                                 <input
                                     type="checkbox"
                                     className="setting-checkbox-toggle"
-                                    checked={notifications.weeklySummary}
-                                    onChange={(e) =>
-                                        setNotifications({
-                                            ...notifications,
-                                            weeklySummary: e.target.checked,
-                                        })
-                                    }
+                                    checked={form.weeklySummary}
+                                    onChange={(e) => patchForm({ weeklySummary: e.target.checked })}
                                 />
                             </div>
                         </div>

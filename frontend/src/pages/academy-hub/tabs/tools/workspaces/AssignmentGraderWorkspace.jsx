@@ -1,19 +1,90 @@
-import { useState } from "react";
-import {
-    ArrowLeft,
-    CheckCircle2,
-    CheckSquare,
-    FileCode,
-    Play,
-    ShieldAlert,
-    Sparkles,
-    Upload,
-} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, CheckSquare, Clock, Loader2, Play, Upload } from "lucide-react";
+import { academyToolApi } from "../../../../../api";
+import CustomSelector from "../../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../../context/ToastContext";
 import "./EduWorkspaces.css";
 
+const getSessionUser = () => {
+    try {
+        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
+        return parsed?.user || parsed || {};
+    } catch {
+        return {};
+    }
+};
+
+/**
+ * Chấm bài theo rubric. BE chưa có rubric engine nên lượt chạy được xếp hàng
+ * (status = queued) và lưu lại bài nộp cùng rubric nguồn — UI nói đúng trạng
+ * thái thay vì hiện điểm giả.
+ */
 export const AssignmentGraderWorkspace = ({ onBackToHub }) => {
-    const [isGrading, setIsGrading] = useState(false);
-    const [resultReady, setResultReady] = useState(true);
+    const sessionUser = getSessionUser();
+    const { showToast } = useToast();
+
+    const [sources, setSources] = useState([]);
+    const [selectedDocId, setSelectedDocId] = useState("");
+    const [submissionName, setSubmissionName] = useState("");
+    const [loadingContext, setLoadingContext] = useState(true);
+    const [running, setRunning] = useState(false);
+    const [lastRun, setLastRun] = useState(null);
+
+    const loadContext = useCallback(
+        async (signal) => {
+            if (!sessionUser?.id) {
+                setLoadingContext(false);
+                return;
+            }
+            try {
+                setLoadingContext(true);
+                const [context, latest] = await Promise.all([
+                    academyToolApi.context(sessionUser.id, "grader"),
+                    academyToolApi.latest(sessionUser.id, "grader").catch(() => null),
+                ]);
+                if (signal?.cancelled) return;
+                setSources(context?.sources || []);
+                setSelectedDocId((prev) => prev || context?.sources?.[0]?.id || "");
+                setLastRun(latest || null);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                showToast(err.message || "Unable to load your rubric sources.", "error");
+            } finally {
+                if (!signal?.cancelled) setLoadingContext(false);
+            }
+        },
+        [sessionUser?.id, showToast],
+    );
+
+    useEffect(() => {
+        const signal = { cancelled: false };
+        loadContext(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [loadContext]);
+
+    const queueGrading = async () => {
+        if (!sessionUser?.id) {
+            showToast("Please sign in again to queue a grading run.", "error");
+            return;
+        }
+        try {
+            setRunning(true);
+            const response = await academyToolApi.run(sessionUser.id, "grader", {
+                documentIds: selectedDocId ? [selectedDocId] : [],
+                prompt: submissionName.trim() || undefined,
+            });
+            setLastRun(response);
+            showToast("Submission queued for grading.", "info");
+        } catch (err) {
+            showToast(err.message || "Could not queue the submission.", "error");
+        } finally {
+            setRunning(false);
+        }
+    };
+
+    const selectedSource = sources.find((source) => source.id === selectedDocId);
 
     return (
         <div className="edu-workspace-root">
@@ -23,93 +94,114 @@ export const AssignmentGraderWorkspace = ({ onBackToHub }) => {
                 </button>
                 <div className="workspace-meta-tag">
                     <span className="badge-socratic blue">AUTO RUBRIC</span>
-                    <strong>Assignment & Lab Rubric Grader</strong>
+                    <strong>Assignment Grader</strong>
                 </div>
             </header>
 
             <div className="workspace-double-pane">
-                {/* Code Submission Area */}
+                {/* Bài nộp + rubric nguồn */}
                 <div className="workspace-canvas-panel">
                     <div className="submission-toolbar">
-                        <strong>Submission: Lab03_GraphRouting.java</strong>
+                        <strong>Submission to grade</strong>
                         <button
                             type="button"
                             className="btn-trigger-grade"
-                            onClick={() => {
-                                setIsGrading(true);
-                                setTimeout(() => setIsGrading(false), 1500);
-                            }}
+                            onClick={queueGrading}
+                            disabled={running || sources.length === 0 || loadingContext}
                         >
-                            <Play size={13} fill="#ffffff" /> Run Automated Rubric
+                            {running ? (
+                                <Loader2 size={13} className="ws-spinner" />
+                            ) : (
+                                <Play size={13} fill="#ffffff" />
+                            )}
+                            {running ? "Queueing..." : "Run Automated Rubric"}
                         </button>
                     </div>
-                    <pre className="code-editor-block">
-                        <code>{`// Student Solution - Lab 03
-public int findCheapestPrice(int n, int[][] flights, int src, int dst, int k) {
-    int[] cost = new int[n];
-    Arrays.fill(cost, Integer.MAX_VALUE);
-    cost[src] = 0;
-    
-    for (int i = 0; i <= k; i++) {
-        int[] temp = Arrays.copyOf(cost, n);
-        for (int[] flight : flights) {
-            int u = flight[0], v = flight[1], price = flight[2];
-            if (cost[u] != Integer.MAX_VALUE && cost[u] + price < temp[v]) {
-                temp[v] = cost[u] + price;
-            }
-        }
-        cost = temp;
-    }
-    return cost[dst] == Integer.MAX_VALUE ? -1 : cost[dst];
-}`}</code>
-                    </pre>
+
+                    <div className="ws-grade-form">
+                        <div className="config-form-unit">
+                            <label>Submission (file name or student reference)</label>
+                            <input
+                                type="text"
+                                value={submissionName}
+                                onChange={(event) => setSubmissionName(event.target.value)}
+                                placeholder="e.g. Lab03_GraphRouting.java"
+                            />
+                        </div>
+
+                        <div className="config-form-unit">
+                            <label>Rubric source</label>
+                            {loadingContext ? (
+                                <span className="ws-inline-note">
+                                    <Loader2 size={12} className="ws-spinner" /> Loading sources...
+                                </span>
+                            ) : sources.length === 0 ? (
+                                <span className="ws-inline-note">
+                                    Upload the rubric or assignment brief first.
+                                </span>
+                            ) : (
+                                <CustomSelector
+                                    options={sources.map((source) => ({
+                                        value: source.id,
+                                        label: `${source.name}${source.ready ? "" : " (indexing)"}`,
+                                    }))}
+                                    value={selectedDocId}
+                                    onChange={(value) => setSelectedDocId(value)}
+                                    placeholder="Choose rubric..."
+                                />
+                            )}
+                        </div>
+
+                        <p className="ws-inline-note">
+                            <Upload size={12} /> File upload for submissions is not connected yet —
+                            the run stores the reference and the rubric source you pick.
+                        </p>
+                    </div>
                 </div>
 
-                {/* Rubric Evaluation Scorecard */}
+                {/* Trạng thái chấm */}
                 <div className="workspace-rubric-card">
                     <div className="rubric-summary-score">
-                        <div className="score-ring">95/100</div>
+                        <div className="score-ring ws-score-ring-pending">
+                            {lastRun?.status === "queued" ? (
+                                <Clock size={20} />
+                            ) : (
+                                <CheckSquare size={20} />
+                            )}
+                        </div>
                         <div>
-                            <h4>Overall Lab Evaluation: Excellent</h4>
+                            <h4>
+                                {lastRun
+                                    ? lastRun.status === "queued"
+                                        ? "Queued for grading"
+                                        : lastRun.status
+                                    : "No submission yet"}
+                            </h4>
                             <p>
-                                Meets optimal Bellman-Ford variant constraints with limited stops.
+                                {lastRun?.summary ||
+                                    "Run the rubric to see how the submission is evaluated."}
                             </p>
                         </div>
                     </div>
 
-                    <div className="rubric-checklist">
-                        <div className="check-item passed">
-                            <CheckCircle2 size={16} />
-                            <div>
-                                <strong>Functional Unit Tests (10/10 Passed)</strong>
-                                <small>
-                                    All edge cases (disconnected nodes, cycle bounds) executed
-                                    successfully.
-                                </small>
+                    {selectedSource && (
+                        <div className="rubric-checklist">
+                            <div className="check-item">
+                                <CheckSquare size={16} />
+                                <div>
+                                    <strong>{selectedSource.name}</strong>
+                                    <small>
+                                        {selectedSource.chunkCount} chunks ·{" "}
+                                        {selectedSource.ready ? "indexed" : "indexing"}
+                                    </small>
+                                </div>
                             </div>
                         </div>
+                    )}
 
-                        <div className="check-item passed">
-                            <CheckCircle2 size={16} />
-                            <div>
-                                <strong>Time Complexity Efficiency: $O(K \times E)$</strong>
-                                <small>
-                                    Meets Big-O requirements without nested redundant traversals.
-                                </small>
-                            </div>
-                        </div>
-
-                        <div className="check-item warning">
-                            <ShieldAlert size={16} />
-                            <div>
-                                <strong>Clean Code & In-line Comments (-5 pts)</strong>
-                                <small>
-                                    Missing Javadoc descriptions explaining array copy logic on line
-                                    8.
-                                </small>
-                            </div>
-                        </div>
-                    </div>
+                    {lastRun?.createdAt && (
+                        <p className="ws-inline-note">Last run: {lastRun.createdAt}</p>
+                    )}
                 </div>
             </div>
         </div>

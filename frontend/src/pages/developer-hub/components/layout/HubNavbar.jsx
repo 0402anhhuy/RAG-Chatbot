@@ -2,13 +2,7 @@ import { Plus, Compass, HelpCircle, BookOpen } from "lucide-react";
 import BrandLogo from "../../../../components/common/logo/BrandLogo";
 import "./HubNavbar.css";
 
-const HubNavbar = ({
-    activeTabName = "Projects",
-    activeProject = null,
-    onNewProjectClick,
-    sandboxStatus = null,
-    onStopSandbox,
-}) => {
+const HubNavbar = ({ activeTabName = "Projects", activeProject = null, onNewProjectClick }) => {
     return (
         <header className="vibe-navbar">
             <div className="navbar-breadcrumb">
@@ -29,28 +23,6 @@ const HubNavbar = ({
 
             {/* Cụm điều khiển bên phải */}
             <div className="navbar-controls-cluster">
-                {/* Trạng thái Sandbox nếu đang trong Project */}
-                {sandboxStatus && (
-                    <div className="navbar-sandbox-indicator">
-                        <span className="sandbox-running-badge">Running</span>
-                        <div className="sandbox-progress-track">
-                            <div className="sandbox-progress-bar" style={{ width: "12%" }} />
-                        </div>
-                        <span className="sandbox-memory-text">
-                            {sandboxStatus.memory || "0.3/8.6"}
-                        </span>
-                        {onStopSandbox && (
-                            <button
-                                type="button"
-                                className="btn-stop-sandbox-outline"
-                                onClick={onStopSandbox}
-                            >
-                                Stop Sandbox
-                            </button>
-                        )}
-                    </div>
-                )}
-
                 {/* Các phím tắt nhanh */}
                 <div className="navbar-keybind-pills">
                     <span className="key-shortcut-tag" title="Navigate (Ctrl+G)">

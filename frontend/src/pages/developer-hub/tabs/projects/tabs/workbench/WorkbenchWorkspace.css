@@ -287,86 +287,28 @@
     color: #94a3b8;
 }
 
-.dot-status.green {
+.dot-status {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: #10b981;
     flex-shrink: 0;
+}
+
+.dot-status.green {
+    background-color: #10b981;
+}
+
+.dot-status.amber {
+    background-color: #f59e0b;
+}
+
+.convo-item-row[data-active="true"] {
+    background-color: #ecfdf5;
 }
 
 /* Chat Middle Stage */
 .wb-chat-middle-content {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-}
-
-.start-sandbox-banner-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    max-width: 340px;
-    gap: 10px;
-}
-
-.sandbox-logo-pill {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background-color: #f1f5f9;
-    display: grid;
-    place-items: center;
-    margin-bottom: 4px;
-}
-
-.logo-sparkle-dots {
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-    color: #64748b;
-}
-
-.start-sandbox-banner-card h3 {
-    margin: 0;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #0f172a;
-}
-
-.start-sandbox-banner-card p {
-    margin: 0;
-    font-size: 0.78rem;
-    color: #64748b;
-    line-height: 1.45;
-}
-
-.btn-start-sandbox-solid {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 20px;
-    background-color: #059669;
-    color: #ffffff;
-    border: none;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 4px;
-    transition: background-color 0.12s ease;
-}
-
-.btn-start-sandbox-solid:hover {
-    background-color: #047857;
-}
-
-.sandbox-idle-note {
-    font-size: 0.68rem;
-    color: #94a3b8;
-    line-height: 1.35;
 }
 
 /* Chat Prompt Footer */
@@ -389,10 +331,7 @@
     gap: 12px;
 }
 
-.prompt-stopped-hint {
-    font-size: 0.78rem;
-    color: #94a3b8;
-}
+
 
 .prompt-bottom-controls-bar {
     display: flex;
@@ -646,19 +585,7 @@
     cursor: pointer;
 }
 
-.btn-canvas-start-sb {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 14px;
-    background-color: #059669;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.74rem;
-    font-weight: 600;
-    cursor: pointer;
-}
+
 
 .canvas-nodes-flow-container {
     display: flex;
@@ -738,4 +665,391 @@
     width: 2px;
     height: 24px;
     background-color: #cbd5e1;
+}
+
+/* ======================================================== */
+/* 3. IDE DỮ LIỆU THẬT: FILE TREE, EDITOR, CHAT, SETTINGS   */
+/* ======================================================== */
+
+/* Thông báo khi chưa mở project */
+.wb-state-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 0.82rem;
+    color: #475569;
+}
+
+.wb-spin {
+    animation: wbSpin 0.9s linear infinite;
+}
+
+@keyframes wbSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Bộ lọc trong cột Files */
+.wb-files-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    flex-shrink: 0;
+}
+
+.wb-files-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 3px 8px;
+    color: #94a3b8;
+}
+
+.wb-files-search input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 0.74rem;
+    color: #334155;
+}
+
+.wb-extension-selector .custom-select-trigger {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+.wb-extension-selector .custom-select-menu {
+    min-width: 130px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+/* Form tạo file nhanh */
+.wb-create-file-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    background-color: #fafbfc;
+    flex-shrink: 0;
+}
+
+.wb-create-file-inline input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    outline: none;
+}
+
+.wb-create-file-inline input:focus {
+    border-color: #059669;
+}
+
+.btn-wb-mini {
+    padding: 4px 8px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-wb-mini.primary {
+    background-color: #0f172a;
+    border-color: #0f172a;
+    color: #ffffff;
+}
+
+.btn-wb-mini:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+/* Cây thư mục */
+.wb-tree-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 4px 10px;
+}
+
+.wb-tree-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    padding: 4px 8px;
+    border: none;
+    background: transparent;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    color: #334155;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.wb-tree-row:hover {
+    background-color: #f1f5f9;
+}
+
+.wb-tree-row.file.active {
+    background-color: #ecfdf5;
+    color: #047857;
+    font-weight: 600;
+}
+
+.wb-tree-folder-icon {
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.wb-tree-file-icon {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.wb-tree-row.file.active .wb-tree-file-icon {
+    color: #059669;
+}
+
+.wb-tree-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wb-tree-edited-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #f59e0b;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Editor */
+.wb-dirty-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #f59e0b;
+    margin-left: 4px;
+}
+
+.wb-editor-surface {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.wb-editor-textarea {
+    flex: 1;
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 12px 14px;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: #0f172a;
+    background-color: #ffffff;
+    tab-size: 4;
+    white-space: pre;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+.wb-editor-statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 12px;
+    border-top: 1px solid #f1f5f9;
+    background-color: #fafbfc;
+    font-size: 0.68rem;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+/* Chat panel */
+.wb-chat-middle-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+}
+
+.wb-chat-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.wb-chat-bubble {
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    max-width: 92%;
+}
+
+.wb-chat-bubble.user {
+    align-self: flex-end;
+    background-color: #ecfdf5;
+    border: 1px solid #d1fae5;
+    color: #065f46;
+}
+
+.wb-chat-bubble.assistant {
+    align-self: flex-start;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.wb-chat-bubble-role {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.65;
+    margin-bottom: 2px;
+}
+
+.wb-chat-bubble-body {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.wb-prompt-textarea {
+    width: 100%;
+    min-height: 48px;
+    max-height: 140px;
+    border: none;
+    outline: none;
+    resize: vertical;
+    background: transparent;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: #0f172a;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.wb-prompt-textarea::placeholder {
+    color: #94a3b8;
+}
+
+.btn-send-message {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #cbd5e1;
+    color: #ffffff;
+    border: none;
+    display: grid;
+    place-items: center;
+    cursor: not-allowed;
+    transition: background-color 0.12s ease;
+}
+
+.btn-send-message.enabled {
+    background-color: #0f172a;
+    cursor: pointer;
+}
+
+.btn-send-message.enabled:hover {
+    background-color: #059669;
+}
+
+/* Selector trong popup tools và chọn model */
+.wb-tool-selector {
+    width: 100%;
+}
+
+.wb-tool-selector .custom-select-trigger,
+.wb-model-selector .custom-select-trigger {
+    width: 100%;
+    justify-content: space-between;
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+.wb-model-selector .custom-select-trigger {
+    width: auto;
+    max-width: 150px;
+    border: none;
+    color: #64748b;
+}
+
+.wb-tool-selector .custom-select-menu,
+.wb-model-selector .custom-select-menu {
+    min-width: 180px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.wb-model-selector .custom-select-menu {
+    right: 0;
+    left: auto;
+}
+
+.tool-menu-select-row {
+    padding: 0 10px 4px;
+}
+
+.tool-menu-row.with-control {
+    padding-bottom: 2px;
+}
+
+.convo-empty-text,
+.canvas-empty-text {
+    font-size: 0.74rem;
+    color: #94a3b8;
+    padding: 10px 6px;
+    text-align: center;
+}
+
+.btn-create-convo-link:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.canvas-node-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }

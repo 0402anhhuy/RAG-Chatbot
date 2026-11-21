@@ -91,34 +91,3 @@
     padding: 1px 4px;
     background-color: #f8fafc;
 }
-
-.sandbox-control-cluster {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.sandbox-stopped-label {
-    font-size: 0.76rem;
-    color: #0f172a;
-    font-weight: 500;
-}
-
-.btn-resume-sandbox {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background-color: transparent;
-    border: none;
-    color: #059669;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 5px 8px;
-    border-radius: 6px;
-    transition: background-color 0.12s ease;
-}
-
-.btn-resume-sandbox:hover {
-    background-color: #ecfdf5;
-}

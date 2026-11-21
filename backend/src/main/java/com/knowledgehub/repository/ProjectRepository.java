@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
     List<Project> findByOwnerIdOrderByUpdatedAtDesc(UUID ownerId);
     List<Project> findByOwnerIdAndStatusOrderByUpdatedAtDesc(UUID ownerId, ProjectStatus status);
+    List<Project> findByOwnerIdAndPinnedTrueOrderByUpdatedAtDesc(UUID ownerId);
+    long countByOwnerId(UUID ownerId);
 }

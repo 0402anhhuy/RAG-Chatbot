@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Folder, Search, Star, Play, Archive, ExternalLink, GitBranch } from "lucide-react";
+import { Folder, Search, Star, Play, Archive, ExternalLink, GitBranch, Plus } from "lucide-react";
 import { projectApi } from "../../../../api";
+import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import "./Project.css";
 
 const getOwnerId = () => {
@@ -13,12 +14,30 @@ const getOwnerId = () => {
 
 const toProjectViewModel = (project) => ({
     ...project,
-    type: project.type === "REMOTE" ? project.repositoryUrl || "Remote Repository" : "Local Project",
-    status: project.status === "ACTIVE" ? "Active" : project.status === "ARCHIVED" ? "Archived" : "Idle",
+    type:
+        project.type === "REMOTE" ? project.repositoryUrl || "Remote Repository" : "Local Project",
+    status:
+        project.status === "ACTIVE"
+            ? "Active"
+            : project.status === "ARCHIVED"
+              ? "Archived"
+              : "Idle",
     isRemote: project.type === "REMOTE",
 });
 
-const Project = ({ onOpenProject, refreshKey = 0 }) => {
+// Các tùy chọn lọc trạng thái bằng CustomSelector (thay thế hoàn toàn select mặc định)
+const STATUS_OPTIONS = [
+    { value: "All", label: "All Projects", color: "blue" },
+    { value: "Active", label: "Active", color: "green" },
+    { value: "Archived", label: "Archived", color: "amber" },
+];
+
+const SORT_OPTIONS = [
+    { value: "Recently updated", label: "Recently updated" },
+    { value: "Name", label: "Name A-Z" },
+];
+
+const Project = ({ onOpenProject, onNewProjectClick, refreshKey = 0 }) => {
     const [projects, setProjects] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("Active");
@@ -32,6 +51,7 @@ const Project = ({ onOpenProject, refreshKey = 0 }) => {
             try {
                 setLoading(true);
                 setError("");
+                // Gọi API thực tế từ backend, không dùng mock data
                 const data = await projectApi.list({ ownerId: getOwnerId() });
                 if (!cancelled) setProjects((data || []).map(toProjectViewModel));
             } catch (err) {
@@ -51,7 +71,8 @@ const Project = ({ onOpenProject, refreshKey = 0 }) => {
             .filter((project) => {
                 const matchesQuery = project.name.toLowerCase().includes(searchQuery.toLowerCase());
                 const matchesStatus =
-                    statusFilter === "All" || project.status.toLowerCase() === statusFilter.toLowerCase();
+                    statusFilter === "All" ||
+                    project.status.toLowerCase() === statusFilter.toLowerCase();
                 return matchesQuery && matchesStatus;
             })
             .sort((first, second) =>
@@ -78,61 +99,124 @@ const Project = ({ onOpenProject, refreshKey = 0 }) => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
+
+                {/* Dropdown dùng CustomSelector chung, không dùng thẻ select mặc định */}
                 <div className="dropdown-pill-group">
-                    <select className="filter-select-pill" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                        <option value="Active">Active</option>
-                        <option value="Idle">Idle</option>
-                        <option value="All">All Status</option>
-                    </select>
-                    <select className="filter-select-pill" value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-                        <option value="Recently updated">Recently updated</option>
-                        <option value="Name">Name A-Z</option>
-                    </select>
+                    <CustomSelector
+                        options={STATUS_OPTIONS}
+                        value={statusFilter}
+                        onChange={(val) => setStatusFilter(val)}
+                        placeholder="Filter status..."
+                    />
+                    <CustomSelector
+                        options={SORT_OPTIONS}
+                        value={sortOption}
+                        onChange={(val) => setSortOption(val)}
+                        placeholder="Sort by..."
+                    />
                 </div>
             </div>
 
-            {loading && <p>Loading projects...</p>}
-            {!loading && error && <p role="alert">{error}</p>}
-            {!loading && !error && filteredProjects.length === 0 && <p>No projects found.</p>}
+            {loading && <p className="projects-loading-text">Loading projects...</p>}
+            {!loading && error && (
+                <p role="alert" className="projects-error-text">
+                    {error}
+                </p>
+            )}
 
-            <div className="projects-catalog-grid">
-                {filteredProjects.map((project) => (
-                    <div key={project.id} className="project-entity-card">
-                        <div className="entity-card-top">
-                            <div className="entity-title-cluster">
-                                <Folder size={17} className="entity-folder-glyph" />
-                                <strong title={project.name}>{project.name}</strong>
+            {/* Khi không có lỗi và không đang loading */}
+            {!loading && !error && (
+                <>
+                    {/* Khi không tìm thấy project nào: Hiển thị khối New Project nét đứt */}
+                    {filteredProjects.length === 0 ? (
+                        <div className="projects-empty-section">
+                            <span className="projects-empty-group-title">
+                                {statusFilter === "Archived"
+                                    ? "Archived Projects"
+                                    : statusFilter === "Active"
+                                      ? "Active Projects"
+                                      : "All Projects"}
+                            </span>
+                            <div className="projects-empty-grid">
+                                <button
+                                    type="button"
+                                    className="btn-create-project-dashed-card"
+                                    onClick={onNewProjectClick}
+                                >
+                                    <Plus size={22} className="dashed-plus-icon" />
+                                    <span className="dashed-label-text">New Project</span>
+                                </button>
                             </div>
-                            <div className="entity-badges-cluster">
-                                <Star size={13} className={project.pinned ? "glyph-star-pinned" : "glyph-star-muted"} />
-                                <Archive size={13} className="glyph-archive-muted" />
-                                <span className={`entity-status-tag ${project.status.toLowerCase()}`}>
-                                    {project.status === "Active" ? <Play size={9} fill="currentColor" /> : "○"}
-                                    <span>{project.status}</span>
-                                </span>
-                            </div>
                         </div>
-                        <div className="entity-type-row">
-                            {project.isRemote ? (
-                                <span className="remote-git-link" title={project.type}>
-                                    <GitBranch size={12} />
-                                    <span>{project.type}</span>
-                                    <ExternalLink size={10} className="external-link-glyph" />
-                                </span>
-                            ) : (
-                                <span className="local-project-label">{project.type}</span>
-                            )}
+                    ) : (
+                        <div className="projects-catalog-grid">
+                            {filteredProjects.map((project) => (
+                                <div key={project.id} className="project-entity-card">
+                                    <div className="entity-card-top">
+                                        <div className="entity-title-cluster">
+                                            <Folder size={17} className="entity-folder-glyph" />
+                                            <strong title={project.name}>{project.name}</strong>
+                                        </div>
+                                        <div className="entity-badges-cluster">
+                                            <Star
+                                                size={13}
+                                                className={
+                                                    project.pinned
+                                                        ? "glyph-star-pinned"
+                                                        : "glyph-star-muted"
+                                                }
+                                            />
+                                            <Archive size={13} className="glyph-archive-muted" />
+                                            <span
+                                                className={`entity-status-tag ${project.status.toLowerCase()}`}
+                                            >
+                                                {project.status === "Active" ? (
+                                                    <Play size={9} fill="currentColor" />
+                                                ) : (
+                                                    "○"
+                                                )}
+                                                <span>{project.status}</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="entity-type-row">
+                                        {project.isRemote ? (
+                                            <span className="remote-git-link" title={project.type}>
+                                                <GitBranch size={12} />
+                                                <span>{project.type}</span>
+                                                <ExternalLink
+                                                    size={10}
+                                                    className="external-link-glyph"
+                                                />
+                                            </span>
+                                        ) : (
+                                            <span className="local-project-label">
+                                                {project.type}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="entity-stats-row">
+                                        <span>
+                                            {project.tasks} {project.tasks === 1 ? "task" : "tasks"}
+                                        </span>
+                                        <span>
+                                            {project.members}{" "}
+                                            {project.members === 1 ? "member" : "members"}
+                                        </span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="btn-open-project-pill"
+                                        onClick={() => onOpenProject && onOpenProject(project)}
+                                    >
+                                        Open Project
+                                    </button>
+                                </div>
+                            ))}
                         </div>
-                        <div className="entity-stats-row">
-                            <span>{project.tasks} {project.tasks === 1 ? "task" : "tasks"}</span>
-                            <span>{project.members} {project.members === 1 ? "member" : "members"}</span>
-                        </div>
-                        <button type="button" className="btn-open-project-pill" onClick={() => onOpenProject && onOpenProject(project)}>
-                            Open Project
-                        </button>
-                    </div>
-                ))}
-            </div>
+                    )}
+                </>
+            )}
         </div>
     );
 };

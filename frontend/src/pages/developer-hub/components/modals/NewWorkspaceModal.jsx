@@ -168,7 +168,7 @@ const NewWorkspaceModal = ({ isOpen, onClose, onCreate }) => {
                                         aria-label="Choose local folder"
                                     />
                                 </label>
-                                <p>Open and edit this folder right away — no sandbox needed.</p>
+                                <p>Open and edit this folder right away.</p>
                                 <small className="folder-picker-note">
                                     <Info size={14} />
                                     This folder link is saved in this browser. Clearing site data
@@ -184,7 +184,7 @@ const NewWorkspaceModal = ({ isOpen, onClose, onCreate }) => {
                                 <GitBranch size={15} />
                                 <span>
                                     Teammates share this code through the Git remote — everyone works
-                                    in their own sandbox, then commit & push/pull.
+                                    on their own copy, then commit & push/pull.
                                 </span>
                             </div>
                             <div className="form-input-field compact-field">

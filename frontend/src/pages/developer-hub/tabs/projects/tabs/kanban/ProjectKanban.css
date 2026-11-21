@@ -50,23 +50,6 @@
     width: 100%;
 }
 
-.kanban-assignee-select {
-    padding: 6px 12px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
-    font-size: 0.76rem;
-    font-weight: 500;
-    color: #334155;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.12s ease;
-}
-
-.kanban-assignee-select:hover {
-    border-color: #94a3b8;
-}
-
 .kanban-top-actions {
     display: flex;
     align-items: center;
@@ -113,6 +96,48 @@
     background-color: #27272a;
 }
 
+.btn-kanban-refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 6px 10px;
+    font-size: 0.74rem;
+    color: #475569;
+    cursor: pointer;
+}
+
+.btn-kanban-refresh:hover {
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+/* Trạng thái tải / lỗi */
+.kanban-state-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+    padding: 8px 2px;
+}
+
+.kanban-state-error {
+    color: #b91c1c;
+}
+
+.kanban-spin {
+    animation: kanban-spin 0.9s linear infinite;
+}
+
+@keyframes kanban-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* 2. Board Area & Columns */
 .kanban-board-scroll-area {
     flex: 1;
@@ -143,6 +168,13 @@
     box-sizing: border-box;
     height: 100%;
     min-width: 0;
+    transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+/* Cột đang được kéo task vào */
+.kanban-column-card.drop-target {
+    border-color: #059669;
+    background-color: #f0fdf4;
 }
 
 .column-header-row {
@@ -264,6 +296,20 @@
 .kanban-task-card:hover {
     border-color: #cbd5e1;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.kanban-task-card.dragging {
+    opacity: 0.5;
+}
+
+.task-label-chip {
+    font-size: 0.68rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: #f1f5f9;
+    color: #475569;
+    margin-left: 6px;
 }
 
 .task-card-header-row {

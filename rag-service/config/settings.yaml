@@ -1,0 +1,111 @@
+app:
+  name: RAG Service
+  env: development
+  host: 127.0.0.1
+  port: 8000
+  log_level: INFO
+  log_format: json
+  cors_origins:
+    - http://localhost:3000
+    - http://localhost:5173
+  request_id_header: X-Request-ID
+
+security:
+  enabled: true
+  api_key: ""
+  api_keys: {}
+
+rate_limit:
+  enabled: false
+  backend: memory
+  requests: 60
+  window_seconds: 60
+  redis_url: redis://localhost:6379/0
+
+embedding:
+  provider: dummy
+  model: sentence-transformers/all-MiniLM-L6-v2
+  dimension: 384
+  device: cpu
+  normalize: true
+
+vector_store:
+  backend: in_memory
+  collection: documents
+  url: http://localhost:6333
+  host: localhost
+  port: 6333
+  persist_path: ./data/vector_store
+  vector_size: null
+  distance: cosine
+
+retrieval:
+  top_k_dense: 10
+  top_k_sparse: 10
+  rerank_top_k: 4
+  score_threshold: 0.65
+  fusion_strategy: rrf
+  rrf_k: 60
+  dense_weight: 0.7
+  sparse_weight: 0.3
+  chunk_size: 600
+  chunk_overlap: 100
+
+bm25:
+  persist_path: ./data/bm25_index.jsonl
+  rebuild_on_boot: true
+
+llm:
+  provider: mock
+  model: mock-model
+  temperature: 0.2
+  max_tokens: 2048
+  request_timeout: 60
+  max_retries: 2
+  retry_backoff_ms: 500
+  max_context_chars: 12000
+
+prompts:
+  system_qa: |
+    You are a careful AI assistant. Use ONLY the supplied context; if the context does not contain the answer, say so clearly and avoid guessing.
+
+    <context>
+    {context}
+    </context>
+  query_rewrite: |
+    Rewrite the latest user question into a self-contained retrieval query. Return only the rewritten query.
+  grade_documents: |
+    Check whether the following snippet is relevant to answering the question: {question}. Return JSON {{"score": "yes" | "no"}}.
+
+    Snippet:
+    {snippet}
+  fallback: |
+    I could not find enough supporting information in the current documents to answer this question. Please provide more context or refine the question.
+
+graph:
+  max_rewrite_retries: 2
+  grade_batch: true
+  context_max_chars: 12000
+  truncation_strategy: tail
+
+reranker:
+  provider: none
+  top_k: 4
+
+ingest:
+  worker_timeout_seconds: 300
+  max_attempts: 3
+  dedup_strategy: hash
+  worker_enabled: true
+  poll_interval_seconds: 0.25
+  chunk_batch_size: 500
+
+upload:
+  max_size_bytes: 15728640
+  directory: ./data/uploads
+
+# The RAG catalog (documents, chunks, ingest jobs) lives in the Spring backend.
+backend:
+  base_url: http://localhost:8080
+  api_key: ""
+  timeout_seconds: 30

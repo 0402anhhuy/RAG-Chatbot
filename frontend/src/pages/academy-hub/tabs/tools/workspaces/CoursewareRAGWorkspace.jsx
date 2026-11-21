@@ -1,33 +1,54 @@
 import { useState } from "react";
-import {
-    ArrowLeft,
-    BookOpen,
-    Database,
-    ExternalLink,
-    Network,
-    Search,
-    Sparkles,
-} from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2, Search, Sparkles } from "lucide-react";
+import { academyToolApi } from "../../../../../api";
+import { useToast } from "../../../../../context/ToastContext";
 import "./EduWorkspaces.css";
 
+const getSessionUser = () => {
+    try {
+        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
+        return parsed?.user || parsed || {};
+    } catch {
+        return {};
+    }
+};
+
+/**
+ * Tra cứu trên chính tài liệu người học đã upload. BE tìm từ khoá trong nội dung
+ * file và trả đoạn khớp + điểm khớp — không có đoạn văn bản nào được soạn sẵn.
+ */
 export const CoursewareRAGWorkspace = ({ onBackToHub }) => {
-    const [query, setQuery] = useState("Explain Outbox Pattern in distributed transactions");
-    const [results, setResults] = useState([
-        {
-            title: "Chapter_05_Microservices_EventDriven.pdf",
-            score: "96.4% Cosine Match",
-            page: "Page 42, Paragraph 3",
-            snippet:
-                "The Transactional Outbox Pattern solves the dual-write anti-pattern by persisting domain entities and outbound events within a single local database transaction before message bus dissemination.",
-        },
-        {
-            title: "Clean_Architecture_Handbook.pdf",
-            score: "88.1% Cosine Match",
-            page: "Page 112, Chapter 8",
-            snippet:
-                "Decoupling transport layers from internal state persistence ensures eventual consistency without requiring distributed two-phase commit (2PC) locks.",
-        },
-    ]);
+    const sessionUser = getSessionUser();
+    const { showToast } = useToast();
+
+    const [query, setQuery] = useState("");
+    const [result, setResult] = useState(null);
+    const [running, setRunning] = useState(false);
+
+    const search = async () => {
+        const question = query.trim();
+        if (!question || running) return;
+        if (!sessionUser?.id) {
+            showToast("Please sign in again to query your courseware.", "error");
+            return;
+        }
+        try {
+            setRunning(true);
+            const response = await academyToolApi.run(sessionUser.id, "courseware", {
+                prompt: question,
+            });
+            setResult(response);
+            if (!response?.citations?.length) {
+                showToast("No passage in your material matches that query.", "warning");
+            }
+        } catch (err) {
+            showToast(err.message || "Could not query your courseware.", "error");
+        } finally {
+            setRunning(false);
+        }
+    };
+
+    const citations = result?.citations || [];
 
     return (
         <div className="edu-workspace-root">
@@ -37,46 +58,78 @@ export const CoursewareRAGWorkspace = ({ onBackToHub }) => {
                 </button>
                 <div className="workspace-meta-tag">
                     <span className="badge-socratic purple">VECTOR RETRIEVAL</span>
-                    <strong>Courseware RAG & Knowledge Graph Explorer</strong>
+                    <strong>Courseware RAG Index</strong>
                 </div>
             </header>
 
             <div className="workspace-rag-container">
-                <div className="rag-search-box">
+                <form
+                    className="rag-search-box"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        search();
+                    }}
+                >
                     <Search size={16} className="search-icon" />
                     <input
                         type="text"
-                        placeholder="Search concepts across all vectorized syllabi..."
+                        placeholder="Search concepts across your uploaded syllabi..."
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
+                        onChange={(event) => setQuery(event.target.value)}
                     />
-                    <button type="button" className="btn-vector-query">
-                        <Sparkles size={14} /> Query RAG Index
+                    <button
+                        type="submit"
+                        className="btn-vector-query"
+                        disabled={running || !query.trim()}
+                    >
+                        {running ? (
+                            <Loader2 size={14} className="ws-spinner" />
+                        ) : (
+                            <Sparkles size={14} />
+                        )}
+                        {running ? "Searching..." : "Query RAG Index"}
                     </button>
-                </div>
+                </form>
+
+                {result && <p className="ws-rag-summary">{result.summary}</p>}
 
                 <div className="rag-results-grid">
-                    {results.map((res, i) => (
-                        <div key={i} className="rag-citation-card">
-                            <div className="citation-top">
-                                <div className="citation-source">
-                                    <BookOpen size={14} color="#7c3aed" />
-                                    <strong>{res.title}</strong>
-                                    <span className="citation-page">{res.page}</span>
-                                </div>
-                                <span className="citation-score">{res.score}</span>
-                            </div>
-                            <p className="citation-snippet">"{res.snippet}"</p>
-                            <div className="citation-actions">
-                                <button type="button" className="btn-cite-action">
-                                    <Network size={12} /> View in Neo4j Graph
-                                </button>
-                                <button type="button" className="btn-cite-action">
-                                    <ExternalLink size={12} /> Open PDF Page
-                                </button>
-                            </div>
+                    {citations.length === 0 ? (
+                        <div className="ws-empty-state">
+                            <span>
+                                {result
+                                    ? "No matching passage. Try different words or upload the course material."
+                                    : "Search your uploaded documents. Passages and match scores come from the files themselves."}
+                            </span>
                         </div>
-                    ))}
+                    ) : (
+                        citations.map((citation) => (
+                            <div key={citation.documentId} className="rag-citation-card">
+                                <div className="citation-top">
+                                    <div className="citation-source">
+                                        <BookOpen size={14} color="#7c3aed" />
+                                        <strong>{citation.name}</strong>
+                                        <span className="citation-page">
+                                            {citation.courseCode || "GEN"}
+                                        </span>
+                                    </div>
+                                    <span className="citation-score">
+                                        {citation.scorePercent}% term match
+                                    </span>
+                                </div>
+                                <p className="citation-snippet">“{citation.snippet}”</p>
+                                {citation.matchedTerms?.length > 0 && (
+                                    <div className="citation-actions">
+                                        {citation.matchedTerms.map((term) => (
+                                            <span key={term} className="ws-term-chip">
+                                                {term}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

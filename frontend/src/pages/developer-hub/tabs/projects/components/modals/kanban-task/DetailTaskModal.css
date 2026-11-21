@@ -345,6 +345,33 @@
     padding-top: 4px;
 }
 
+/* CustomSelector cho assignee: chiếm hết chiều ngang pill */
+.kanban-modal-selector {
+    display: block;
+    width: 100%;
+}
+
+.kanban-modal-selector .custom-select-container {
+    display: block;
+    width: 100%;
+}
+
+.kanban-modal-selector .custom-select-trigger {
+    width: 100%;
+    justify-content: space-between;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #334155;
+}
+
+.btn-footer-save-pill:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
 /* 3. Footer cố định: Nền trắng, nằm trên lớp cuộn */
 .task-modal-footer-fixed {
     background-color: #ffffff;

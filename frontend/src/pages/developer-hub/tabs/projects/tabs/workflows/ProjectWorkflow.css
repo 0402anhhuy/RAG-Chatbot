@@ -92,6 +92,65 @@
     border-color: #94a3b8;
 }
 
+/* Selector filter (CustomSelector dùng chung) */
+.workflows-filter-selectors {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Dòng đếm workflow */
+.workflows-count-row {
+    font-size: 0.76rem;
+    color: #64748b;
+}
+
+/* Trạng thái loading / lỗi */
+.workflows-state-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.workflows-state-error {
+    color: #b91c1c;
+}
+
+.workflows-empty-well {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 36px 16px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.workflows-spin {
+    animation: workflowsSpin 0.9s linear infinite;
+}
+
+@keyframes workflowsSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.btn-card-remove:hover {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.btn-card-remove:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 /* 2. Lưới Thẻ 3 Cột */
 .workflows-cards-grid {
     display: grid;

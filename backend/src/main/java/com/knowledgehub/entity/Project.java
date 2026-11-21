@@ -30,7 +30,7 @@ public class Project {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ProjectStatus status = ProjectStatus.IDLE;
+    private ProjectStatus status = ProjectStatus.ACTIVE;
 
     @Column(nullable = false)
     private boolean pinned;

@@ -66,6 +66,110 @@
     background-color: #1e293b;
 }
 
+/* Selector filter (CustomSelector dùng chung) */
+.agents-filter-selectors {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Dòng đếm agent */
+.agents-count-row {
+    font-size: 0.76rem;
+    color: #64748b;
+}
+
+/* Trạng thái loading / lỗi */
+.agents-state-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.agents-state-error {
+    color: #b91c1c;
+}
+
+.agents-empty-well {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 36px 16px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.agents-spin {
+    animation: agentsSpin 0.9s linear infinite;
+}
+
+@keyframes agentsSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.btn-import-agent-white {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-import-agent-white:hover {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+}
+
+/* Header Thẻ */
+.agent-card-header-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.btn-card-more-menu {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    transition: background-color 0.12s ease;
+}
+
+.btn-card-more-menu:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.btn-card-remove:hover {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.btn-card-remove:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 /* 2. Lưới Thẻ 3 Cột */
 .agents-cards-grid {
     display: grid;
@@ -110,6 +214,7 @@
     align-items: center;
     gap: 8px;
     margin-top: 2px;
+    overflow: hidden;
 }
 
 .agent-icon-well {

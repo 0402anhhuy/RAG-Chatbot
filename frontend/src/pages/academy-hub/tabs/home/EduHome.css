@@ -1,34 +1,41 @@
 .edu-home-bounds {
-    max-width: 1120px;
+    max-width: 1280px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+    padding-bottom: 30px;
+    box-sizing: border-box;
 }
 
-/* 1. Hero Resume Study Banner */
+/* ======================================================== */
+/* 1. HERO RESUME / EXPLORE BANNER                          */
+/* ======================================================== */
 .edu-resume-hero {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 20px 24px;
+    border-radius: 12px;
+    padding: 18px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
+    gap: 20px;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    box-sizing: border-box;
 }
 
 .resume-hero-left {
     display: flex;
     align-items: center;
     gap: 16px;
+    min-width: 0;
+    flex: 1;
 }
 
 .edu-resume-hero .resume-icon-badge {
     width: 44px;
     height: 44px;
-    border-radius: 9px;
+    border-radius: 10px;
     background-color: #ecfdf5;
     color: #059669;
     border: 1px solid #a7f3d0;
@@ -37,24 +44,79 @@
     flex-shrink: 0;
 }
 
+.edu-resume-hero .resume-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    overflow: hidden;
+}
+
 .edu-resume-hero .resume-eyebrow {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 700;
     color: #059669;
     letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .edu-resume-hero .resume-copy h3 {
-    margin: 3px 0 4px;
+    margin: 0;
     font-size: 1.05rem;
     font-weight: 600;
     color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .edu-resume-hero .resume-copy p {
     margin: 0;
     font-size: 0.8rem;
     color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Controls bên phải Hero: Sắp xếp theo flexbox, không đè lấn */
+.resume-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.time-range-toggles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 3px 6px;
+}
+
+.btn-reload-icon {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+    transition: all 0.15s ease;
+}
+
+.btn-reload-icon:hover:not(:disabled) {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.btn-reload-icon:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .btn-continue-edu {
@@ -65,7 +127,7 @@
     background-color: #059669;
     color: #ffffff;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.84rem;
     font-weight: 600;
     cursor: pointer;
@@ -77,35 +139,51 @@
 
 .btn-continue-edu:hover {
     background-color: #047857;
-    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
 }
 
-/* 2. KPI Metrics Grid */
+/* ======================================================== */
+/* 2. KPI METRICS GRID (4 CỘT)                              */
+/* ======================================================== */
 .edu-kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .edu-kpi-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: 12px;
+    padding: 16px 18px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    min-height: 104px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    box-sizing: border-box;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.edu-kpi-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .edu-kpi-card .kpi-card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .edu-kpi-card .kpi-label {
-    font-size: 0.74rem;
-    color: #64748b;
+    font-size: 0.76rem;
+    color: #475569;
     font-weight: 500;
 }
 
@@ -114,76 +192,103 @@
 }
 
 .edu-kpi-card .kpi-value {
-    font-size: 1.4rem;
-    font-weight: 600;
+    font-size: 1.55rem;
+    font-weight: 700;
     color: #0f172a;
     letter-spacing: -0.02em;
-    margin-bottom: 2px;
+    line-height: 1.2;
+    margin-bottom: 4px;
 }
 
 .edu-kpi-card .kpi-sub-note {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: #94a3b8;
 }
 
-/* 3. Split Sections: Courses & AI Drills */
+/* ======================================================== */
+/* 3. SPLIT SECTIONS (COURSES PROGRESS & AI DRILLS)         */
+/* ======================================================== */
 .edu-split-sections {
     display: grid;
-    grid-template-columns: 1.25fr 1fr;
-    gap: 18px;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .courses-progress-card,
 .ai-recs-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 9px;
-    padding: 18px;
+    border-radius: 12px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    min-height: 180px;
+    box-sizing: border-box;
 }
 
 .section-title-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f8fafc;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .section-title-row strong {
-    font-size: 0.88rem;
+    font-size: 0.92rem;
     color: #0f172a;
+    font-weight: 600;
 }
 
 .btn-text-link {
     background: transparent;
     border: none;
     color: #64748b;
-    font-size: 0.75rem;
+    font-size: 0.76rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: color 0.12s ease;
+    padding: 0;
 }
 
 .btn-text-link:hover {
     color: #059669;
 }
 
+.section-empty-feedback {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 8px 0;
+}
+
+.ai-rec-intro {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 0 0 12px;
+    line-height: 1.45;
+}
+
 /* Course Items */
 .course-progress-list {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
+    flex: 1;
 }
 
 .course-progress-item {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 10px 12px;
+    padding: 10px 14px;
     background-color: #f8fafc;
     border: 1px solid #f1f5f9;
-    border-radius: 7px;
+    border-radius: 8px;
 }
 
 .course-meta-head {
@@ -239,13 +344,7 @@
     color: #64748b;
 }
 
-/* AI Recommendation Action Boxes */
-.ai-rec-intro {
-    font-size: 0.78rem;
-    color: #64748b;
-    margin: 0 0 14px;
-}
-
+/* Drill boxes */
 .drill-action-boxes {
     display: flex;
     flex-direction: column;
@@ -257,15 +356,12 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 14px;
+    padding: 12px 14px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     background-color: #fcfdfe;
     cursor: pointer;
-    transition:
-        border-color 0.15s ease,
-        background-color 0.15s ease,
-        transform 0.12s ease;
+    transition: all 0.15s ease;
 }
 
 .drill-box:hover {
@@ -287,19 +383,22 @@
 }
 
 /* Responsive */
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
     .edu-kpi-grid {
         grid-template-columns: repeat(2, 1fr);
     }
     .edu-split-sections {
         grid-template-columns: 1fr;
     }
+}
+
+@media (max-width: 768px) {
     .edu-resume-hero {
         flex-direction: column;
         align-items: flex-start;
     }
-    .btn-continue-edu {
+    .resume-hero-actions {
         width: 100%;
-        justify-content: center;
+        justify-content: space-between;
     }
 }

@@ -51,6 +51,87 @@
     border-color: #94a3b8;
 }
 
+/* Bộ lọc tháng + nút refresh ở góc phải header */
+.analytics-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analytics-month-selector .custom-select-trigger,
+.analytics-export-selector .custom-select-trigger {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #0f172a;
+    border-radius: 8px;
+    gap: 8px;
+}
+
+.analytics-month-selector .custom-select-menu {
+    min-width: 175px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.btn-analytics-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-analytics-ghost:hover:not(:disabled) {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.btn-analytics-ghost:disabled {
+    cursor: progress;
+    opacity: 0.7;
+}
+
+.analytics-spinner {
+    animation: analyticsSpin 0.9s linear infinite;
+    color: #94a3b8;
+}
+
+.spin {
+    animation: analyticsSpin 0.9s linear infinite;
+}
+
+@keyframes analyticsSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Thông báo trạng thái: đang tải / lỗi / không có dữ liệu */
+.analytics-state-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    font-size: 0.82rem;
+    color: #475569;
+}
+
+.td-empty {
+    padding: 22px 16px !important;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.78rem;
+}
+
 /* 2. Sub-tabs Toolbar */
 .analytics-subtabs-toolbar {
     display: flex;
@@ -98,6 +179,10 @@
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.analytics-export-selector .custom-select-menu {
+    min-width: 165px;
 }
 
 .btn-csv-dropdown {
@@ -261,6 +346,49 @@
     color: #64748b;
 }
 
+.chart-legend-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.legend-swatch {
+    width: 9px;
+    height: 3px;
+    border-radius: 2px;
+}
+
+.legend-swatch.amber {
+    background-color: #f59e0b;
+}
+.legend-swatch.purple {
+    background-color: #8b5cf6;
+}
+.legend-swatch.green {
+    background-color: #10b981;
+}
+.legend-swatch.rose {
+    background-color: #ef4444;
+}
+
+.chart-empty-state {
+    height: 180px;
+    display: grid;
+    place-items: center;
+    border: 1px dashed #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+
 .chart-svg-wrapper {
     position: relative;
     width: 100%;
@@ -289,18 +417,33 @@
 .chart-axis-x {
     position: absolute;
     bottom: -4px;
-    left: 40px;
-    right: 20px;
-    display: flex;
-    justify-content: space-between;
+    left: 0;
+    right: 0;
+    height: 14px;
     font-size: 0.68rem;
     color: #64748b;
     pointer-events: none;
 }
 
+/* Mỗi nhãn ngày đặt đúng toạ độ X của điểm trên SVG rồi tự căn giữa */
+.chart-axis-x-tick {
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.dot-circle.green {
+    background-color: #10b981;
+}
+.dot-circle.rose {
+    background-color: #ef4444;
+}
+
 /* Tooltip nổi trên biểu đồ Cost & Usage */
 .chart-floating-tooltip {
     position: absolute;
+    transform: translate(6px, -100%);
+    margin-bottom: 6px;
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;

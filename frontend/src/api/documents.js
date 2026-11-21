@@ -1,5 +1,4 @@
-import { request } from "./client";
-import { API_BASE_URL } from "./config";
+import { request, requestBlob } from "./client";
 
 export const documentApi = {
     getByWorkspace: (workspaceId, { courseCode, fileType, status } = {}) => {
@@ -36,8 +35,7 @@ export const documentApi = {
             method: "DELETE",
         }),
 
-    getPreviewUrl: (id) => 
-    `${API_BASE_URL}/documents/${id}/preview#scrollbar=0`,
-    
-    getDownloadUrl: (id) => `${API_BASE_URL}/documents/${id}/download`,
+    getPreview: (id) => requestBlob(`/documents/${id}/preview`),
+
+    getDownload: (id) => requestBlob(`/documents/${id}/download`),
 };

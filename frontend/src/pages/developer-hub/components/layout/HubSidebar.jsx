@@ -18,7 +18,6 @@ const NAV_ITEMS = [
     { id: "home", label: "Home", icon: Home },
     { id: "projects", label: "Projects", icon: FolderKanban },
     { id: "conversations", label: "Conversations", icon: MessageSquare },
-    { id: "sandboxes", label: "Sandboxes", icon: Terminal },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "settings", label: "Settings", icon: Settings },
     //{ id: "tools", label: "Tools", icon: Terminal, isToolParent: true },

@@ -1,0 +1,62 @@
+services:
+  rag-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag-service-app
+    environment:
+      APP__ENV: development
+      APP__HOST: 0.0.0.0
+      APP__PORT: 8000
+      APP__LOG_LEVEL: INFO
+      APP__LOG_FORMAT: json
+      DATABASE__PATH: /app/data/app.db
+      VECTOR_STORE__BACKEND: in_memory
+      VECTOR_STORE__PERSIST_PATH: /app/data/vector_store
+      BM25__PERSIST_PATH: /app/data/bm25_index.jsonl
+      INGEST__QUEUE_PATH: /app/data/ingest_queue.db
+      RATE_LIMIT__ENABLED: "false"
+      SECURITY__ENABLED: "true"
+      SECURITY__API_KEY: ${RAG_SERVICE_API_KEY:-local-development-rag-service-key-32}
+      LLM__PROVIDER: mock
+      EMBEDDING__PROVIDER: dummy
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      redis:
+        condition: service_started
+      qdrant:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json, urllib.request; r = urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/readiness', timeout=5); data = json.loads(r.read().decode()); raise SystemExit(0 if data.get('status') == 'ready' else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: rag-service-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.0
+    container_name: rag-service-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  qdrant_data:

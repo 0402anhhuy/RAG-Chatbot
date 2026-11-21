@@ -25,7 +25,6 @@ import WorkbenchWorkspace from "./tabs/projects/tabs/workbench/WorkbenchWorkspac
 import HomeTab from "./tabs/home/Home";
 import ProjectsTab from "./tabs/projects/Project";
 import ConversationsTab from "./tabs/conversations/Conversation";
-import SandboxesTab from "./tabs/sandboxes/Sandbox";
 import TasksTab from "./tabs/tasks/Task";
 import SettingsTab from "./tabs/settings/Setting";
 
@@ -40,6 +39,8 @@ const DeveloperHub = () => {
     const [activeProjectTab, setActiveProjectTab] = useState("dashboard");
     // Quản lý sub-view bên trong Workbench (ide, chat, changes, canvas, galaxy, preview)
     const [activeWorkbenchSubTab, setActiveWorkbenchSubTab] = useState("ide");
+    // Conversation được mở từ tab Conversations (null = mặc định)
+    const [activeConversation, setActiveConversation] = useState(null);
 
     const [activeSubTool, setActiveSubTool] = useState(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -56,6 +57,37 @@ const DeveloperHub = () => {
         setCurrentProject(project);
         setActiveProjectTab("dashboard");
         setActiveWorkbenchSubTab("ide");
+        setActiveConversation(null);
+    };
+
+    // Khi thành viên của project thay đổi: cập nhật số member trên card project
+    const handleMembersChanged = () => {
+        setProjectsRefreshKey((key) => key + 1);
+        if (!currentProject?.id) return;
+        projectApi
+            .getById(currentProject.id)
+            .then((project) => {
+                if (project) setCurrentProject((prev) => ({ ...prev, ...project }));
+            })
+            .catch(() => {
+                /* im lặng: số member sẽ được cập nhật ở lần tải sau */
+            });
+    };
+
+    // Khi người dùng bấm vào một dòng trong tab Conversations
+    const handleOpenConversation = (conversation) => {
+        const project =
+            conversation?.projectId
+                ? {
+                      id: conversation.projectId,
+                      name: conversation.project || conversation.projectName || "Project",
+                  }
+                : currentProject;
+
+        setActiveConversation(conversation || null);
+        if (project) setCurrentProject(project);
+        setActiveProjectTab("workbench");
+        setActiveWorkbenchSubTab("chat");
     };
 
     // Khi người dùng bấm quay lại danh sách Hub
@@ -128,6 +160,13 @@ const DeveloperHub = () => {
 
                 {/* 3. VIEWPORT NỘI DUNG */}
                 <div className="vibe-main-viewport">
+                    {/* Tab Members: ProjectMember tự quản lý layout và spinner riêng */}
+                    {currentProject && activeProjectTab === "members" && (
+                        <ProjectMember
+                            project={currentProject}
+                            onMembersChanged={handleMembersChanged}
+                        />
+                    )}
                     <main
                         className={`vibe-canvas-body ${
                             activeProjectTab === "workbench" ? "no-padding-full" : ""
@@ -145,24 +184,33 @@ const DeveloperHub = () => {
                                 )}
                                 {activeProjectTab === "workbench" && (
                                     <WorkbenchWorkspace
+                                        project={currentProject}
                                         activeSubView={activeWorkbenchSubTab}
+                                        conversation={activeConversation}
                                         onSubViewChange={(subTab) =>
                                             setActiveWorkbenchSubTab(subTab)
                                         }
+                                        onOpenConversation={handleOpenConversation}
                                     />
                                 )}
                                 {activeProjectTab === "kanban" && (
                                     <ProjectKanban
+                                        project={currentProject}
                                         onOpenWorkbench={() => setActiveProjectTab("workbench")}
-                                        onNewTaskClick={() => setIsCreateModalOpen(true)}
                                     />
                                 )}
-                                {activeProjectTab === "members" && <ProjectMember />}
-                                {activeProjectTab === "workflows" && <ProjectWorkflow />}
-                                {activeProjectTab === "agents" && <ProjectAgent />}
-                                {activeProjectTab === "analytics" && <ProjectAnalytics />}
+                                {activeProjectTab === "members" && null}
+                                {activeProjectTab === "workflows" && (
+                                    <ProjectWorkflow project={currentProject} />
+                                )}
+                                {activeProjectTab === "agents" && (
+                                    <ProjectAgent project={currentProject} />
+                                )}
+                                {activeProjectTab === "analytics" && (
+                                    <ProjectAnalytics project={currentProject} />
+                                )}
                                 {activeProjectTab === "settings" && (
-                                    <ProjectSetting projectName={currentProject?.name} />
+                                    <ProjectSetting project={currentProject} />
                                 )}
                             </>
                         ) : (
@@ -181,8 +229,10 @@ const DeveloperHub = () => {
                                         refreshKey={projectsRefreshKey}
                                     />
                                 )}
-                                {activeTab === "conversations" && <ConversationsTab />}
-                                {activeTab === "sandboxes" && <SandboxesTab />}
+                                {activeTab === "conversations" && (
+                                    <ConversationsTab onOpenConversation={handleOpenConversation} />
+                                )}
+
                                 {activeTab === "tasks" && <TasksTab />}
                                 {activeTab === "settings" && <SettingsTab />}
                             </>

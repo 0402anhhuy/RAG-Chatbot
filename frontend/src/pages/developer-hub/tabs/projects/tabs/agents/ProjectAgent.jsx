@@ -1,216 +1,198 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Plus,
-    FileText,
-    Tv,
-    FolderKanban,
+    Trash2,
     Cpu,
-    Database,
-    ShieldAlert,
-    FileCode,
-    GitFork,
-    FileDiff,
-    CheckCircle2,
+    FileText,
+    FilePlus,
     Server,
-    History,
+    Code2,
+    Search,
+    Scan,
+    Database,
     Cloud,
-    Layout,
-    TestTube2,
     Shield,
+    TestTube,
+    Columns3,
+    Palette,
+    Monitor,
+    GitBranch,
+    Terminal,
+    Globe,
+    BookOpen,
+    BarChart3,
+    Wrench,
+    Zap,
+    Printer,
+    Network,
+    Plug,
+    Pencil,
+    Target,
+    Microscope,
+    Lightbulb,
+    RefreshCw,
+    Loader2,
+    CloudDownload,
 } from "lucide-react";
+import { agentApi } from "../../../../../../api";
+import CustomSelector from "../../../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../../../context/ToastContext";
 import CreateAgentModal from "../../components/modals/agents/CreateAgentModal";
 import "./ProjectAgent.css";
 
-const INITIAL_AGENTS = [
-    {
-        id: "business-analyst",
-        name: "business-analyst",
-        desc: "Business Analyst - Cross-industry requirements, SRS, user stories, process modeling",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#3b82f6", // Blue
-        icon: FileText,
-    },
-    {
-        id: "slide-craft",
-        name: "slide-craft",
-        desc: "Presentation Designer — generates self-contained 16:9 slide decks (HTML + PDF + PPTX) from documents, RFPs, or topics",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#ec4899", // Pink
-        icon: Tv,
-    },
-    {
-        id: "project-manager",
-        name: "project-manager",
-        desc: "Project Manager - Planning, WBS, timeline, risk management, sprint planning",
-        type: "BUILT-IN",
-        permission: "Docs writer",
-        color: "#10b981", // Emerald
-        icon: FolderKanban,
-    },
-    {
-        id: "solution-architect",
-        name: "solution-architect",
-        desc: "Solution Architect - System design, data architecture, infrastructure planning, and ADR",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#8b5cf6", // Purple
-        icon: Cpu,
-    },
-    {
-        id: "dba-expert",
-        name: "dba-expert",
-        desc: "DBA Expert - Query tuning, schema design, replication, all database engines",
-        type: "BUILT-IN",
-        permission: "Docs writer",
-        color: "#ec4899", // Pink
-        icon: Database,
-    },
-    {
-        id: "security-auditor",
-        name: "security-auditor",
-        desc: "Security Auditor - White-box security code review (OWASP Top 10 Web + API, CWE, CVSS): finds vulnerabilities with exact file:line, exploit scenario, and a working fix, then writes a report t...",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#ef4444", // Red
-        icon: ShieldAlert,
-    },
-    {
-        id: "document-to-md",
-        name: "document-to-md",
-        desc: "Convert source documents (PDF, Word, Excel, PowerPoint) to Markdown using the matching skill (pdf/docx/xlsx/pptx), with selective diagram/figure rasterization to PNG, and save to...",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#ef4444", // Red
-        icon: FileCode,
-    },
-    {
-        id: "migration-expert",
-        name: "migration-expert",
-        desc: "Migration Expert - System, code, data, and platform migration strategies",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#f97316", // Orange
-        icon: GitFork,
-    },
-    {
-        id: "docs-drift",
-        name: "docs-drift",
-        desc: "Docs Drift Auditor — audits the docs against the code and fixes stale references (renamed symbols, moved files, dead links, outdated commands), report-first",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#0ea5e9", // Sky
-        icon: FileDiff,
-    },
-    {
-        id: "reviewer",
-        name: "reviewer",
-        desc: "Reviewer - Code review (all stacks) and document review (SRS, RFP, design docs)",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#ef4444", // Red
-        icon: CheckCircle2,
-    },
-    {
-        id: "backend-dev",
-        name: "backend-dev",
-        desc: "Backend Developer - Implements APIs and business logic across all backend stacks",
-        type: "BUILT-IN",
-        permission: "Full access",
-        color: "#f59e0b", // Amber
-        icon: Server,
-    },
-    {
-        id: "revert-expert",
-        name: "revert-expert",
-        desc: "Reverse Engineering Expert - Legacy code analysis, documentation extraction, and modernization strategy",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#8b5cf6", // Purple
-        icon: History,
-    },
-    {
-        id: "cloud-expert",
-        name: "cloud-expert",
-        desc: "Cloud Expert - AWS, Azure, GCP, Alibaba Cloud, OCI, Kubernetes, Terraform",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#06b6d4", // Teal
-        icon: Cloud,
-    },
-    {
-        id: "frontend-dev",
-        name: "frontend-dev",
-        desc: "Frontend Developer - Implements UI components and features across all frontend stacks",
-        type: "BUILT-IN",
-        permission: "Full access",
-        color: "#10b981", // Emerald
-        icon: Layout,
-    },
-    {
-        id: "tester",
-        name: "tester",
-        desc: "Tester - Write test cases (IPA standard or your template) and execute them against a running web app (Playwright), reporting pass/fail per TC-ID",
-        type: "BUILT-IN",
-        permission: "Scoped edits",
-        color: "#84cc16", // Lime
-        icon: TestTube2,
-    },
+// Icon của agent lưu dưới dạng key (BE) -> component hiển thị
+const ICON_MAP = {
+    bot: Cpu,
+    server: Server,
+    code: Code2,
+    file: FileText,
+    "file-plus": FilePlus,
+    search: Search,
+    scan: Scan,
+    db: Database,
+    cloud: Cloud,
+    shield: Shield,
+    "test-tube": TestTube,
+    columns: Columns3,
+    palette: Palette,
+    monitor: Monitor,
+    git: GitBranch,
+    terminal: Terminal,
+    globe: Globe,
+    book: BookOpen,
+    chart: BarChart3,
+    wrench: Wrench,
+    zap: Zap,
+    printer: Printer,
+    network: Network,
+    plug: Plug,
+    pencil: Pencil,
+    target: Target,
+    microscope: Microscope,
+    lightbulb: Lightbulb,
+    refresh: RefreshCw,
+};
+
+const TYPE_LABELS = {
+    BUILT_IN: "BUILT-IN",
+    CUSTOM: "CUSTOM",
+};
+
+// options cho CustomSelector chung
+const TYPE_OPTIONS = [
+    { value: "ALL", label: "All agents" },
+    { value: "BUILT_IN", label: "Built-In" },
+    { value: "CUSTOM", label: "Custom" },
 ];
 
-const ProjectAgent = () => {
-    const [agents, setAgents] = useState(INITIAL_AGENTS);
-    const [filterCategory, setFilterCategory] = useState("all");
+const SORT_OPTIONS = [
+    { value: "created", label: "Newest first" },
+    { value: "name", label: "Name A-Z" },
+];
+
+const ProjectAgent = ({ project = null }) => {
+    const { showToast } = useToast();
+    const projectId = project?.id || null;
+
+    const [agents, setAgents] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [typeFilter, setTypeFilter] = useState("ALL");
+    const [sortBy, setSortBy] = useState("created");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
 
-    const builtInCount = agents.filter((a) => a.type === "BUILT-IN").length;
-    const customCount = agents.filter((a) => a.type === "CUSTOM").length;
+    const loadAgents = useCallback(
+        async (signal) => {
+            if (!projectId) {
+                setAgents([]);
+                return;
+            }
+            try {
+                setLoading(true);
+                setError("");
+                const data = await agentApi.list(projectId);
+                if (!signal?.cancelled) setAgents(data || []);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                setAgents([]);
+                setError(err.message || "Unable to load agents.");
+            } finally {
+                if (!signal?.cancelled) setLoading(false);
+            }
+        },
+        [projectId],
+    );
 
-    const filteredAgents = agents.filter((a) => {
-        if (filterCategory === "builtin") return a.type === "BUILT-IN";
-        if (filterCategory === "custom") return a.type === "CUSTOM";
-        return true;
-    });
+    useEffect(() => {
+        const signal = { cancelled: false };
+        loadAgents(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [loadAgents]);
 
-    const handleCreateAgent = (newAgentData) => {
-        setAgents((prev) => [
-            ...prev,
-            {
-                ...newAgentData,
-                id: `agent-${Date.now()}`,
-                type: "CUSTOM",
-                icon: Cpu,
-            },
-        ]);
+    const builtInCount = agents.filter((item) => item.type === "BUILT_IN").length;
+    const customCount = agents.filter((item) => item.type === "CUSTOM").length;
+
+    const visibleAgents = useMemo(() => {
+        const filtered =
+            typeFilter === "ALL" ? agents : agents.filter((item) => item.type === typeFilter);
+
+        return [...filtered].sort((a, b) => {
+            if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+    }, [agents, typeFilter, sortBy]);
+
+    // Modal tự gọi BE để tạo agent, trả về bản ghi vừa tạo
+    const handleCreated = (created) => {
+        if (created) setAgents((prev) => [...prev, created]);
+        setTypeFilter((prev) => (prev === "BUILT_IN" ? "ALL" : prev));
+        showToast("Agent created.", "success");
     };
+
+    const handleDeleteAgent = async (agent) => {
+        if (!projectId || deletingId) return;
+        setDeletingId(agent.id);
+        try {
+            await agentApi.remove(projectId, agent.id);
+            setAgents((prev) => prev.filter((item) => item.id !== agent.id));
+            showToast("Agent deleted.", "success");
+        } catch (err) {
+            showToast(err.message || "Unable to delete the agent.", "error");
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    if (!projectId) {
+        return (
+            <div className="vibe-agents-viewport">
+                <div className="agents-state-row" role="alert">
+                    Open a project first to see its agents.
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="vibe-agents-viewport">
             {/* Header Filter Control Bar */}
             <div className="agents-filter-control-bar">
-                <div className="filter-pill-switch-group">
-                    <button
-                        type="button"
-                        className={`btn-filter-pill ${filterCategory === "all" ? "active" : ""}`}
-                        onClick={() => setFilterCategory("all")}
-                    >
-                        All ({agents.length})
-                    </button>
-                    <button
-                        type="button"
-                        className={`btn-filter-pill ${filterCategory === "builtin" ? "active" : ""}`}
-                        onClick={() => setFilterCategory("builtin")}
-                    >
-                        Built-In ({builtInCount})
-                    </button>
-                    <button
-                        type="button"
-                        className={`btn-filter-pill ${filterCategory === "custom" ? "active" : ""}`}
-                        onClick={() => setFilterCategory("custom")}
-                    >
-                        Custom ({customCount})
-                    </button>
+                <div className="agents-filter-selectors">
+                    <CustomSelector
+                        options={TYPE_OPTIONS}
+                        value={typeFilter}
+                        onChange={(value) => setTypeFilter(value)}
+                        placeholder="All agents"
+                    />
+                    <CustomSelector
+                        options={SORT_OPTIONS}
+                        value={sortBy}
+                        onChange={(value) => setSortBy(value)}
+                        placeholder="Sort by..."
+                    />
                 </div>
 
                 <button
@@ -223,48 +205,105 @@ const ProjectAgent = () => {
                 </button>
             </div>
 
-            {/* Lưới 3 cột Agents */}
-            <div className="agents-cards-grid">
-                {filteredAgents.map((agent) => {
-                    const IconComp = agent.icon || Cpu;
-
-                    return (
-                        <div key={agent.id} className="agent-card-surface">
-                            {/* Dải line màu ở đỉnh đầu thẻ */}
-                            <div
-                                className="agent-card-top-line"
-                                style={{ backgroundColor: agent.color }}
-                            />
-
-                            {/* Header Thẻ: Icon + Tên Agent */}
-                            <div className="agent-card-identity">
-                                <div className="agent-icon-well" style={{ color: agent.color }}>
-                                    <IconComp size={16} />
-                                </div>
-                                <strong className="agent-name-text">{agent.name}</strong>
-                            </div>
-
-                            {/* Mô tả nhiệm vụ */}
-                            <p className="agent-desc-text">{agent.desc}</p>
-
-                            {/* Chân Thẻ: Badge Built-in & Quyền hạn */}
-                            <div className="agent-card-footer">
-                                <span className="agent-badge-type">{agent.type}</span>
-                                <div className="agent-permission-tag">
-                                    <Shield size={11} className="perm-shield-icon" />
-                                    <span>{agent.permission}</span>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
+            <div className="agents-count-row">
+                {agents.length} agents · {builtInCount} built-in · {customCount} custom
             </div>
+
+            {loading && (
+                <div className="agents-state-row">
+                    <Loader2 size={15} className="agents-spin" />
+                    <span>Loading agents...</span>
+                </div>
+            )}
+
+            {!loading && error && (
+                <div className="agents-state-row agents-state-error" role="alert">
+                    <span>{error}</span>
+                    <button
+                        type="button"
+                        className="btn-import-agent-white"
+                        onClick={() => loadAgents()}
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
+            {!loading && !error && (
+                <div className="agents-cards-grid">
+                    {visibleAgents.length === 0 ? (
+                        <div className="agents-empty-well">
+                            <CloudDownload size={18} />
+                            <span>No agents match this filter.</span>
+                        </div>
+                    ) : (
+                        visibleAgents.map((agent) => {
+                            const IconComp = ICON_MAP[agent.iconKey] || Cpu;
+                            const isBuiltIn = agent.type === "BUILT_IN";
+
+                            return (
+                                <div key={agent.id} className="agent-card-surface">
+                                    {/* Dải line màu ở đỉnh đầu thẻ */}
+                                    <div
+                                        className="agent-card-top-line"
+                                        style={{ backgroundColor: agent.color }}
+                                    />
+
+                                    {/* Header Thẻ: Icon + Tên Agent + Xoá */}
+                                    <div className="agent-card-header-line">
+                                        <div className="agent-card-identity">
+                                            <div
+                                                className="agent-icon-well"
+                                                style={{ color: agent.color }}
+                                            >
+                                                <IconComp size={16} />
+                                            </div>
+                                            <strong className="agent-name-text">
+                                                {agent.name}
+                                            </strong>
+                                        </div>
+
+                                        {!isBuiltIn && (
+                                            <button
+                                                type="button"
+                                                className="btn-card-more-menu btn-card-remove"
+                                                title="Delete agent"
+                                                disabled={deletingId === agent.id}
+                                                onClick={() => handleDeleteAgent(agent)}
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Mô tả nhiệm vụ */}
+                                    <p className="agent-desc-text">
+                                        {agent.description || "No description yet."}
+                                    </p>
+
+                                    {/* Chân Thẻ: Badge Built-in & Quyền hạn */}
+                                    <div className="agent-card-footer">
+                                        <span className="agent-badge-type">
+                                            {TYPE_LABELS[agent.type] || agent.type}
+                                        </span>
+                                        <div className="agent-permission-tag">
+                                            <Shield size={11} className="perm-shield-icon" />
+                                            <span>{agent.permissions || "Scoped edits"}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            )}
 
             {/* Modal Create Agent */}
             <CreateAgentModal
                 isOpen={isCreateModalOpen}
+                projectId={projectId}
                 onClose={() => setIsCreateModalOpen(false)}
-                onCreate={handleCreateAgent}
+                onCreated={handleCreated}
             />
         </div>
     );

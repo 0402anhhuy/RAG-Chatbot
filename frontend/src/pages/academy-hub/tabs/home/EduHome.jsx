@@ -1,100 +1,231 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     ArrowRight,
     BookOpen,
     CheckCircle,
     Clock,
-    Flame,
+    Compass,
     GraduationCap,
-    Play,
+    Loader2,
+    RefreshCw,
     Sparkles,
 } from "lucide-react";
+import { academyHomeApi } from "../../../../api";
+import CustomSelector from "../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../context/ToastContext";
 import "./EduHome.css";
 
-const EduHome = ({ onNavigateTab, onLaunchTool }) => {
-    const kpis = [
-        { label: "Active Courses", val: "6", note: "enrolled", icon: BookOpen },
-        {
-            label: "Average Mastery",
-            val: "89%",
-            note: "top 5% percentile",
-            icon: CheckCircle,
-            color: "#059669",
-        },
-        { label: "Quizzes Solved", val: "48", note: "+12 this week", icon: Sparkles },
-        { label: "Study Time", val: "18.4h", note: "this month", icon: Clock },
-    ];
+// Cửa sổ thời gian cho KPI "Quizzes Solved" và "Study Time"
+const RANGE_OPTIONS = [
+    { value: "7d", label: "Last 7 days" },
+    { value: "30d", label: "Last 30 days" },
+    { value: "all", label: "Full term" },
+];
 
-    const currentCourses = [
-        {
-            id: 1,
-            code: "CS204",
-            title: "Algorithms & Complexity",
-            progress: 75,
-            nextLesson: "Dynamic Programming",
+const KPI_ICONS = {
+    active_courses: BookOpen,
+    average_mastery: CheckCircle,
+    quizzes_solved: Sparkles,
+    study_time: Clock,
+};
+
+const KPI_COLORS = {
+    average_mastery: "#059669",
+};
+
+const getSessionUser = () => {
+    try {
+        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
+        return parsed?.user || parsed || {};
+    } catch {
+        return {};
+    }
+};
+
+const EduHome = ({ onNavigateTab, onLaunchTool, workspaceId }) => {
+    const sessionUser = getSessionUser();
+    const { showToast } = useToast();
+
+    const [range, setRange] = useState("30d");
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const loadHome = useCallback(
+        async (signal) => {
+            if (!sessionUser?.id) {
+                setData(null);
+                return;
+            }
+            try {
+                setLoading(true);
+                const result = await academyHomeApi.get({
+                    ownerId: sessionUser.id,
+                    workspaceId: workspaceId || undefined,
+                    range,
+                });
+                if (signal?.cancelled) return;
+                setData(result);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                setData(null);
+                showToast(err.message || "Unable to load your dashboard.", "error");
+            } finally {
+                if (!signal?.cancelled) setLoading(false);
+            }
         },
-        {
-            id: 2,
-            code: "SE301",
-            title: "Software Architecture & Design Patterns",
-            progress: 60,
-            nextLesson: "Event-Driven & Microservices",
-        },
-        {
-            id: 3,
-            code: "AI402",
-            title: "Large Language Models & Agentic RAG",
-            progress: 92,
-            nextLesson: "GraphRAG & Knowledge Graphs",
-        },
-    ];
+        [sessionUser?.id, workspaceId, range, showToast],
+    );
+
+    useEffect(() => {
+        const signal = { cancelled: false };
+        loadHome(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [loadHome]);
+
+    const handleRangeChange = (value, option) => {
+        setRange(value);
+        showToast(`Showing ${option?.label?.toLowerCase() || value} of study activity.`, "info");
+    };
+
+    const handleRefresh = () => {
+        loadHome();
+        showToast("Dashboard refreshed.", "info");
+    };
+
+    const kpis = useMemo(() => data?.kpis || [], [data]);
+    const continueLearning = data?.continueLearning;
+    const courses = data?.courses || [];
+    const recommendations = data?.recommendations || [];
+
+    // Làm sạch và kiểm tra dữ liệu môn học
+    const rawCode = (continueLearning?.courseCode || "").replace(/^[:\s]+|[:\s]+$/g, "").trim();
+    const rawTitle = (continueLearning?.courseTitle || "").replace(/^[:\s]+|[:\s]+$/g, "").trim();
+    const step = (continueLearning?.step || "").trim();
+    const nextLesson = (continueLearning?.nextLesson || "").trim();
+
+    // Điều kiện có khóa học hợp lệ: Phải có ít nhất 1 khóa học đang hoạt động và có tên/mã hợp lệ
+    const hasValidCourse = Boolean(
+        courses.length > 0 && (rawCode || rawTitle) && rawCode !== ":" && rawTitle !== ":",
+    );
+
+    // Tạo tiêu đề sạch tuyệt đối, chỉ nối ":" nếu cả hai đều có nội dung
+    const courseDisplayTitle =
+        rawCode && rawTitle ? `${rawCode}: ${rawTitle}` : rawTitle || rawCode;
 
     return (
         <div className="edu-home-bounds">
-            {/* Hero Study Banner */}
+            {/* 1. Hero Study Banner */}
             <div className="edu-resume-hero">
                 <div className="resume-hero-left">
                     <div className="resume-icon-badge">
-                        <GraduationCap size={20} />
+                        {hasValidCourse ? <GraduationCap size={22} /> : <Compass size={22} />}
                     </div>
                     <div className="resume-copy">
-                        <span className="resume-eyebrow">CONTINUE LEARNING</span>
-                        <h3>CS204: Algorithms & Complexity — Module 4</h3>
-                        <p>
-                            Pick up Socratic step-by-step tutoring on Shortest Path & Dijkstra
-                            optimizations.
-                        </p>
+                        {/* Dòng Eyebrow: Đổi sang EXPLORE COURSES nếu chưa có khóa học */}
+                        <span className="resume-eyebrow">
+                            {hasValidCourse ? "CONTINUE LEARNING" : "EXPLORE COURSES"}
+                        </span>
+
+                        {loading && !data ? (
+                            <p>Loading your study plan…</p>
+                        ) : hasValidCourse ? (
+                            <>
+                                <h3>
+                                    {courseDisplayTitle}
+                                    {step ? ` — ${step}` : ""}
+                                </h3>
+                                {nextLesson && <p>{nextLesson}</p>}
+                            </>
+                        ) : (
+                            <>
+                                <h3>Explore Courses & AI Practice</h3>
+                                <p>
+                                    Discover syllabi, interactive AI tutor sessions, and mock
+                                    drills.
+                                </p>
+                            </>
+                        )}
                     </div>
                 </div>
-                <button
-                    type="button"
-                    className="btn-continue-edu"
-                    onClick={() => onLaunchTool("tutor")}
-                >
-                    <span>Resume with Tutor</span>
-                    <ArrowRight size={14} />
-                </button>
+
+                <div className="resume-hero-actions">
+                    <div className="time-range-toggles">
+                        <CustomSelector
+                            options={RANGE_OPTIONS}
+                            value={range}
+                            onChange={handleRangeChange}
+                            placeholder="Range"
+                        />
+                        <button
+                            type="button"
+                            className="btn-reload-icon"
+                            onClick={handleRefresh}
+                            disabled={loading}
+                            title="Reload dashboard"
+                        >
+                            {loading ? (
+                                <Loader2 size={13} className="ws-spinner" />
+                            ) : (
+                                <RefreshCw size={13} />
+                            )}
+                        </button>
+                    </div>
+
+                    {hasValidCourse ? (
+                        <button
+                            type="button"
+                            className="btn-continue-edu"
+                            onClick={() => onLaunchTool?.("tutor")}
+                        >
+                            <span>Resume with Tutor</span>
+                            <ArrowRight size={14} />
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            className="btn-continue-edu"
+                            onClick={() => onNavigateTab?.("courses")}
+                        >
+                            <span>Explore courses</span>
+                            <ArrowRight size={14} />
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {/* KPI Metrics */}
+            {/* 2. KPI Metrics Grid */}
             <div className="edu-kpi-grid">
-                {kpis.map((k, i) => {
-                    const Icon = k.icon;
+                {kpis.map((kpi) => {
+                    const Icon = KPI_ICONS[kpi.id] || BookOpen;
                     return (
-                        <div key={i} className="edu-kpi-card">
+                        <div key={kpi.id} className="edu-kpi-card">
                             <div className="kpi-card-header">
-                                <span className="kpi-label">{k.label}</span>
+                                <span className="kpi-label">{kpi.label}</span>
                                 <Icon size={14} className="kpi-icon-muted" />
                             </div>
-                            <div className="kpi-value" style={k.color ? { color: k.color } : {}}>
-                                {k.val}
+                            <div
+                                className="kpi-value"
+                                style={KPI_COLORS[kpi.id] ? { color: KPI_COLORS[kpi.id] } : {}}
+                            >
+                                {kpi.value}
                             </div>
-                            <span className="kpi-sub-note">{k.note}</span>
+                            <span className="kpi-sub-note">{kpi.note}</span>
                         </div>
                     );
                 })}
+                {!loading && kpis.length === 0 && (
+                    <div className="edu-kpi-card">
+                        <span className="kpi-label">No study data yet</span>
+                        <span className="kpi-sub-note">
+                            Upload course material or take a quiz to see your metrics.
+                        </span>
+                    </div>
+                )}
             </div>
 
-            {/* Enrolled Courses & Quick Flashcard Grid */}
+            {/* 3. Enrolled Courses & Quick Flashcard Grid */}
             <div className="edu-split-sections">
                 <div className="courses-progress-card">
                     <div className="section-title-row">
@@ -102,15 +233,15 @@ const EduHome = ({ onNavigateTab, onLaunchTool }) => {
                         <button
                             type="button"
                             className="btn-text-link"
-                            onClick={() => onNavigateTab("courses")}
+                            onClick={() => onNavigateTab?.("courses")}
                         >
                             All courses →
                         </button>
                     </div>
 
                     <div className="course-progress-list">
-                        {currentCourses.map((c) => (
-                            <div key={c.id} className="course-progress-item">
+                        {courses.map((c) => (
+                            <div key={c.courseId} className="course-progress-item">
                                 <div className="course-meta-head">
                                     <div className="course-title-unit">
                                         <code>{c.code}</code>
@@ -125,10 +256,19 @@ const EduHome = ({ onNavigateTab, onLaunchTool }) => {
                                     />
                                 </div>
                                 <div className="course-next-row">
-                                    <small>Next: {c.nextLesson}</small>
+                                    <small>
+                                        {c.nextLesson
+                                            ? `Next: ${c.nextLesson}`
+                                            : "All lessons completed"}
+                                    </small>
                                 </div>
                             </div>
                         ))}
+                        {!loading && courses.length === 0 && (
+                            <p className="section-empty-feedback">
+                                No enrolled courses yet. Use “All courses →” to join your first one.
+                            </p>
+                        )}
                     </div>
                 </div>
 
@@ -138,23 +278,32 @@ const EduHome = ({ onNavigateTab, onLaunchTool }) => {
                         <strong>Instant AI Drill & Mock Exam</strong>
                     </div>
                     <p className="ai-rec-intro">
-                        Practice weak concepts detected from your latest assignment rubrics.
+                        Generated from your submitted attempts and the tools you have already run.
                     </p>
                     <div className="drill-action-boxes">
-                        <div className="drill-box" onClick={() => onLaunchTool("exam_prep")}>
-                            <Sparkles size={16} color="#f59e0b" />
-                            <div>
-                                <strong>10 Quick Dynamic Programming Quizzes</strong>
-                                <small>Estimated: 15 mins · Adaptive difficulty</small>
+                        {recommendations.map((rec) => (
+                            <div
+                                key={rec.id}
+                                className="drill-box"
+                                onClick={() => onLaunchTool?.(rec.toolId)}
+                            >
+                                {rec.toolId === "grader" ? (
+                                    <CheckCircle size={16} color="#059669" />
+                                ) : (
+                                    <Sparkles size={16} color="#f59e0b" />
+                                )}
+                                <div>
+                                    <strong>{rec.title}</strong>
+                                    <small>{rec.detail}</small>
+                                </div>
                             </div>
-                        </div>
-                        <div className="drill-box" onClick={() => onLaunchTool("grader")}>
-                            <CheckCircle size={16} color="#059669" />
-                            <div>
-                                <strong>Submit Lab 3 Assignment</strong>
-                                <small>Instant syntax, clean code & rubric scoring</small>
-                            </div>
-                        </div>
+                        ))}
+                        {!loading && recommendations.length === 0 && (
+                            <p className="section-empty-feedback">
+                                Nothing to practice right now — every graded course is above the
+                                advanced threshold.
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

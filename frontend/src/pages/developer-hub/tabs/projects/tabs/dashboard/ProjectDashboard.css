@@ -120,10 +120,10 @@
     background-color: #047857;
 }
 
-/* Lưới 4 Thẻ KPI */
+/* Lưới 3 Thẻ KPI */
 .dashboard-stats-four-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 }
 
@@ -224,6 +224,26 @@
 
 @media (max-width: 1080px) {
     .dashboard-stats-four-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
     }
+}
+
+/* Một dòng task được giao cho người đang xem (My Tasks) */
+.my-task-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.8rem;
+    color: #334155;
+}
+
+.my-task-row:last-child {
+    border-bottom: none;
+}
+
+.my-task-row small {
+    font-size: 0.7rem;
+    color: #94a3b8;
 }

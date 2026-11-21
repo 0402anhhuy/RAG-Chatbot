@@ -145,17 +145,46 @@
     background-color: #fafbfc;
 }
 
+/* Số lượng kết quả sau khi lọc */
+.conversations-result-count {
+    font-size: 0.74rem;
+    color: #94a3b8;
+    margin-left: auto;
+}
+
 /* Các ô Cell chi tiết */
 .td-status {
-    width: 44px;
+    width: 132px;
 }
 
-.glyph-status-success {
-    color: #10b981;
+.convo-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-.glyph-status-idle {
-    color: #94a3b8;
+.convo-status-badge.active {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.convo-status-badge.bookmarked {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.convo-status-badge.archived {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.convo-status-badge.muted {
+    background-color: #f1f5f9;
+    color: #64748b;
 }
 
 .td-title {
@@ -172,6 +201,58 @@
 .convo-flag-glyph {
     color: #64748b;
     flex-shrink: 0;
+}
+
+.convo-flag-glyph.bookmarked {
+    color: #059669;
+    fill: currentColor;
+}
+
+/* Thông báo tải / lỗi / rỗng */
+.conversations-loading-text {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 12px 0;
+}
+
+.conversations-error-text {
+    font-size: 0.8rem;
+    color: #ef4444;
+    margin: 12px 0;
+}
+
+.td-empty {
+    text-align: center;
+    color: #94a3b8;
+    padding: 28px 16px !important;
+}
+
+/* Phân trang */
+.conversations-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.pagination-summary {
+    font-size: 0.74rem;
+    color: #64748b;
+}
+
+.pagination-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagination-controls .btn-action-glyph:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background-color: transparent;
+    color: #94a3b8;
 }
 
 .convo-title-cell strong {

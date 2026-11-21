@@ -1,55 +1,107 @@
-import { useState } from "react";
-import { Search, RotateCw, Archive, ExternalLink, ListTodo } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+    Search,
+    RotateCw,
+    Archive,
+    ExternalLink,
+    ListTodo,
+    ArchiveRestore,
+    ChevronsUpDown,
+} from "lucide-react";
+import { taskApi } from "../../../../api";
+import CustomSelector from "../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../context/ToastContext";
 import "./Task.css";
 
-const TASKS_DATA = [
-    { id: "t1", status: "Backlog", task: "Main", project: "ShoeStore", updated: "Oct 9, 02:12 PM" },
-    {
-        id: "t2",
-        status: "Backlog",
-        task: "Tạo reuire",
-        project: "ShoeStore",
-        updated: "Oct 9, 02:12 PM",
-    },
-    {
-        id: "t3",
-        status: "Backlog",
-        task: "Main",
-        project: "Hanh's Private Workspace",
-        updated: "Oct 9, 10:13 AM",
-    },
-    { id: "t4", status: "Backlog", task: "Main", project: "ShoeStore", updated: "Oct 8, 03:27 PM" },
-    { id: "t5", status: "Backlog", task: "hihi", project: "ShoeStore", updated: "Oct 8, 08:53 AM" },
-    { id: "t6", status: "Backlog", task: "Main", project: "ShoeStore", updated: "Oct 7, 04:16 PM" },
-    { id: "t7", status: "Backlog", task: "Main", project: "ShoeStore", updated: "Oct 7, 02:40 PM" },
-    { id: "t8", status: "Backlog", task: "Main", project: "WebApp", updated: "Oct 7, 01:41 PM" },
-    { id: "t9", status: "Backlog", task: "Main", project: "ShoeStore", updated: "Oct 7, 01:25 PM" },
-    {
-        id: "t10",
-        status: "Backlog",
-        task: "Main",
-        project: "ShoeStore",
-        updated: "Oct 7, 01:25 PM",
-    },
-    {
-        id: "t11",
-        status: "Backlog",
-        task: "Main",
-        project: "ShoeStore",
-        updated: "Oct 7, 01:25 PM",
-    },
+const getOwnerId = () => {
+    try {
+        return JSON.parse(localStorage.getItem("rag_session") || "{}")?.user?.id;
+    } catch {
+        return null;
+    }
+};
+
+// Bộ lọc Active / Archived / All dùng CustomSelector chung của hệ thống
+const STATUS_FILTER_OPTIONS = [
+    { value: "Active", label: "Active", color: "green" },
+    { value: "Archived", label: "Archived", color: "amber" },
+    { value: "All", label: "All", color: "blue" },
 ];
 
+// Truyền thẳng trạng thái xuống BE để lọc (null = không lọc)
+const toArchivedParam = (filter) => {
+    if (filter === "Active") return false;
+    if (filter === "Archived") return true;
+    return undefined;
+};
+
 const Task = ({ onOpenTask }) => {
+    const { showToast } = useToast();
+    const [tasks, setTasks] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("Active");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [pendingTaskId, setPendingTaskId] = useState(null);
 
-    const filteredTasks = TASKS_DATA.filter((item) => {
-        const matchesSearch =
-            item.task.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.project.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesSearch;
-    });
+    const loadTasks = useCallback(
+        async (signal) => {
+            try {
+                setLoading(true);
+                setError("");
+                const data = await taskApi.list({
+                    ownerId: getOwnerId(),
+                    archived: toArchivedParam(statusFilter),
+                    search: searchQuery.trim() || undefined,
+                });
+                if (signal?.cancelled) return;
+                setTasks(data || []);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                setError(err.message || "Unable to load tasks.");
+            } finally {
+                if (!signal?.cancelled) setLoading(false);
+            }
+        },
+        [searchQuery, statusFilter],
+    );
+
+    // Debounce tìm kiếm để không gọi API trên mỗi lần gõ phím
+    useEffect(() => {
+        const signal = { cancelled: false };
+        const timer = setTimeout(() => loadTasks(signal), 250);
+        return () => {
+            signal.cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [loadTasks, refreshKey]);
+
+    const toggleArchived = async (task) => {
+        try {
+            setPendingTaskId(task.id);
+            const updated = await taskApi.archive(task.id, !task.archived);
+            setTasks((prev) => {
+                // Đang xem Active/Archived thì dòng vừa đổi trạng thái phải biến khỏi danh sách
+                if (statusFilter !== "All") {
+                    return prev.filter((item) => item.id !== updated.id);
+                }
+                return prev.map((item) => (item.id === updated.id ? updated : item));
+            });
+            showToast(updated.archived ? "Task archived." : "Task restored.", "success");
+        } catch (err) {
+            showToast(err.message || "Unable to update task.", "error");
+        } finally {
+            setPendingTaskId(null);
+        }
+    };
+
+    const totalLabel = useMemo(() => {
+        const count = tasks.length;
+        return `${count} ${count === 1 ? "task" : "tasks"} ${
+            statusFilter === "Archived" ? "archived" : "across all your projects"
+        }.`;
+    }, [tasks.length, statusFilter]);
 
     return (
         <div className="vibe-tasks-viewport">
@@ -57,9 +109,14 @@ const Task = ({ onOpenTask }) => {
             <div className="tasks-top-banner">
                 <div className="banner-title-col">
                     <h2>Your tasks</h2>
-                    <span>99 tasks across all your projects.</span>
+                    <span>{totalLabel}</span>
                 </div>
-                <button type="button" className="btn-refresh-task" title="Refresh">
+                <button
+                    type="button"
+                    className="btn-refresh-task"
+                    title="Refresh"
+                    onClick={() => setRefreshKey((key) => key + 1)}
+                >
                     <RotateCw size={15} />
                 </button>
             </div>
@@ -76,83 +133,139 @@ const Task = ({ onOpenTask }) => {
                     />
                 </div>
 
-                <select
-                    className="filter-select-pill"
+                <CustomSelector
+                    options={STATUS_FILTER_OPTIONS}
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                    <option value="Active">Active</option>
-                    <option value="Archived">Archived</option>
-                    <option value="All">All</option>
-                </select>
+                    onChange={(value) => setStatusFilter(value)}
+                    placeholder="Filter status..."
+                />
             </div>
+
+            {loading && <p className="tasks-state-text">Loading tasks...</p>}
+            {!loading && error && (
+                <p role="alert" className="tasks-state-text tasks-state-error">
+                    {error}
+                </p>
+            )}
 
             {/* Bảng dữ liệu Tasks */}
-            <div className="tasks-table-wrapper">
-                <table className="vibe-task-table">
-                    <thead>
-                        <tr>
-                            <th className="th-status">Status ⇕</th>
-                            <th className="th-task">Task ⇕</th>
-                            <th className="th-project">Project ⇕</th>
-                            <th className="th-updated">Updated ▾</th>
-                            <th className="th-actions">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredTasks.map((row) => (
-                            <tr
-                                key={row.id}
-                                className="task-table-row"
-                                onClick={() => onOpenTask && onOpenTask(row)}
-                            >
-                                {/* Cột Status */}
-                                <td className="td-status">
-                                    <span className="task-backlog-badge">{row.status}</span>
-                                </td>
-
-                                {/* Cột Task Name */}
-                                <td className="td-task">
-                                    <div className="task-title-cell">
-                                        <ListTodo size={14} className="task-icon-glyph" />
-                                        <strong title={row.task}>{row.task}</strong>
-                                    </div>
-                                </td>
-
-                                {/* Cột Project */}
-                                <td className="td-project">
-                                    <span>{row.project}</span>
-                                </td>
-
-                                {/* Cột Updated Time */}
-                                <td className="td-updated">
-                                    <span>{row.updated}</span>
-                                </td>
-
-                                {/* Cột Actions */}
-                                <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                                    <div className="actions-cluster">
-                                        <button
-                                            type="button"
-                                            className="btn-action-glyph"
-                                            title="Archive task"
-                                        >
-                                            <Archive size={14} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn-action-glyph"
-                                            title="Open task details"
-                                        >
-                                            <ExternalLink size={14} />
-                                        </button>
-                                    </div>
-                                </td>
+            {!loading && !error && (
+                <div className="tasks-table-wrapper">
+                    <table className="vibe-task-table">
+                        <thead>
+                            <tr>
+                                <th className="th-status">
+                                    <span className="th-sort-label">
+                                        Status
+                                        <ChevronsUpDown size={12} className="th-sort-icon" />
+                                    </span>
+                                </th>
+                                <th className="th-task">
+                                    <span className="th-sort-label">
+                                        Task
+                                        <ChevronsUpDown size={12} className="th-sort-icon" />
+                                    </span>
+                                </th>
+                                <th className="th-project">
+                                    <span className="th-sort-label">
+                                        Project
+                                        <ChevronsUpDown size={12} className="th-sort-icon" />
+                                    </span>
+                                </th>
+                                <th className="th-updated">
+                                    <span className="th-sort-label">
+                                        Updated
+                                        <ChevronsUpDown size={12} className="th-sort-icon" />
+                                    </span>
+                                </th>
+                                <th className="th-actions">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {tasks.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="tasks-empty-cell">
+                                        No tasks found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                tasks.map((row) => (
+                                    <tr
+                                        key={row.id}
+                                        className={`task-table-row ${
+                                            row.archived ? "is-archived" : ""
+                                        }`}
+                                        onClick={() => onOpenTask && onOpenTask(row)}
+                                    >
+                                        {/* Cột Status */}
+                                        <td className="td-status">
+                                            <span
+                                                className={`task-backlog-badge status-${(
+                                                    row.status || ""
+                                                ).toLowerCase()}`}
+                                            >
+                                                {row.statusLabel || row.status}
+                                            </span>
+                                        </td>
+
+                                        {/* Cột Task Name */}
+                                        <td className="td-task">
+                                            <div className="task-title-cell">
+                                                <ListTodo size={14} className="task-icon-glyph" />
+                                                <strong title={row.title}>{row.title}</strong>
+                                            </div>
+                                        </td>
+
+                                        {/* Cột Project */}
+                                        <td className="td-project">
+                                            <span>{row.projectName || "—"}</span>
+                                        </td>
+
+                                        {/* Cột Updated Time */}
+                                        <td className="td-updated">
+                                            <span>{row.updatedAtLabel || "—"}</span>
+                                        </td>
+
+                                        {/* Cột Actions */}
+                                        <td
+                                            className="td-actions"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div className="actions-cluster">
+                                                <button
+                                                    type="button"
+                                                    className="btn-action-glyph"
+                                                    title={
+                                                        row.archived
+                                                            ? "Restore task"
+                                                            : "Archive task"
+                                                    }
+                                                    disabled={pendingTaskId === row.id}
+                                                    onClick={() => toggleArchived(row)}
+                                                >
+                                                    {row.archived ? (
+                                                        <ArchiveRestore size={14} />
+                                                    ) : (
+                                                        <Archive size={14} />
+                                                    )}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn-action-glyph"
+                                                    title="Open task details"
+                                                    onClick={() => onOpenTask && onOpenTask(row)}
+                                                >
+                                                    <ExternalLink size={14} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 };

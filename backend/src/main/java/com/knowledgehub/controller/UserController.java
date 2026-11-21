@@ -26,8 +26,12 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAll() {
-        return ResponseEntity.ok(userService.getAll());
+    public ResponseEntity<List<UserResponse>> getAll(
+            @RequestParam(required = false) List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return ResponseEntity.ok(userService.getAll());
+        }
+        return ResponseEntity.ok(userService.getAllByIds(ids));
     }
 
     @GetMapping("/{id}")

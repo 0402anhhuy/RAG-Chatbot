@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     X,
     Bot,
+    Loader2,
     Server,
     Code2,
     FileText,
@@ -29,8 +30,11 @@ import {
     Target,
     Microscope,
     Lightbulb,
-    ChevronDown,
+    RefreshCw,
 } from "lucide-react";
+import { agentApi } from "../../../../../../../api";
+import CustomSelector from "../../../../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../../../../context/ToastContext";
 import "./CreateAgentModal.css";
 
 const AGENT_ICON_PALETTE = [
@@ -62,6 +66,7 @@ const AGENT_ICON_PALETTE = [
     { id: "target", icon: Target },
     { id: "microscope", icon: Microscope },
     { id: "lightbulb", icon: Lightbulb },
+    { id: "refresh", icon: RefreshCw },
 ];
 
 const AGENT_COLORS = [
@@ -77,33 +82,76 @@ const AGENT_COLORS = [
     "#64748B", // Slate
 ];
 
-const CreateAgentModal = ({ isOpen, onClose, onCreate }) => {
+const PERMISSION_OPTIONS = [
+    { value: "Full access", label: "Full access" },
+    { value: "Scoped edits", label: "Scoped edits" },
+    { value: "Docs writer", label: "Docs writer" },
+];
+
+const PERMISSION_HINTS = {
+    "Full access": "Edit any file, run commands, fetch the web (implementers).",
+    "Scoped edits": "Edit only the files needed for the task, no destructive commands.",
+    "Docs writer": "Write and update documentation, no source-code edits.",
+};
+
+const CreateAgentModal = ({ isOpen, projectId, onClose, onCreated }) => {
+    const { showToast } = useToast();
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [selectedIconId, setSelectedIconId] = useState("bot");
     const [selectedColor, setSelectedColor] = useState("#3B82F6");
     const [promptText, setPromptText] = useState("");
     const [permissionPreset, setPermissionPreset] = useState("Full access");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formError, setFormError] = useState("");
+
+    // Reset form mỗi lần mở modal
+    useEffect(() => {
+        if (!isOpen) return;
+        setName("");
+        setDescription("");
+        setSelectedIconId("bot");
+        setSelectedColor("#3B82F6");
+        setPromptText("");
+        setPermissionPreset("Full access");
+        setIsSubmitting(false);
+        setFormError("");
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!name.trim()) return;
+        if (isSubmitting) return;
+        if (!name.trim()) {
+            setFormError("Name is required.");
+            return;
+        }
+        if (!projectId) {
+            setFormError("No project selected.");
+            return;
+        }
 
-        onCreate({
-            name: name.trim(),
-            desc: description.trim() || "Custom Agent with specialized skills.",
-            color: selectedColor,
-            permission: permissionPreset,
-            prompt: promptText,
-            iconId: selectedIconId,
-        });
-
-        setName("");
-        setDescription("");
-        setPromptText("");
-        onClose();
+        setIsSubmitting(true);
+        setFormError("");
+        try {
+            const created = await agentApi.create(projectId, {
+                name: name.trim(),
+                description: description.trim() || null,
+                color: selectedColor,
+                iconKey: selectedIconId,
+                permissions: permissionPreset,
+                prompt: promptText.trim() || null,
+            });
+            onCreated?.(created);
+            onClose();
+        } catch (err) {
+            const message = err.message || "Unable to create the agent.";
+            setFormError(message);
+            showToast(message, "error");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -211,22 +259,24 @@ const CreateAgentModal = ({ isOpen, onClose, onCreate }) => {
                         <div className="modal-field-group">
                             <label className="field-title-label">Permissions</label>
                             <span className="field-preset-subtitle">Permission preset</span>
-                            <div className="permissions-select-pill-wrap">
-                                <select
-                                    className="permissions-native-select"
-                                    value={permissionPreset}
-                                    onChange={(e) => setPermissionPreset(e.target.value)}
-                                >
-                                    <option value="Full access">Full access</option>
-                                    <option value="Scoped edits">Scoped edits</option>
-                                    <option value="Docs writer">Docs writer</option>
-                                </select>
-                                <ChevronDown size={14} className="perm-caret-icon" />
-                            </div>
+                            <CustomSelector
+                                options={PERMISSION_OPTIONS}
+                                value={permissionPreset}
+                                onChange={(value) => setPermissionPreset(value)}
+                                placeholder="Select permissions"
+                                className="agent-permission-selector"
+                            />
                             <small className="field-subnote-text">
-                                Edit any file, run commands, fetch the web (implementers).
+                                {PERMISSION_HINTS[permissionPreset] ||
+                                    PERMISSION_HINTS["Full access"]}
                             </small>
                         </div>
+
+                        {formError && (
+                            <p className="agent-form-error-text" role="alert">
+                                {formError}
+                            </p>
+                        )}
                     </form>
                 </div>
 
@@ -239,8 +289,16 @@ const CreateAgentModal = ({ isOpen, onClose, onCreate }) => {
                         type="submit"
                         form="create-agent-form"
                         className="btn-agent-submit-pill"
+                        disabled={isSubmitting}
                     >
-                        Create
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 size={14} className="agents-spin" />
+                                <span>Creating...</span>
+                            </>
+                        ) : (
+                            <span>Create</span>
+                        )}
                     </button>
                 </div>
             </div>

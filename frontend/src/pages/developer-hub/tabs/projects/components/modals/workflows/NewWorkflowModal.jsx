@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     X,
     Server,
@@ -14,7 +14,10 @@ import {
     Monitor,
     Sparkles,
     RefreshCw,
+    Loader2,
 } from "lucide-react";
+import { workflowApi } from "../../../../../../../api";
+import { useToast } from "../../../../../../../context/ToastContext";
 import "./NewWorkflowModal.css";
 
 const ICON_LIST = [
@@ -46,28 +49,58 @@ const COLOR_PALETTE = [
     "#64748B", // Slate
 ];
 
-const NewWorkflowModal = ({ isOpen, onClose, onCreate }) => {
+const NewWorkflowModal = ({ isOpen, projectId, onClose, onCreated }) => {
+    const { showToast } = useToast();
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [selectedIconId, setSelectedIconId] = useState("layers");
     const [selectedColor, setSelectedColor] = useState("#3B82F6");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formError, setFormError] = useState("");
+
+    // Reset form mỗi lần mở modal
+    useEffect(() => {
+        if (!isOpen) return;
+        setName("");
+        setDescription("");
+        setSelectedIconId("layers");
+        setSelectedColor("#3B82F6");
+        setIsSubmitting(false);
+        setFormError("");
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!name.trim()) return;
+        if (isSubmitting) return;
+        if (!name.trim()) {
+            setFormError("Name is required.");
+            return;
+        }
+        if (!projectId) {
+            setFormError("No project selected.");
+            return;
+        }
 
-        onCreate({
-            title: name.trim(),
-            description: description.trim(),
-            color: selectedColor,
-            iconId: selectedIconId,
-        });
-
-        setName("");
-        setDescription("");
-        onClose();
+        setIsSubmitting(true);
+        setFormError("");
+        try {
+            const created = await workflowApi.create(projectId, {
+                name: name.trim(),
+                description: description.trim() || null,
+                color: selectedColor,
+                iconKey: selectedIconId,
+            });
+            onCreated?.(created);
+            onClose();
+        } catch (err) {
+            const message = err.message || "Unable to create the workflow.";
+            setFormError(message);
+            showToast(message, "error");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -153,13 +186,30 @@ const NewWorkflowModal = ({ isOpen, onClose, onCreate }) => {
                         </div>
                     </div>
 
+                    {formError && (
+                        <p className="wf-form-error-text" role="alert">
+                            {formError}
+                        </p>
+                    )}
+
                     {/* Footer Buttons */}
                     <div className="new-wf-footer-actions">
                         <button type="button" className="btn-wf-cancel-pill" onClick={onClose}>
                             Cancel
                         </button>
-                        <button type="submit" className="btn-wf-submit-pill">
-                            Create & Edit
+                        <button
+                            type="submit"
+                            className="btn-wf-submit-pill"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 size={14} className="workflows-spin" />
+                                    <span>Creating...</span>
+                                </>
+                            ) : (
+                                <span>Create & Edit</span>
+                            )}
                         </button>
                     </div>
                 </form>

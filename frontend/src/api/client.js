@@ -31,3 +31,14 @@ export async function request(endpoint, options = {}) {
 
     return data;
 }
+
+export async function requestBlob(endpoint) {
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, { headers });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || `Request failed with status ${response.status}`);
+    }
+    return response.blob();
+}

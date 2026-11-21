@@ -24,4 +24,6 @@ export const authApi = {
             method: "POST",
             body: JSON.stringify({ email, otp }),
         }),
+
+    me: () => request("/auth/me"),
 };

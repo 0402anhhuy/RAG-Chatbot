@@ -8,6 +8,18 @@ public record ChatSessionResponse(
         String title,
         UUID ownerId,
         UUID workspaceId,
+        String workspaceName,
+        UUID projectId,
+        String projectName,
+        String model,
+        long promptTokens,
+        long completionTokens,
+        long totalTokens,
+        double totalCost,
+        boolean archived,
+        boolean bookmarked,
+        Instant archivedAt,
         Instant createdAt,
         Instant updatedAt) {
+
 }

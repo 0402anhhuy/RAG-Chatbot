@@ -7,7 +7,7 @@ __pycache__/
 .venv
 .vscode/
 
-# Local application data
+# Local application data (runtime data: never deleted by source cleanup)
 data/uploads/
 data/vector_store/
 *.sqlite3

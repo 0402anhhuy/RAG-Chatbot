@@ -66,6 +66,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAllByIds(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return userRepository.findAllById(ids)
+                .stream()
+                .map(UserResponse::fromEntity)
+                .toList();
+    }
+
+    @Override
     public UserResponse update(UUID id, UserUpdateRequest changes) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ServiceEntityNotFoundException("User not found: " + id));

@@ -1,184 +1,370 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     BarChart3,
     DollarSign,
     Code,
-    ChevronDown,
     ArrowDownToLine,
     ArrowUpFromLine,
     Database,
     ListTree,
-    Plus,
-    Minus,
     Zap,
     CheckCircle2,
     Trash2,
     Download,
-    FileSpreadsheet,
     FileCode,
+    Loader2,
+    RefreshCw,
 } from "lucide-react";
+import { analyticsApi } from "../../../../../../api";
+import CustomSelector from "../../../../../../components/common/selector/CustomSelector";
+import { useToast } from "../../../../../../context/ToastContext";
+import { CostTrendChart, CodeActivityChart } from "./helpers/AnalyticsCharts";
+import {
+    EMPTY,
+    currentMonthValue,
+    formatCache,
+    formatCost,
+    formatCount,
+    formatInOut,
+    formatPercent,
+    formatSigned,
+    formatTokens,
+    initialsOf,
+    monthOptions,
+} from "./helpers/analyticsFormat";
 import "./ProjectAnalytics.css";
 
-const PROVIDER_MODELS_DATA = [
-    {
-        provider: "fpt-starter-vn",
-        model: "DeepSeek-V4-Flash",
-        cost: "$1.52",
-        inOut: "4.9M / 110.6K",
-        cache: "33.9M / 0",
-        steps: 315,
-        percent: "59.9%",
-    },
-    {
-        provider: "amazon-bedrock-starter",
-        model: "us.openai.gpt-5.6-luna",
-        cost: "$0.92",
-        inOut: "11.0K / 48.2K",
-        cache: "13.3M / 1.6M",
-        steps: 86,
-        percent: "36.4%",
-    },
-    {
-        provider: "fpt-starter-vn",
-        model: "GLM-5.2",
-        cost: "$0.04",
-        inOut: "25.8K / 18",
-        cache: "8.8K / 0",
-        steps: 1,
-        percent: "1.7%",
-    },
-    {
-        provider: "google-starter",
-        model: "gemini-3.8-flash",
-        cost: "$0.03",
-        inOut: "35.9K / 14",
-        cache: "0 / 0",
-        steps: 1,
-        percent: "1.2%",
-    },
-    {
-        provider: "fpt-starter-vn",
-        model: "Qwen3.8-27B",
-        cost: "$0.02",
-        inOut: "31.0K / 40",
-        cache: "4.8K / 0",
-        steps: 1,
-        percent: "0.6%",
-    },
-    {
-        provider: "fpt-starter-vn",
-        model: "gemma-4-26B-A4B-it",
-        cost: "$0.01",
-        inOut: "34.2K / 18",
-        cache: "0 / 0",
-        steps: 1,
-        percent: "0.2%",
-    },
+const SUB_TABS = [
+    { id: "overview", label: "Overview", icon: BarChart3 },
+    { id: "cost", label: "Cost & Usage", icon: DollarSign },
+    { id: "code", label: "Code Activity", icon: Code },
 ];
 
-const ProjectAnalytics = () => {
-    const [subTab, setSubTab] = useState("overview"); // "overview" | "cost" | "code"
-    const [selectedMonth, setSelectedMonth] = useState("October 2026");
+const CSV_HEADERS = [
+    "Provider",
+    "Model",
+    "Cost (USD)",
+    "Tokens in",
+    "Tokens out",
+    "Cache read",
+    "Cache write",
+    "Steps",
+    "% of total",
+];
+
+const PROJECT_TYPES = {
+    PROVIDER: "provider",
+    MEMBER: "member",
+};
+
+const toCsvCell = (value) => {
+    const text = String(value ?? "");
+    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+const buildProviderCsv = (rows) =>
+    [
+        CSV_HEADERS.join(","),
+        ...rows.map((row) =>
+            [
+                row.provider,
+                row.model,
+                row.cost.toFixed(6),
+                row.tokensIn,
+                row.tokensOut,
+                row.cacheReadTokens,
+                row.cacheWriteTokens,
+                row.steps,
+                `${row.percent.toFixed(2)}%`,
+            ]
+                .map(toCsvCell)
+                .join(","),
+        ),
+    ].join("\n");
+
+const downloadCsv = (filename, content) => {
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+};
+
+const ProjectAnalytics = ({ project = null }) => {
+    const projectId = project?.id || null;
+    const { showToast } = useToast();
+
+    const [subTab, setSubTab] = useState("overview");
+    const [month, setMonth] = useState(currentMonthValue);
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [exportTarget, setExportTarget] = useState(PROJECT_TYPES.PROVIDER);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const monthList = useMemo(() => monthOptions(12), []);
+    const summary = data?.summary;
+
+    const loadAnalytics = useCallback(
+        async (signal) => {
+            if (!projectId) {
+                setData(null);
+                return;
+            }
+            try {
+                setLoading(true);
+                setError("");
+                const result = await analyticsApi.getByProject(projectId, month);
+                if (!signal?.cancelled) setData(result);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                setData(null);
+                setError(err.message || "Unable to load analytics.");
+                showToast(err.message || "Unable to load analytics.", "error");
+            } finally {
+                if (!signal?.cancelled) setLoading(false);
+            }
+        },
+        [projectId, month, showToast],
+    );
+
+    useEffect(() => {
+        const signal = { cancelled: false };
+        loadAnalytics(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [loadAnalytics, refreshKey]);
+
+    const handleMonthChange = (value) => {
+        setMonth(value);
+    };
+
+    const handleRefresh = () => {
+        setRefreshKey((key) => key + 1);
+        showToast("Analytics refreshed.", "info");
+    };
+
+    const handleExport = () => {
+        if (!data) {
+            showToast("Nothing to export yet.", "info");
+            return;
+        }
+        const rows = exportTarget === PROJECT_TYPES.MEMBER ? data.users : data.providers;
+        if (!rows?.length) {
+            showToast("No usage recorded in this month.", "info");
+            return;
+        }
+        if (exportTarget === PROJECT_TYPES.MEMBER) {
+            const header = [
+                "User",
+                "Email",
+                "Project cost",
+                "Personal cost",
+                "Tokens in",
+                "Tokens out",
+                "Cache read",
+                "Cache write",
+                "Steps",
+            ];
+            const body = rows.map((row) =>
+                [
+                    row.name,
+                    row.email,
+                    row.projectCost.toFixed(6),
+                    row.personalCost.toFixed(6),
+                    row.tokensIn,
+                    row.tokensOut,
+                    row.cacheReadTokens,
+                    row.cacheWriteTokens,
+                    row.steps,
+                ]
+                    .map(toCsvCell)
+                    .join(","),
+            );
+            downloadCsv(
+                `analytics-users-${data.range}.csv`,
+                [header.join(","), ...body].join("\n"),
+            );
+        } else {
+            downloadCsv(`analytics-usage-${data.range}.csv`, buildProviderCsv(rows));
+        }
+        showToast("CSV exported.", "success");
+    };
+
+    if (!projectId) {
+        return (
+            <div className="vibe-analytics-viewport">
+                <div className="analytics-state-card" role="alert">
+                    Open a project first to view its analytics.
+                </div>
+            </div>
+        );
+    }
+
+    // Cost / outcome tính từ số liệu thật: task bị bỏ dở bị loại khỏi mẫu số.
+    const billableCost = (summary?.totalCost || 0) - (summary?.abandonedCost || 0);
+    const tasksTracked = summary?.tasks || 0;
+    const completedTasks = summary?.completedTasks || 0;
+    const aiLines = summary?.linesAdded || 0;
+    const abandonedTokens = summary?.abandonedTokens || 0;
+    const totalTokensInOut = (summary?.tokensIn || 0) + (summary?.tokensOut || 0);
+    const abandonedShare =
+        totalTokensInOut + abandonedTokens > 0
+            ? (abandonedTokens / (totalTokensInOut + abandonedTokens)) * 100
+            : null;
+
+    const costPerTask = tasksTracked > 0 ? summary.totalCost / tasksTracked : null;
+    const costPerCompleted = completedTasks > 0 ? billableCost / completedTasks : null;
+    const costPerLine = aiLines > 0 ? summary.totalCost / aiLines : null;
+
+    const daily = data?.daily || [];
+    const chartDays = daily.filter(
+        (point) => point.total > 0 || point.linesAdded || point.linesRemoved,
+    );
+    const chartPoints = chartDays.length ? chartDays : daily;
 
     return (
         <div className="vibe-analytics-viewport">
-            {/* Header: Title & Month Dropdown */}
+            {/* Header: Title & Month Filter */}
             <div className="analytics-header-row">
                 <div className="analytics-title-cluster">
                     <BarChart3 size={20} className="analytics-title-glyph" />
                     <h2>Analytics</h2>
+                    {loading && <Loader2 size={15} className="analytics-spinner" />}
                 </div>
 
-                <div className="analytics-month-pill-wrap">
-                    <span>{selectedMonth}</span>
-                    <ChevronDown size={14} />
+                <div className="analytics-header-actions">
+                    <button
+                        type="button"
+                        className="btn-analytics-ghost"
+                        onClick={handleRefresh}
+                        disabled={loading}
+                        title="Reload analytics"
+                    >
+                        <RefreshCw size={13} className={loading ? "spin" : ""} />
+                        <span>Refresh</span>
+                    </button>
+                    <CustomSelector
+                        options={monthList}
+                        value={month}
+                        onChange={handleMonthChange}
+                        placeholder="Select month"
+                        className="analytics-month-selector"
+                    />
                 </div>
             </div>
 
             {/* Sub-tabs Switcher */}
             <div className="analytics-subtabs-toolbar">
                 <div className="analytics-subtabs-pill-box">
-                    <button
-                        type="button"
-                        className={`btn-subtab-pill ${subTab === "overview" ? "active" : ""}`}
-                        onClick={() => setSubTab("overview")}
-                    >
-                        <BarChart3 size={13} />
-                        <span>Overview</span>
-                    </button>
-                    <button
-                        type="button"
-                        className={`btn-subtab-pill ${subTab === "cost" ? "active" : ""}`}
-                        onClick={() => setSubTab("cost")}
-                    >
-                        <DollarSign size={13} />
-                        <span>Cost & Usage</span>
-                    </button>
-                    <button
-                        type="button"
-                        className={`btn-subtab-pill ${subTab === "code" ? "active" : ""}`}
-                        onClick={() => setSubTab("code")}
-                    >
-                        <Code size={13} />
-                        <span>Code Activity</span>
-                    </button>
+                    {SUB_TABS.map((tab) => {
+                        const Icon = tab.icon;
+                        return (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                className={`btn-subtab-pill ${subTab === tab.id ? "active" : ""}`}
+                                onClick={() => setSubTab(tab.id)}
+                            >
+                                <Icon size={13} />
+                                <span>{tab.label}</span>
+                            </button>
+                        );
+                    })}
                 </div>
 
-                {/* Nút Xuất Báo Cáo khi ở tab Cost & Usage */}
                 {subTab === "cost" && (
                     <div className="analytics-export-cluster">
-                        <button type="button" className="btn-csv-dropdown">
-                            <span>CSV</span>
-                            <ChevronDown size={13} />
-                        </button>
-                        <button type="button" className="btn-export-outline">
+                        <CustomSelector
+                            options={[
+                                { value: PROJECT_TYPES.PROVIDER, label: "Provider / Model" },
+                                { value: PROJECT_TYPES.MEMBER, label: "Members" },
+                            ]}
+                            value={exportTarget}
+                            onChange={setExportTarget}
+                            placeholder="Export"
+                            className="analytics-export-selector"
+                        />
+                        <button type="button" className="btn-export-outline" onClick={handleExport}>
                             <Download size={13} />
-                            <span>Export</span>
+                            <span>Export CSV</span>
                         </button>
                     </div>
                 )}
             </div>
 
+            {error && (
+                <div className="analytics-state-card" role="alert">
+                    {error}
+                </div>
+            )}
+
             {/* ======================================================== */}
-            {/* 1. NỘI DUNG VIEW: OVERVIEW                                */}
+            {/* 1. OVERVIEW                                               */}
             {/* ======================================================== */}
             {subTab === "overview" && (
                 <div className="analytics-view-stack">
-                    {/* Hàng 6 KPI Tổng quát */}
                     <div className="kpi-six-cards-grid">
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">$ Total Cost</span>
-                            <strong className="kpi-analytic-value">$2.54</strong>
+                            <strong className="kpi-analytic-value">
+                                {summary ? formatCost(summary.totalCost) : EMPTY}
+                            </strong>
+                            {summary && (
+                                <small className="kpi-analytic-sub">
+                                    {formatCost(summary.projectCost)} project ·{" "}
+                                    {formatCost(summary.personalCost)} personal
+                                </small>
+                            )}
                         </div>
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">
                                 <ArrowDownToLine size={12} /> Tokens In
                             </span>
-                            <strong className="kpi-analytic-value">5.1M</strong>
+                            <strong className="kpi-analytic-value">
+                                {summary ? formatTokens(summary.tokensIn) : EMPTY}
+                            </strong>
                         </div>
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">
                                 <ArrowUpFromLine size={12} /> Tokens Out
                             </span>
-                            <strong className="kpi-analytic-value">159.0K</strong>
+                            <strong className="kpi-analytic-value">
+                                {summary ? formatTokens(summary.tokensOut) : EMPTY}
+                            </strong>
                         </div>
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">
                                 <Database size={12} /> Cache R / W
                             </span>
-                            <strong className="kpi-analytic-value">47.2M</strong>
-                            <small className="kpi-analytic-sub">write 1.6M</small>
+                            <strong className="kpi-analytic-value">
+                                {summary ? formatTokens(summary.cacheReadTokens) : EMPTY}
+                            </strong>
+                            <small className="kpi-analytic-sub">
+                                write {summary ? formatTokens(summary.cacheWriteTokens) : EMPTY}
+                            </small>
                         </div>
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">
                                 <ListTree size={12} /> Steps
                             </span>
-                            <strong className="kpi-analytic-value">405</strong>
+                            <strong className="kpi-analytic-value">
+                                {summary ? formatCount(summary.steps) : EMPTY}
+                            </strong>
                         </div>
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">+ Lines of Code</span>
-                            <strong className="kpi-analytic-value">45</strong>
-                            <small className="kpi-analytic-sub">-1 · 3 files</small>
+                            <strong className="kpi-analytic-value">
+                                {summary ? formatSigned(summary.netLines) : EMPTY}
+                            </strong>
+                            {summary && (
+                                <small className="kpi-analytic-sub">
+                                    {formatSigned(-Math.abs(summary.linesRemoved))} ·{" "}
+                                    {summary.filesChanged} files
+                                </small>
+                            )}
                         </div>
                     </div>
 
@@ -190,29 +376,57 @@ const ProjectAnalytics = () => {
                                 <span className="kpi-outcome-label">
                                     <Zap size={13} /> Cost / Task
                                 </span>
-                                <strong className="kpi-outcome-value">$2.54</strong>
-                                <small className="kpi-outcome-sub">1 tasks</small>
+                                <strong className="kpi-outcome-value">
+                                    {costPerTask === null ? EMPTY : formatCost(costPerTask)}
+                                </strong>
+                                <small className="kpi-outcome-sub">
+                                    {summary ? `${tasksTracked} tasks` : EMPTY}
+                                </small>
                             </div>
                             <div className="kpi-outcome-card">
                                 <span className="kpi-outcome-label">
                                     <CheckCircle2 size={13} /> Cost / Completed
                                 </span>
-                                <strong className="kpi-outcome-value">—</strong>
-                                <small className="kpi-outcome-sub">0 shipped</small>
+                                <strong className="kpi-outcome-value">
+                                    {costPerCompleted === null
+                                        ? EMPTY
+                                        : formatCost(costPerCompleted)}
+                                </strong>
+                                <small className="kpi-outcome-sub">
+                                    {summary ? `${completedTasks} shipped` : EMPTY}
+                                </small>
                             </div>
                             <div className="kpi-outcome-card">
                                 <span className="kpi-outcome-label">
                                     <Code size={13} /> Cost / AI-authored line
                                 </span>
-                                <strong className="kpi-outcome-value">$0.055</strong>
+                                <strong className="kpi-outcome-value">
+                                    {costPerLine === null ? EMPTY : formatCost(costPerLine)}
+                                </strong>
+                                {summary && (
+                                    <small className="kpi-outcome-sub">
+                                        {aiLines} lines written
+                                    </small>
+                                )}
                             </div>
                             <div className="kpi-outcome-card">
                                 <span className="kpi-outcome-label">
                                     <Trash2 size={13} /> % Tokens on Abandoned
                                 </span>
-                                <strong className="kpi-outcome-value">—</strong>
+                                <strong className="kpi-outcome-value">
+                                    {abandonedShare === null
+                                        ? EMPTY
+                                        : formatPercent(abandonedShare)}
+                                </strong>
                                 <small className="kpi-outcome-sub">
-                                    no spend on abandoned tasks
+                                    {summary?.abandoned?.length
+                                        ? `${summary.abandonedTasks} abandoned · ${formatCost(
+                                              summary.abandoned.reduce(
+                                                  (total, item) => total + item.cost,
+                                                  0,
+                                              ),
+                                          )}`
+                                        : "no spend on abandoned tasks"}
                                 </small>
                             </div>
                         </div>
@@ -222,306 +436,58 @@ const ProjectAnalytics = () => {
                     <div className="chart-panel-card">
                         <div className="chart-panel-header">
                             <h4>Cost trend</h4>
-                            <span className="chart-legend-text">Project</span>
-                        </div>
-                        <div className="chart-svg-wrapper">
-                            <svg
-                                className="chart-svg"
-                                viewBox="0 0 900 200"
-                                preserveAspectRatio="none"
-                            >
-                                <defs>
-                                    <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
-                                        <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
-                                    </linearGradient>
-                                </defs>
-                                {/* Grid lines */}
-                                <line
-                                    x1="40"
-                                    y1="30"
-                                    x2="880"
-                                    y2="30"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="75"
-                                    x2="880"
-                                    y2="75"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="120"
-                                    x2="880"
-                                    y2="120"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="165"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-
-                                {/* Area fill */}
-                                <path
-                                    d="M 40,165 L 40,155 Q 180,135 240,140 T 420,160 Q 560,170 610,130 T 730,40 L 880,45 L 880,165 Z"
-                                    fill="url(#costGradient)"
-                                />
-
-                                {/* Đường tím nền phẳng */}
-                                <line
-                                    x1="40"
-                                    y1="165"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#8b5cf6"
-                                    strokeWidth="2"
-                                />
-
-                                {/* Đường vàng hổ phách chính */}
-                                <path
-                                    d="M 40,155 Q 180,135 240,140 T 420,160 Q 560,170 610,130 T 730,40 L 880,45"
-                                    fill="none"
-                                    stroke="#f59e0b"
-                                    strokeWidth="2.5"
-                                />
-                            </svg>
-                            <div className="chart-axis-y">
-                                <span>$1.00</span>
-                                <span>$0.75</span>
-                                <span>$0.50</span>
-                                <span>$0.25</span>
-                                <span>$0.00</span>
-                            </div>
-                            <div className="chart-axis-x">
-                                <span>Oct 1</span>
-                                <span>Oct 2</span>
-                                <span>Oct 5</span>
-                                <span>Oct 6</span>
-                                <span>Oct 7</span>
-                                <span>Oct 8</span>
+                            <div className="chart-legend-cluster">
+                                <span className="chart-legend-item">
+                                    <span className="legend-swatch amber" /> Total
+                                </span>
+                                <span className="chart-legend-item">
+                                    <span className="legend-swatch purple" /> Project
+                                </span>
                             </div>
                         </div>
+                        <CostTrendChart
+                            points={chartPoints}
+                            emptyLabel="No usage recorded in this month."
+                        />
                     </div>
 
                     {/* Biểu đồ Code activity */}
                     <div className="chart-panel-card">
                         <div className="chart-panel-header">
                             <h4>Code activity</h4>
-                            <span className="chart-legend-text">Lines added / removed, daily</span>
-                        </div>
-                        <div className="chart-svg-wrapper">
-                            <svg
-                                className="chart-svg"
-                                viewBox="0 0 900 200"
-                                preserveAspectRatio="none"
-                            >
-                                <defs>
-                                    <linearGradient id="codeGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                                    </linearGradient>
-                                </defs>
-                                <line
-                                    x1="40"
-                                    y1="30"
-                                    x2="880"
-                                    y2="30"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="75"
-                                    x2="880"
-                                    y2="75"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="120"
-                                    x2="880"
-                                    y2="120"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="165"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-
-                                <polygon
-                                    points="40,75 880,165 880,165 40,165"
-                                    fill="url(#codeGradient)"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="75"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#10b981"
-                                    strokeWidth="2.5"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="165"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#ef4444"
-                                    strokeWidth="2"
-                                />
-                            </svg>
-                            <div className="chart-axis-y">
-                                <span>60</span>
-                                <span>45</span>
-                                <span>30</span>
-                                <span>15</span>
-                                <span>0</span>
-                            </div>
-                            <div className="chart-axis-x">
-                                <span>Oct 1</span>
-                                <span>Oct 5</span>
+                            <div className="chart-legend-cluster">
+                                <span className="chart-legend-item">
+                                    <span className="legend-swatch green" /> Added
+                                </span>
+                                <span className="chart-legend-item">
+                                    <span className="legend-swatch rose" /> Removed
+                                </span>
                             </div>
                         </div>
+                        <CodeActivityChart
+                            points={chartPoints}
+                            emptyLabel="No code activity recorded in this month."
+                        />
                     </div>
                 </div>
             )}
 
             {/* ======================================================== */}
-            {/* 2. NỘI DUNG VIEW: COST & USAGE                           */}
+            {/* 2. COST & USAGE                                           */}
             {/* ======================================================== */}
             {subTab === "cost" && (
                 <div className="analytics-view-stack">
-                    {/* Biểu đồ Daily LLM Cost kèm Tooltip */}
                     <div className="chart-panel-card">
                         <div className="chart-panel-header">
                             <h4>Daily LLM cost</h4>
                             <span className="chart-legend-text">Project vs personal spend</span>
                         </div>
-                        <div className="chart-svg-wrapper with-tooltip">
-                            <svg
-                                className="chart-svg"
-                                viewBox="0 0 900 200"
-                                preserveAspectRatio="none"
-                            >
-                                <defs>
-                                    <linearGradient id="costGradient2" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
-                                        <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
-                                    </linearGradient>
-                                </defs>
-                                <line
-                                    x1="40"
-                                    y1="30"
-                                    x2="880"
-                                    y2="30"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="75"
-                                    x2="880"
-                                    y2="75"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="120"
-                                    x2="880"
-                                    y2="120"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="165"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-
-                                <path
-                                    d="M 40,165 L 40,155 Q 180,135 240,140 T 420,160 Q 560,170 610,130 T 730,40 L 880,45 L 880,165 Z"
-                                    fill="url(#costGradient2)"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="165"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#8b5cf6"
-                                    strokeWidth="2"
-                                />
-                                <path
-                                    d="M 40,155 Q 180,135 240,140 T 420,160 Q 560,170 610,130 T 730,40 L 880,45"
-                                    fill="none"
-                                    stroke="#f59e0b"
-                                    strokeWidth="2.5"
-                                />
-
-                                {/* Điểm đánh dấu Oct 2 */}
-                                <circle cx="240" cy="140" r="4" fill="#f59e0b" />
-                                <circle cx="240" cy="165" r="4" fill="#8b5cf6" />
-                            </svg>
-
-                            {/* Tooltip Card Oct 2 */}
-                            <div
-                                className="chart-floating-tooltip"
-                                style={{ left: "19%", top: "15%" }}
-                            >
-                                <div className="tooltip-date-header">Oct 2</div>
-                                <div className="tooltip-item-row">
-                                    <span className="dot-circle blue" />
-                                    <span>Project</span>
-                                    <strong>$0.00</strong>
-                                </div>
-                                <div className="tooltip-item-row">
-                                    <span className="dot-circle purple" />
-                                    <span>Personal</span>
-                                    <strong>$0.00</strong>
-                                </div>
-                                <div className="tooltip-item-row">
-                                    <span className="dot-circle amber" />
-                                    <span>Platform</span>
-                                    <strong>$0.28</strong>
-                                </div>
-                            </div>
-
-                            <div className="chart-axis-y">
-                                <span>$1.00</span>
-                                <span>$0.75</span>
-                                <span>$0.50</span>
-                                <span>$0.25</span>
-                                <span>$0.00</span>
-                            </div>
-                            <div className="chart-axis-x">
-                                <span>Oct 1</span>
-                                <span>Oct 2</span>
-                                <span>Oct 5</span>
-                                <span>Oct 6</span>
-                                <span>Oct 7</span>
-                                <span>Oct 8</span>
-                            </div>
-                        </div>
+                        <CostTrendChart
+                            points={chartPoints}
+                            emptyLabel="No LLM spend recorded in this month."
+                        />
                     </div>
 
-                    {/* Bảng By Provider / Model */}
                     <div className="analytics-section-panel">
                         <h4 className="section-panel-title">By Provider / Model</h4>
                         <div className="analytics-table-card">
@@ -538,28 +504,46 @@ const ProjectAnalytics = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {PROVIDER_MODELS_DATA.map((row, idx) => (
-                                        <tr key={idx}>
-                                            <td className="td-provider">{row.provider}</td>
-                                            <td className="td-model">{row.model}</td>
-                                            <td className="td-cost">{row.cost}</td>
-                                            <td className="td-inout">{row.inOut}</td>
-                                            <td className="td-cache">{row.cache}</td>
-                                            <td className="td-steps">{row.steps}</td>
-                                            <td className="td-percent">{row.percent}</td>
+                                    {data?.providers?.length ? (
+                                        data.providers.map((row) => (
+                                            <tr key={`${row.provider}-${row.model}`}>
+                                                <td className="td-provider">{row.provider}</td>
+                                                <td className="td-model">{row.model}</td>
+                                                <td className="td-cost">{formatCost(row.cost)}</td>
+                                                <td className="td-inout">
+                                                    {formatInOut(row.tokensIn, row.tokensOut)}
+                                                </td>
+                                                <td className="td-cache">
+                                                    {formatCache(
+                                                        row.cacheReadTokens,
+                                                        row.cacheWriteTokens,
+                                                    )}
+                                                </td>
+                                                <td className="td-steps">{row.steps}</td>
+                                                <td className="td-percent">
+                                                    {formatPercent(row.percent)}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className="td-empty">
+                                                {loading
+                                                    ? "Loading usage…"
+                                                    : "No usage recorded in this month."}
+                                            </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    {/* Bảng By User */}
                     <div className="analytics-section-panel">
                         <div className="section-header-caption-line">
                             <h4 className="section-panel-title">By User</h4>
                             <span className="caption-subtext">
-                                — click a user to see their tasks
+                                — personal spend is billed to the member's own key
                             </span>
                         </div>
                         <div className="analytics-table-card">
@@ -575,19 +559,38 @@ const ProjectAnalytics = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <div className="user-table-cell">
-                                                <div className="avatar-chip-small">HT</div>
-                                                <strong>Huy Tran Anh</strong>
-                                            </div>
-                                        </td>
-                                        <td>$0.00</td>
-                                        <td>$0.00</td>
-                                        <td>5.1M / 159.0K</td>
-                                        <td>47.2M / 1.6M</td>
-                                        <td>405</td>
-                                    </tr>
+                                    {data?.users?.length ? (
+                                        data.users.map((row) => (
+                                            <tr key={row.userId || row.name}>
+                                                <td>
+                                                    <div className="user-table-cell">
+                                                        <div className="avatar-chip-small">
+                                                            {initialsOf(row.name, row.email)}
+                                                        </div>
+                                                        <strong>{row.name}</strong>
+                                                    </div>
+                                                </td>
+                                                <td>{formatCost(row.projectCost)}</td>
+                                                <td>{formatCost(row.personalCost)}</td>
+                                                <td>{formatInOut(row.tokensIn, row.tokensOut)}</td>
+                                                <td>
+                                                    {formatCache(
+                                                        row.cacheReadTokens,
+                                                        row.cacheWriteTokens,
+                                                    )}
+                                                </td>
+                                                <td>{row.steps}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={6} className="td-empty">
+                                                {loading
+                                                    ? "Loading users…"
+                                                    : "No member usage recorded in this month."}
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -596,121 +599,52 @@ const ProjectAnalytics = () => {
             )}
 
             {/* ======================================================== */}
-            {/* 3. NỘI DUNG VIEW: CODE ACTIVITY                          */}
+            {/* 3. CODE ACTIVITY                                          */}
             {/* ======================================================== */}
             {subTab === "code" && (
                 <div className="analytics-view-stack">
-                    {/* 4 Thẻ KPI Code Activity */}
                     <div className="kpi-four-cards-grid">
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">+ Lines Added</span>
-                            <strong className="kpi-analytic-value">+45</strong>
+                            <strong className="kpi-analytic-value">
+                                {summary ? `+${summary.linesAdded}` : EMPTY}
+                            </strong>
                         </div>
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">— Lines Removed</span>
-                            <strong className="kpi-analytic-value">-1</strong>
+                            <strong className="kpi-analytic-value">
+                                {summary ? `-${summary.linesRemoved}` : EMPTY}
+                            </strong>
                         </div>
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">
                                 <Code size={12} /> Net Change
                             </span>
-                            <strong className="kpi-analytic-value">+44</strong>
+                            <strong className="kpi-analytic-value">
+                                {summary ? formatSigned(summary.netLines) : EMPTY}
+                            </strong>
                         </div>
                         <div className="kpi-analytic-card">
                             <span className="kpi-analytic-label">
                                 <FileCode size={12} /> Files Changed
                             </span>
-                            <strong className="kpi-analytic-value">3</strong>
+                            <strong className="kpi-analytic-value">
+                                {summary ? summary.filesChanged : EMPTY}
+                            </strong>
                         </div>
                     </div>
 
-                    {/* Biểu đồ Code activity */}
                     <div className="chart-panel-card">
                         <div className="chart-panel-header">
                             <h4>Code activity</h4>
                             <span className="chart-legend-text">Lines added / removed, daily</span>
                         </div>
-                        <div className="chart-svg-wrapper">
-                            <svg
-                                className="chart-svg"
-                                viewBox="0 0 900 200"
-                                preserveAspectRatio="none"
-                            >
-                                <defs>
-                                    <linearGradient id="codeGradient2" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                                    </linearGradient>
-                                </defs>
-                                <line
-                                    x1="40"
-                                    y1="30"
-                                    x2="880"
-                                    y2="30"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="75"
-                                    x2="880"
-                                    y2="75"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="120"
-                                    x2="880"
-                                    y2="120"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="165"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#f1f5f9"
-                                    strokeWidth="1"
-                                />
-
-                                <polygon
-                                    points="40,75 880,165 880,165 40,165"
-                                    fill="url(#codeGradient2)"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="75"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#10b981"
-                                    strokeWidth="2.5"
-                                />
-                                <line
-                                    x1="40"
-                                    y1="165"
-                                    x2="880"
-                                    y2="165"
-                                    stroke="#ef4444"
-                                    strokeWidth="2"
-                                />
-                            </svg>
-                            <div className="chart-axis-y">
-                                <span>60</span>
-                                <span>45</span>
-                                <span>30</span>
-                                <span>15</span>
-                                <span>0</span>
-                            </div>
-                            <div className="chart-axis-x">
-                                <span>Oct 1</span>
-                                <span>Oct 5</span>
-                            </div>
-                        </div>
+                        <CodeActivityChart
+                            points={chartPoints}
+                            emptyLabel="No code activity recorded in this month."
+                        />
                     </div>
 
-                    {/* Bảng By Member */}
                     <div className="analytics-section-panel">
                         <h4 className="section-panel-title">By Member</h4>
                         <div className="analytics-table-card">
@@ -727,20 +661,52 @@ const ProjectAnalytics = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <div className="user-table-cell">
-                                                <div className="avatar-chip-small">HT</div>
-                                                <strong>Huy Tran Anh</strong>
-                                            </div>
-                                        </td>
-                                        <td className="text-green-bold">+45</td>
-                                        <td className="text-red-bold">-1</td>
-                                        <td className="text-green-bold">+44</td>
-                                        <td>3</td>
-                                        <td>3</td>
-                                        <td>15</td>
-                                    </tr>
+                                    {data?.users?.length ? (
+                                        data.users.map((row) => (
+                                            <tr key={`code-${row.userId || row.name}`}>
+                                                <td>
+                                                    <div className="user-table-cell">
+                                                        <div className="avatar-chip-small">
+                                                            {initialsOf(row.name, row.email)}
+                                                        </div>
+                                                        <strong>{row.name}</strong>
+                                                    </div>
+                                                </td>
+                                                <td className="text-green-bold">
+                                                    +{row.linesAdded}
+                                                </td>
+                                                <td className="text-red-bold">
+                                                    -{row.linesRemoved}
+                                                </td>
+                                                <td
+                                                    className={
+                                                        row.linesAdded - row.linesRemoved >= 0
+                                                            ? "text-green-bold"
+                                                            : "text-red-bold"
+                                                    }
+                                                >
+                                                    {formatSigned(
+                                                        row.linesAdded - row.linesRemoved,
+                                                    )}
+                                                </td>
+                                                <td>{row.filesChanged}</td>
+                                                <td>{row.runs}</td>
+                                                <td>
+                                                    {row.runs > 0
+                                                        ? Math.round(row.linesAdded / row.runs)
+                                                        : 0}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className="td-empty">
+                                                {loading
+                                                    ? "Loading code activity…"
+                                                    : "No code activity recorded in this month."}
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>

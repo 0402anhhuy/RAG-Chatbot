@@ -11,5 +11,6 @@ public record ProjectCreateRequest(
         ProjectType type,
         ProjectStatus status,
         Boolean pinned,
-        @Size(max = 500) String repositoryUrl) {
+        @Size(max = 500) String repositoryUrl,
+        String ownerName) {
 }

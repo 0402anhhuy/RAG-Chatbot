@@ -184,6 +184,65 @@
     color: #64748b;
 }
 
+/* Selector role dùng CustomSelector chung (kích thước theo hàng member) */
+.member-role-selector .custom-select-trigger {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+/* Trạng thái loading / lỗi / rỗng */
+.members-state-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.members-state-error {
+    color: #b91c1c;
+}
+
+.members-empty-text {
+    font-size: 0.8rem;
+    color: #64748b;
+    padding: 10px 2px;
+}
+
+.btn-retry-members {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+}
+
+.btn-retry-members:hover {
+    background-color: #f1f5f9;
+}
+
+.members-spin {
+    animation: membersSpin 0.9s linear infinite;
+}
+
+@keyframes membersSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.btn-delete-member:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 .btn-delete-member {
     background: transparent;
     border: none;

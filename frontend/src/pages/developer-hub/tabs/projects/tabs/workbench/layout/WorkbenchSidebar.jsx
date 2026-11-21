@@ -8,7 +8,6 @@ import {
     Menu,
     Search,
     Sun,
-    ChevronDown,
 } from "lucide-react";
 import "./WorkbenchSidebar.css";
 

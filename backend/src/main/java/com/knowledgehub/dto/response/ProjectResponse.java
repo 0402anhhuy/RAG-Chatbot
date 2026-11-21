@@ -16,6 +16,7 @@ public record ProjectResponse(
         String repositoryUrl,
         int tasks,
         int members,
+        String ownerName,
         UUID ownerId,
         Instant createdAt,
         Instant updatedAt) {
