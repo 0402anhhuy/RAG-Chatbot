@@ -20,6 +20,8 @@ const insertPath = (root, file) => {
                 language: file.language,
                 sizeBytes: file.sizeBytes,
                 lineCount: file.lineCount,
+                editedByUser: file.editedByUser,
+                updatedAt: file.updatedAt,
             });
             return;
         }
