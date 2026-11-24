@@ -5,6 +5,7 @@ import CustomSelector from "../../../../../../components/common/selector/CustomS
 import { useToast } from "../../../../../../context/ToastContext";
 import AddMemberModal from "../../components/modals/member/AddMemberModal";
 import "./ProjectMember.css";
+import { getSessionUserId } from "../../../../../../components/common/utils/session";
 
 // Vai trò trong project (ProjectMemberRole của BE). Owner không đổi được vai trò.
 const ROLE_OPTIONS = [
@@ -12,14 +13,6 @@ const ROLE_OPTIONS = [
     { value: "TEAM_LEAD", label: "Team Lead" },
     { value: "MEMBER", label: "Member" },
 ];
-
-const getOwnerId = () => {
-    try {
-        return JSON.parse(localStorage.getItem("rag_session") || "{}")?.user?.id || null;
-    } catch {
-        return null;
-    }
-};
 
 const initialsOf = (name, email) => {
     const source = (name || email || "?").trim();
@@ -29,7 +22,7 @@ const initialsOf = (name, email) => {
 const ProjectMember = ({ project = null, onMembersChanged }) => {
     const { showToast } = useToast();
     const projectId = project?.id || null;
-    const currentUserId = getOwnerId();
+    const currentUserId = getSessionUserId();
 
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);

@@ -1,7 +1,7 @@
 .conversations-tab-bounds {
     max-width: 1440px;
     height: calc(100vh - 84px);
-    margin: 0 auto;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -29,9 +29,9 @@
 .studio-brand-badge {
     width: 36px;
     height: 36px;
-    border-radius: 9px;
-    background-color: #059669;
-    color: #ffffff;
+    border-radius: 10px;
+    background-color: var(--success);
+    color: var(--text-on-accent);
     display: grid;
     place-items: center;
     flex-shrink: 0;
@@ -40,13 +40,13 @@
 .banner-left-info h2 {
     font-size: 1.15rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     margin: 0 0 2px;
 }
 
 .banner-left-info span {
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .banner-action-cluster {
@@ -60,10 +60,10 @@
     align-items: center;
     gap: 6px;
     padding: 7px 13px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #334155;
-    border-radius: 6px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    border-radius: 10px;
     font-size: 0.76rem;
     font-weight: 500;
     cursor: pointer;
@@ -71,9 +71,9 @@
 }
 
 .btn-header-secondary:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
-    color: #0f172a;
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
+    color: var(--text-primary);
 }
 
 /* 2. Bố cục Studio 3 Cột (Flexbox để hỗ trợ Resizing) */
@@ -104,7 +104,7 @@
     content: "";
     width: 2px;
     height: 36px;
-    background-color: #cbd5e1;
+    background-color: var(--border-strong);
     border-radius: 2px;
     transition:
         background-color 0.15s ease,
@@ -113,14 +113,14 @@
 
 .studio-resizer:hover::after,
 .studio-resizer:active::after {
-    background-color: #059669;
+    background-color: var(--success);
     height: 52px;
 }
 
 .studio-column {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -133,7 +133,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--surface-sunken-2);
     flex-shrink: 0;
 }
 
@@ -141,15 +141,15 @@
     margin: 0;
     font-size: 0.88rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .panel-badge-count {
     font-size: 0.68rem;
-    color: #64748b;
-    background-color: #f1f5f9;
+    color: var(--text-muted);
+    background-color: var(--surface-sunken-2);
     padding: 2px 7px;
-    border-radius: 4px;
+    border-radius: 10px;
     font-weight: 500;
     display: inline-flex;
     align-items: center;
@@ -175,9 +175,9 @@
     align-items: flex-start;
     gap: 7px;
     padding: 11px 10px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background-color: #ffffff;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background-color: var(--surface-card);
     cursor: pointer;
     text-align: left;
     transition: all 0.15s ease;
@@ -185,8 +185,8 @@
 }
 
 .studio-tool-tile:hover:not(:disabled) {
-    border-color: #cbd5e1;
-    background-color: #f8fafc;
+    border-color: var(--border-strong);
+    background-color: var(--surface-sunken);
     transform: translateY(-1px);
 }
 
@@ -196,32 +196,32 @@
 }
 
 .studio-tool-tile .tile-icon {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .studio-tool-tile.blue .tile-icon {
-    color: #0284c7;
+    color: var(--accent);
 }
 .studio-tool-tile.amber .tile-icon {
-    color: #d97706;
+    color: var(--warning-strong);
 }
 .studio-tool-tile.green .tile-icon {
-    color: #059669;
+    color: var(--success);
 }
 .studio-tool-tile.purple .tile-icon {
-    color: #7c3aed;
+    color: var(--violet);
 }
 .studio-tool-tile.rose .tile-icon {
-    color: #e11d48;
+    color: var(--danger-strong);
 }
 .studio-tool-tile.teal .tile-icon {
-    color: #0d9488;
+    color: var(--success-strong);
 }
 
 .studio-tool-tile .tile-label {
     font-size: 0.72rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary);
     line-height: 1.3;
 }
 
@@ -230,7 +230,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--surface-sunken-2);
     padding-top: 10px;
     overflow: hidden;
     min-height: 0;
@@ -246,14 +246,14 @@
 .subcontainer-header h4 {
     margin: 0;
     font-size: 0.76rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 600;
 }
 
 .btn-quick-add-note {
     background: transparent;
     border: none;
-    color: #059669;
+    color: var(--success);
     font-size: 0.7rem;
     font-weight: 600;
     cursor: pointer;
@@ -263,7 +263,7 @@
 }
 
 .btn-quick-add-note:hover {
-    color: #047857;
+    color: var(--success-strong);
 }
 
 .notes-list-scroll {
@@ -281,9 +281,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 7px 9px;
-    background-color: #f8fafc;
-    border: 1px solid #f1f5f9;
-    border-radius: 6px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--surface-sunken-2);
+    border-radius: 10px;
     box-sizing: border-box;
 }
 
@@ -295,14 +295,14 @@
 }
 
 .note-glyph {
-    color: #059669;
+    color: var(--success);
     flex-shrink: 0;
 }
 
 .note-tile-content strong {
     display: block;
     font-size: 0.74rem;
-    color: #0f172a;
+    color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -310,25 +310,25 @@
 
 .note-tile-content small {
     font-size: 0.65rem;
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 .btn-note-context {
     background: transparent;
     border: none;
-    color: #94a3b8;
+    color: var(--text-faint);
     cursor: pointer;
     padding: 2px;
-    border-radius: 4px;
+    border-radius: 10px;
 }
 
 .btn-note-context:hover {
-    color: #ef4444;
+    color: var(--danger);
 }
 
 .empty-subtext {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--text-faint);
     text-align: center;
     margin: 12px 0;
 }
@@ -337,7 +337,7 @@
 .center-chat-panel {
     flex: 1;
     min-width: 320px;
-    background-color: #ffffff;
+    background-color: var(--surface-card);
 }
 
 .chat-messages-scroll-area {
@@ -357,7 +357,7 @@
     align-items: center;
     gap: 6px;
     padding: 8px 0 14px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--surface-sunken-2);
     position: relative;
     flex-shrink: 0;
 }
@@ -365,9 +365,9 @@
 .notebook-book-emblem {
     width: 50px;
     height: 50px;
-    border-radius: 12px;
-    background-color: #ecfdf5;
-    color: #059669;
+    border-radius: 10px;
+    background-color: var(--success-soft);
+    color: var(--success);
     display: grid;
     place-items: center;
     margin-bottom: 2px;
@@ -377,13 +377,13 @@
     margin: 0;
     font-size: 1.15rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .overview-meta-line {
     margin: 0;
     font-size: 0.76rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .chat-dialogue-stream {
@@ -406,16 +406,16 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background-color: #ecfdf5;
-    color: #059669;
+    background-color: var(--success-soft);
+    color: var(--success);
     display: grid;
     place-items: center;
     flex-shrink: 0;
 }
 
 .chat-bubble-row.user .bubble-avatar-box {
-    background-color: #0f172a;
-    color: #ffffff;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
 }
 
 .bubble-body-column {
@@ -430,7 +430,7 @@
     align-items: center;
     gap: 8px;
     font-size: 0.68rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .chat-bubble-row.user .bubble-meta-info {
@@ -440,18 +440,18 @@
 .bubble-text-box {
     position: relative;
     padding: 10px 14px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 0.82rem;
     line-height: 1.55;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #1e293b;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
 }
 
 .chat-bubble-row.user .bubble-text-box {
-    background-color: #059669;
-    border-color: #059669;
-    color: #ffffff;
+    background-color: var(--success);
+    border-color: var(--success);
+    color: var(--text-on-accent);
 }
 
 .bubble-text-box p {
@@ -464,23 +464,23 @@
     gap: 5px;
     margin-top: 10px;
     padding-top: 8px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border);
     font-size: 0.72rem;
 }
 
 .message-citations > strong {
-    color: #475569;
+    color: var(--text-tertiary);
     font-size: 0.68rem;
 }
 
 .message-citation {
     display: grid;
     gap: 2px;
-    color: #0f766e;
+    color: var(--success);
 }
 
 .message-citation small {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .btn-copy-bubble {
@@ -489,20 +489,20 @@
     right: 6px;
     background: transparent;
     border: none;
-    color: #94a3b8;
+    color: var(--text-faint);
     cursor: pointer;
     padding: 2px;
 }
 
 .btn-copy-bubble:hover {
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 /* Thanh dock nhập câu hỏi */
 .chat-bottom-dock {
     padding: 12px 18px 10px;
-    background-color: #ffffff;
-    border-top: 1px solid #f1f5f9;
+    background-color: var(--surface-card);
+    border-top: 1px solid var(--surface-sunken-2);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -510,9 +510,9 @@
 }
 
 .chat-prompt-card {
-    background-color: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 9px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
     padding: 8px 12px;
     display: flex;
     flex-direction: column;
@@ -521,9 +521,9 @@
 }
 
 .chat-prompt-card:focus-within {
-    border-color: #059669;
-    background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08);
+    border-color: var(--success);
+    background-color: var(--surface-card);
+    box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.08);
 }
 
 .chat-prompt-card textarea {
@@ -531,7 +531,7 @@
     background: transparent;
     border: none;
     outline: none;
-    color: #0f172a;
+    color: var(--text-primary);
     font-size: 0.8rem;
     resize: none;
     font-family: inherit;
@@ -546,15 +546,15 @@
 
 .active-sources-hint {
     font-size: 0.68rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .btn-submit-message {
     width: 28px;
     height: 28px;
-    border-radius: 6px;
-    background-color: #059669;
-    color: #ffffff;
+    border-radius: 10px;
+    background-color: var(--success);
+    color: var(--text-on-accent);
     border: none;
     display: grid;
     place-items: center;
@@ -565,13 +565,13 @@
 .btn-submit-message:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-    background-color: #cbd5e1;
+    background-color: var(--border-strong);
 }
 
 .ai-notice-line {
     text-align: center;
     font-size: 0.66rem;
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 /* --- CỘT PHẢI: NGUỒN TÀI LIỆU --- */
@@ -586,10 +586,10 @@
     justify-content: center;
     gap: 6px;
     padding: 9px;
-    background-color: #ecfdf5;
-    border: 1px dashed #a7f3d0;
-    border-radius: 7px;
-    color: #059669;
+    background-color: var(--success-soft);
+    border: 1px dashed var(--success-border);
+    border-radius: 10px;
+    color: var(--success);
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -598,8 +598,8 @@
 }
 
 .btn-add-source-trigger:hover {
-    background-color: #d1fae5;
-    border-color: #059669;
+    background-color: var(--success-soft-2);
+    border-color: var(--success);
 }
 
 .source-selector-wrapper {
@@ -608,9 +608,9 @@
 }
 
 .web-source-discovery-card {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 7px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 8px 10px;
     display: flex;
     flex-direction: column;
@@ -620,7 +620,7 @@
 
 .web-source-discovery-card span {
     font-size: 0.68rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 500;
 }
 
@@ -635,7 +635,7 @@
     background: transparent;
     border: none;
     outline: none;
-    color: #0f172a;
+    color: var(--text-primary);
     font-size: 0.75rem;
 }
 
@@ -658,7 +658,7 @@
     gap: 6px;
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.72rem;
     cursor: pointer;
 }
@@ -678,21 +678,21 @@
     align-items: center;
     gap: 9px;
     padding: 8px 10px;
-    border-radius: 6px;
-    background-color: #f8fafc;
-    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--surface-sunken-2);
     cursor: pointer;
     transition: all 0.15s ease;
     box-sizing: border-box;
 }
 
 .source-card-item:hover {
-    background-color: #f1f5f9;
+    background-color: var(--surface-sunken-2);
 }
 
 .source-card-item.selected {
-    border-color: #a7f3d0;
-    background-color: #ecfdf5;
+    border-color: var(--success-border);
+    background-color: var(--success-soft);
 }
 
 .source-icon-wrap {
@@ -710,7 +710,7 @@
 
 .source-info-col strong {
     font-size: 0.75rem;
-    color: #0f172a;
+    color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -718,17 +718,17 @@
 
 .source-info-col small {
     font-size: 0.65rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .source-checkbox-col {
     display: grid;
     place-items: center;
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 .checkbox-glyph.checked {
-    color: #059669;
+    color: var(--success);
 }
 
 /* ======================================================== */
@@ -740,7 +740,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(15, 23, 42, 0.45);
+    background-color: rgba(var(--shadow-rgb), 0.45);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -759,14 +759,14 @@
 }
 
 .modal-note-container {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;;
     width: 520px;
     max-width: 90vw;
     box-shadow:
-        0 10px 25px -5px rgba(15, 23, 42, 0.12),
-        0 8px 10px -6px rgba(15, 23, 42, 0.08);
+        0 10px 25px -5px rgba(var(--shadow-rgb), 0.12),
+        0 8px 10px -6px rgba(var(--shadow-rgb), 0.08);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -789,7 +789,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--surface-sunken-2);
 }
 
 .modal-note-title-cluster {
@@ -802,24 +802,24 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .btn-modal-close {
     background: transparent;
     border: none;
-    color: #94a3b8;
+    color: var(--text-faint);
     cursor: pointer;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 10px;
     display: grid;
     place-items: center;
     transition: all 0.15s ease;
 }
 
 .btn-modal-close:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
 }
 
 .modal-note-body {
@@ -838,18 +838,18 @@
 .modal-form-group label {
     font-size: 0.76rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary);
 }
 
 .modal-input-control {
     width: 100%;
     height: 40px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;;
     padding: 0 12px;
     font-size: 0.82rem;
-    color: #0f172a;
+    color: var(--text-primary);
     outline: none;
     box-sizing: border-box;
     transition:
@@ -858,18 +858,18 @@
 }
 
 .modal-input-control:focus {
-    border-color: #059669;
-    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+    border-color: var(--success);
+    box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.1);
 }
 
 .modal-textarea-control {
     width: 100%;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;;
     padding: 10px 12px;
     font-size: 0.82rem;
-    color: #0f172a;
+    color: var(--text-primary);
     outline: none;
     box-sizing: border-box;
     resize: vertical;
@@ -881,8 +881,8 @@
 }
 
 .modal-textarea-control:focus {
-    border-color: #059669;
-    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+    border-color: var(--success);
+    box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.1);
 }
 
 .modal-note-footer {
@@ -891,16 +891,16 @@
     justify-content: flex-end;
     gap: 10px;
     padding: 14px 20px;
-    border-top: 1px solid #f1f5f9;
-    background-color: #f8fafc;
+    border-top: 1px solid var(--surface-sunken-2);
+    background-color: var(--surface-sunken);
 }
 
 .btn-modal-secondary {
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #475569;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    color: var(--text-tertiary);
     padding: 8px 16px;
-    border-radius: 7px;
+    border-radius: 6px;;
     font-size: 0.78rem;
     font-weight: 500;
     cursor: pointer;
@@ -908,18 +908,18 @@
 }
 
 .btn-modal-secondary:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
 }
 
 .btn-modal-primary {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background-color: #059669;
-    color: #ffffff;
+    background-color: var(--success);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: 7px;
+    border-radius: 6px;;
     padding: 8px 18px;
     font-size: 0.78rem;
     font-weight: 600;
@@ -928,7 +928,7 @@
 }
 
 .btn-modal-primary:hover:not(:disabled) {
-    background-color: #047857;
+    background-color: var(--success-strong);
 }
 
 .btn-modal-primary:disabled {

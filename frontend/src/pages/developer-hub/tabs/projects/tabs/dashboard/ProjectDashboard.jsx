@@ -3,15 +3,7 @@ import { Terminal, Plus, ArrowRight, CheckSquare, CheckCircle2, Loader2 } from "
 import { projectDashboardApi } from "../../../../../../api";
 import { useToast } from "../../../../../../context/ToastContext";
 import "./ProjectDashboard.css";
-
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || {};
-    } catch {
-        return {};
-    }
-};
+import { getSessionUser } from "../../../../../../components/common/utils/session";
 
 const initialsOf = (name) => {
     const source = (name || "?").trim();

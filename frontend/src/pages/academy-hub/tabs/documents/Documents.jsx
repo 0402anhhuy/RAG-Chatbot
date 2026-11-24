@@ -1239,30 +1239,34 @@ const Documents = ({
                         >
                             <Filter size={14} />
                         </button>
-                        <select
-                            className="docs-sort-select"
+                        <CustomSelector
+                            className="docs-sort-selector"
+                            options={[
+                                { value: "recent", label: "Recent" },
+                                { value: "name", label: "Name" },
+                                { value: "size", label: "Size" },
+                            ]}
                             value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                        >
-                            <option value="recent">Recent</option>
-                            <option value="name">Name</option>
-                            <option value="size">Size</option>
-                        </select>
+                            onChange={(val) => setSortBy(val)}
+                            placeholder="Sort by..."
+                        />
                     </div>
 
                     {isAdvancedFiltersOpen && (
                         <div className="docs-advanced-filters">
-                            <select
+                            <CustomSelector
+                                className="docs-course-filter-selector"
+                                options={[
+                                    { value: "all", label: "All courses" },
+                                    ...availableCourses.map((course) => ({
+                                        value: course,
+                                        label: course,
+                                    })),
+                                ]}
                                 value={courseFilter}
-                                onChange={(e) => setCourseFilter(e.target.value)}
-                            >
-                                <option value="all">All courses</option>
-                                {availableCourses.map((course) => (
-                                    <option key={course} value={course}>
-                                        {course}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={(val) => setCourseFilter(val)}
+                                placeholder="All courses"
+                            />
                             <span className="filter-help-text">
                                 <Star size={12} /> Favorites are highlighted
                             </span>
@@ -1330,7 +1334,7 @@ const Documents = ({
                             </div>
                         ) : filteredDocs.length === 0 ? (
                             <div className="docs-empty-placeholder">
-                                <FileText size={28} color="#cbd5e1" />
+                                <FileText size={28} color="var(--icon-faint)" />
                                 <span>No materials found</span>
                             </div>
                         ) : (
@@ -1672,7 +1676,7 @@ const Documents = ({
                         </>
                     ) : (
                         <div className="no-document-selected">
-                            <BookOpen size={36} color="#cbd5e1" />
+                            <BookOpen size={36} color="var(--icon-faint)" />
                             <p>Select any learning material from the list to preview</p>
                         </div>
                     )}
@@ -1776,7 +1780,7 @@ const Documents = ({
                                     <div className="notes-stack-cards-track">
                                         {currentDocNotesList.length === 0 ? (
                                             <div className="empty-notes-stack">
-                                                <StickyNote size={24} color="#94a3b8" />
+                                                <StickyNote size={24} color="var(--text-faint)" />
                                                 <span>Chưa có ghi chú nào cho tài liệu này.</span>
                                             </div>
                                         ) : (

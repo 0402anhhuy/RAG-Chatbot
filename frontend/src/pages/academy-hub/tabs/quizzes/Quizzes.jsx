@@ -17,6 +17,7 @@ import { quizApi } from "../../../../api";
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../context/ToastContext";
 import "./Quizzes.css";
+import { getSessionUser } from "../../../../components/common/utils/session";
 
 const FILTERS = [
     { value: "all", label: "All" },
@@ -37,15 +38,6 @@ const BLANK_QUESTION = {
     correctIndex: 0,
     explanation: "",
     ragSource: "",
-};
-
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
 };
 
 const Quizzes = ({ onLaunchTool }) => {
@@ -661,7 +653,7 @@ const Quizzes = ({ onLaunchTool }) => {
                                         ) : (
                                             <div className="explanation-reveal-box">
                                                 <div className="explanation-title">
-                                                    <Sparkles size={14} color="#059669" />
+                                                    <Sparkles size={14} color="var(--success)" />
                                                     <strong>
                                                         Curriculum Analysis & RAG Context:
                                                     </strong>

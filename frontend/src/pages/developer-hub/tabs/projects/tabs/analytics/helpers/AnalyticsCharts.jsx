@@ -79,8 +79,8 @@ const CostTrendChart = ({ points, emptyLabel }) => {
             <svg className="chart-svg" viewBox="0 0 900 200" preserveAspectRatio="none">
                 <defs>
                     <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                        <stop offset="0%" stopColor="var(--warning)" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="var(--warning)" stopOpacity="0" />
                     </linearGradient>
                 </defs>
 
@@ -100,7 +100,7 @@ const CostTrendChart = ({ points, emptyLabel }) => {
                         axis.max,
                     )}
                     fill="none"
-                    stroke="#8b5cf6"
+                    stroke="var(--violet-bright)"
                     strokeWidth="2"
                 />
                 <path
@@ -109,7 +109,7 @@ const CostTrendChart = ({ points, emptyLabel }) => {
                         axis.max,
                     )}
                     fill="none"
-                    stroke="#f59e0b"
+                    stroke="var(--warning)"
                     strokeWidth="2.5"
                 />
 
@@ -120,7 +120,7 @@ const CostTrendChart = ({ points, emptyLabel }) => {
                             y1={top}
                             x2={xAt(activeIndex, points.length)}
                             y2={bottom}
-                            stroke="#cbd5e1"
+                            stroke="var(--icon-faint)"
                             strokeWidth="1"
                             strokeDasharray="3 3"
                         />
@@ -128,13 +128,13 @@ const CostTrendChart = ({ points, emptyLabel }) => {
                             cx={xAt(activeIndex, points.length)}
                             cy={yAt(active.total, axis.max)}
                             r="4"
-                            fill="#f59e0b"
+                            fill="var(--warning)"
                         />
                         <circle
                             cx={xAt(activeIndex, points.length)}
                             cy={yAt(active.project, axis.max)}
                             r="4"
-                            fill="#8b5cf6"
+                            fill="var(--violet-bright)"
                         />
                     </>
                 )}
@@ -205,8 +205,8 @@ const CodeActivityChart = ({ points, emptyLabel }) => {
             <svg className="chart-svg" viewBox="0 0 900 200" preserveAspectRatio="none">
                 <defs>
                     <linearGradient id="codeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                        <stop offset="0%" stopColor="var(--success-bright)" stopOpacity="0.2" />
+                        <stop offset="100%" stopColor="var(--success-bright)" stopOpacity="0" />
                     </linearGradient>
                 </defs>
 
@@ -225,7 +225,7 @@ const CodeActivityChart = ({ points, emptyLabel }) => {
                         axis.max,
                     )}
                     fill="none"
-                    stroke="#10b981"
+                    stroke="var(--success-bright)"
                     strokeWidth="2.5"
                 />
                 <path
@@ -234,7 +234,7 @@ const CodeActivityChart = ({ points, emptyLabel }) => {
                         axis.max,
                     )}
                     fill="none"
-                    stroke="#ef4444"
+                    stroke="var(--danger)"
                     strokeWidth="2"
                 />
 
@@ -243,7 +243,7 @@ const CodeActivityChart = ({ points, emptyLabel }) => {
                         cx={xAt(activeIndex, points.length)}
                         cy={yAt(active.linesAdded, axis.max)}
                         r="4"
-                        fill="#10b981"
+                        fill="var(--success-bright)"
                     />
                 )}
 

@@ -70,6 +70,7 @@ const AcademyHub = () => {
                 workspaceId={currentWorkspaceId}
                 onUploadClick={handleUploadCourseware}
                 hideControls={Boolean(activeSubTool)}
+                onHubClick={() => handleTabChange("home")}
             />
 
             <div className="edu-app-body">

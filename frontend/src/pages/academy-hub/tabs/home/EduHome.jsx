@@ -14,6 +14,7 @@ import { academyHomeApi } from "../../../../api";
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../context/ToastContext";
 import "./EduHome.css";
+import { getSessionUser } from "../../../../components/common/utils/session";
 
 // Cửa sổ thời gian cho KPI "Quizzes Solved" và "Study Time"
 const RANGE_OPTIONS = [
@@ -30,16 +31,7 @@ const KPI_ICONS = {
 };
 
 const KPI_COLORS = {
-    average_mastery: "#059669",
-};
-
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
+    average_mastery: "var(--success)",
 };
 
 const EduHome = ({ onNavigateTab, onLaunchTool, workspaceId }) => {
@@ -288,9 +280,9 @@ const EduHome = ({ onNavigateTab, onLaunchTool, workspaceId }) => {
                                 onClick={() => onLaunchTool?.(rec.toolId)}
                             >
                                 {rec.toolId === "grader" ? (
-                                    <CheckCircle size={16} color="#059669" />
+                                    <CheckCircle size={16} color="var(--success)" />
                                 ) : (
-                                    <Sparkles size={16} color="#f59e0b" />
+                                    <Sparkles size={16} color="var(--warning)" />
                                 )}
                                 <div>
                                     <strong>{rec.title}</strong>

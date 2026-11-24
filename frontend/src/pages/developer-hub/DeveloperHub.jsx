@@ -114,6 +114,7 @@ const DeveloperHub = () => {
                 <HubNavbar
                     activeTabName={activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                     onNewProjectClick={() => setIsCreateModalOpen(true)}
+                    onHubClick={() => setActiveTab("home")}
                 />
             )}
 
@@ -191,6 +192,7 @@ const DeveloperHub = () => {
                                             setActiveWorkbenchSubTab(subTab)
                                         }
                                         onOpenConversation={handleOpenConversation}
+                                        onOpenWorkflows={() => setActiveProjectTab("workflows")}
                                     />
                                 )}
                                 {activeProjectTab === "kanban" && (

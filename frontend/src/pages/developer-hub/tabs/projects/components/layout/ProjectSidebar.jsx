@@ -6,13 +6,12 @@ import {
     Workflow,
     Bot,
     BarChart3,
-    GitPullRequest,
     Settings,
     Menu,
     Search,
     Globe,
-    Sun,
 } from "lucide-react";
+import ThemePicker from "../../../../../../components/common/theme/ThemePicker";
 import "./ProjectSidebar.css";
 
 const PROJECT_NAV_ITEMS = [
@@ -23,7 +22,6 @@ const PROJECT_NAV_ITEMS = [
     { id: "workflows", label: "Workflows", icon: Workflow },
     { id: "agents", label: "Agents", icon: Bot },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
-    { id: "jira", label: "Jira", icon: GitPullRequest },
     { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -49,15 +47,24 @@ const ProjectSidebar = ({
                 </button>
             </div>
 
-            {/* Quick Search */}
+            {/* Quick Search: mở Workbench (nơi có file search thật) */}
             {!isCollapsed ? (
-                <button type="button" className="sidebar-search-pill" onClick={() => {}}>
+                <button
+                    type="button"
+                    className="sidebar-search-pill"
+                    onClick={() => onTabChange("workbench")}
+                >
                     <Search size={14} />
                     <span>Search</span>
                     <kbd>Ctrl+K</kbd>
                 </button>
             ) : (
-                <button type="button" className="sidebar-search-mini" title="Search (Ctrl+K)">
+                <button
+                    type="button"
+                    className="sidebar-search-mini"
+                    title="Search (Ctrl+K)"
+                    onClick={() => onTabChange("workbench")}
+                >
                     <Search size={15} />
                 </button>
             )}
@@ -91,10 +98,12 @@ const ProjectSidebar = ({
                             <Globe size={14} />
                             <span>English</span>
                         </button>
-                        <button type="button" className="footer-action-row">
-                            <Sun size={14} />
-                            <span>Theme</span>
-                        </button>
+                        <ThemePicker
+                            direction="up"
+                            showLabel
+                            iconSize={14}
+                            triggerClassName="footer-action-row"
+                        />
                     </>
                 )}
 

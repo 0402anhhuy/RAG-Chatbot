@@ -17,6 +17,7 @@ import {
     Wrench,
     MessageSquare,
 } from "lucide-react";
+import ThemePicker from "../../../components/common/theme/ThemePicker";
 import "./EduSidebar.css";
 
 const EDU_SUB_TOOLS = [
@@ -154,6 +155,13 @@ const EduSidebar = ({
 
             {/* Footer Profile */}
             <div className="sidebar-footer-group">
+                <ThemePicker
+                    direction="up"
+                    showLabel={!isCollapsed}
+                    iconSize={15}
+                    labelKey="name"
+                    triggerClassName="sidebar-theme-pill"
+                />
                 <div
                     className="sidebar-user-pill"
                     onClick={() => navigate("/overview")}

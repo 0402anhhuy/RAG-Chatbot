@@ -1,24 +1,33 @@
 import { Plus, Compass, HelpCircle, BookOpen } from "lucide-react";
-import BrandLogo from "../../../../components/common/logo/BrandLogo";
+import { useNavigate } from "react-router-dom";
+import Breadcrumb from "../../../../components/common/breadcrumb/Breadcrumb";
+import TriangleField from "../../../../components/common/canvas/TriangleField";
 import "./HubNavbar.css";
 
-const HubNavbar = ({ activeTabName = "Projects", activeProject = null, onNewProjectClick }) => {
+const HubNavbar = ({
+    activeTabName = "Projects",
+    activeProject = null,
+    onNewProjectClick,
+    onHubClick,
+}) => {
+    const navigate = useNavigate();
+
     return (
         <header className="vibe-navbar">
+            {/* Nền tam giác động giống trang Overview */}
+            <TriangleField />
             <div className="navbar-breadcrumb">
-                <BrandLogo size="md" showText title="Prism Studio" />
-                <span className="crumb-separator">/</span>
-                <span className="crumb-root">Developer Hub</span>
-                <span className="crumb-separator">/</span>
-                {activeProject ? (
-                    <>
-                        <span className="crumb-project">{activeProject.name}</span>
-                        <span className="crumb-separator">/</span>
-                        <span className="crumb-current">{activeTabName}</span>
-                    </>
-                ) : (
-                    <span className="crumb-current">{activeTabName}</span>
-                )}
+                <Breadcrumb
+                    onHomeClick={() => navigate("/overview")}
+                    items={[
+                        ...(onHubClick
+                            ? [{ label: "Developer Hub", onClick: onHubClick }]
+                            : [{ label: "Developer Hub" }]),
+                        ...(activeProject
+                            ? [{ label: activeProject.name }, { label: activeTabName }]
+                            : [{ label: activeTabName }]),
+                    ]}
+                />
             </div>
 
             {/* Cụm điều khiển bên phải */}

@@ -3,17 +3,19 @@ import { useNavigate, Link } from "react-router-dom";
 import {
     ArrowRight,
     Bot,
-    Check,
     Eye,
     EyeOff,
     Lock,
     Mail,
     ShieldCheck,
-    Sparkles,
 } from "lucide-react";
 import { authApi } from "../../api";
+import { getSessionUser } from "../../components/common/utils/session";
 import { useToast } from "../../context/ToastContext";
 import BrandLogo from "../../components/common/logo/BrandLogo";
+import AuthDecor from "./AuthDecor";
+import { useShowcaseEntrance } from "./motionPrefs";
+import { useRef } from "react";
 import "./Auth.css";
 
 const Login = () => {
@@ -25,6 +27,8 @@ const Login = () => {
 
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const showcaseRef = useRef(null);
+    useShowcaseEntrance(showcaseRef);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -76,9 +80,10 @@ const Login = () => {
 
     return (
         <div className="auth-screen">
-            <div className="auth-showcase">
-                <BrandLogo size="md" title="Prism Studio" onClick={() => navigate("/overview")} />
-                <div className="showcase-copy">
+            <div className="auth-showcase" ref={showcaseRef}>
+                <AuthDecor />
+                <BrandLogo size="md" title="Prism Studio" onClick={() => navigate(getSessionUser().id ? "/overview" : "/landing")} />
+                <div className="showcase-copy" data-animate>
                     <p className="auth-eyebrow">YOUR KNOWLEDGE, IN CONTEXT</p>
                     <h1>
                         Turn documents
@@ -90,25 +95,7 @@ const Login = () => {
                         with your knowledge.
                     </p>
                 </div>
-                <div className="showcase-preview">
-                    <div className="preview-top">
-                        <span>
-                            <Bot size={13} /> Assistant
-                        </span>
-                        <span className="preview-dot">Ready</span>
-                    </div>
-                    <div className="preview-message">What are the key ideas in this document?</div>
-                    <div className="preview-answer">
-                        <span className="answer-icon">
-                            <Sparkles size={13} />
-                        </span>
-                        <span>I found 4 key ideas across your connected sources.</span>
-                    </div>
-                    <div className="preview-source">
-                        <Check size={11} /> 3 sources connected
-                    </div>
-                </div>
-                <div className="showcase-footer">
+                <div className="showcase-footer" data-animate>
                     <span>
                         <ShieldCheck size={14} /> Private by design
                     </span>
@@ -185,6 +172,14 @@ const Login = () => {
                         <p>
                             Don't have an account? <Link to="/register">Create one</Link>
                         </p>
+                        <button
+                            type="button"
+                            className="landing-preview-btn"
+                            onClick={() => navigate("/landing")}
+                            title="See what Prism Studio looks like before signing up"
+                        >
+                            <Eye size={13} /> View landing page
+                        </button>
                     </div>
                 </div>
             </div>

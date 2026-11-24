@@ -1,7 +1,7 @@
 .add-member-modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(15, 23, 42, 0.45);
+    background-color: rgba(var(--shadow-rgb), 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -12,14 +12,14 @@
 }
 
 .add-member-modal-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;;
     width: 100%;
     max-width: 440px;
     padding: 22px 24px;
     box-sizing: border-box;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.16);
+    box-shadow: 0 20px 45px rgba(var(--shadow-rgb), 0.16);
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -37,31 +37,31 @@
     margin: 0;
     font-size: 1.15rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     letter-spacing: -0.01em;
 }
 
 .add-member-title-col p {
     margin: 3px 0 0 0;
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .btn-close-modal {
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 10px;
     display: grid;
     place-items: center;
     transition: all 0.12s ease;
 }
 
 .btn-close-modal:hover {
-    color: #0f172a;
-    background-color: #f1f5f9;
+    color: var(--text-primary);
+    background-color: var(--surface-sunken-2);
 }
 
 /* Form fields */
@@ -81,7 +81,7 @@
 .input-group-label {
     font-size: 0.8rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-secondary);
 }
 
 /* Search email pill input */
@@ -89,9 +89,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 0 14px;
     height: 40px;
     box-sizing: border-box;
@@ -99,11 +99,11 @@
 }
 
 .search-email-pill-box:focus-within {
-    border-color: #0f172a;
+    border-color: var(--text-primary);
 }
 
 .search-glyph-icon {
-    color: #64748b;
+    color: var(--text-muted);
     flex-shrink: 0;
 }
 
@@ -112,12 +112,12 @@
     outline: none;
     background: transparent;
     font-size: 0.8rem;
-    color: #0f172a;
+    color: var(--text-primary);
     width: 100%;
 }
 
 .search-email-pill-box input::placeholder {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 /* Selector Role Pill */
@@ -125,13 +125,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 0 16px;
     height: 40px;
     font-size: 0.8rem;
-    color: #1e293b;
+    color: var(--text-secondary);
     cursor: pointer;
     box-sizing: border-box;
     user-select: none;
@@ -139,11 +139,11 @@
 }
 
 .role-pill-selector-box:hover {
-    border-color: #94a3b8;
+    border-color: var(--text-faint);
 }
 
 .selector-caret {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 /* Custom dropdown menu (không còn dùng: role dùng CustomSelector chung) */
@@ -152,11 +152,11 @@
     top: calc(100% + 4px);
     left: 0;
     right: 0;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 6px;
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+    box-shadow: 0 10px 25px rgba(var(--shadow-rgb), 0.1);
     z-index: 10;
     display: flex;
     flex-direction: column;
@@ -168,25 +168,25 @@
     align-items: center;
     justify-content: space-between;
     padding: 9px 12px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 0.8rem;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: background-color 0.12s ease;
 }
 
 .dropdown-role-option-row:hover {
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: var(--surface-sunken);
+    color: var(--text-primary);
 }
 
 .dropdown-role-option-row.active {
     font-weight: 500;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .check-mark-glyph {
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 /* Selector role dùng CustomSelector chung */
@@ -199,10 +199,10 @@
     width: 100%;
     height: 40px;
     padding: 0 16px;
-    border-radius: 20px;
+    border-radius: 16px;
     font-size: 0.8rem;
     font-weight: 500;
-    color: #1e293b;
+    color: var(--text-secondary);
 }
 
 .add-member-role-selector .custom-select-menu {
@@ -225,7 +225,7 @@
     gap: 10px;
     width: 100%;
     padding: 8px 10px;
-    background-color: #ffffff;
+    background-color: var(--surface-card);
     border: 1px solid transparent;
     border-radius: 10px;
     cursor: pointer;
@@ -234,26 +234,26 @@
 }
 
 .member-candidate-row:hover {
-    background-color: #f8fafc;
+    background-color: var(--surface-sunken);
 }
 
 .member-candidate-row.selected {
-    background-color: #ecfdf5;
-    border-color: #a7f3d0;
+    background-color: var(--success-soft);
+    border-color: var(--success-border);
 }
 
 .member-candidate-avatar {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
     font-size: 0.7rem;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border);
     flex-shrink: 0;
 }
 
@@ -267,7 +267,7 @@
 .member-candidate-texts strong {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -275,7 +275,7 @@
 
 .member-candidate-texts span {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -285,11 +285,11 @@
 .add-member-error-text {
     margin: 2px 0 0 2px;
     font-size: 0.74rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .add-member-error-text {
-    color: #b91c1c;
+    color: var(--danger-deep);
 }
 
 /* Footer modal */
@@ -303,18 +303,18 @@
 
 .btn-footer-close-pill {
     padding: 7px 16px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     font-size: 0.8rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: background-color 0.12s ease;
 }
 
 .btn-footer-close-pill:hover {
-    background-color: #f8fafc;
+    background-color: var(--surface-sunken);
 }
 
 .add-member-footer-row .btn-add-member-pill:disabled {

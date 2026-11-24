@@ -1,29 +1,23 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Activity,
     ArrowRight,
     BookOpen,
     CheckCircle2,
-    Clock,
     Code2,
     Database,
     ExternalLink,
     FileCode2,
-    FileText,
     GraduationCap,
-    HardDrive,
     Keyboard,
     Layers,
     Library,
+    Loader2,
     LogOut,
     PenTool,
     Pin,
-    Plus,
     Search,
     Settings,
-    ShieldAlert,
-    ShieldCheck,
     Sparkles,
     Terminal,
     Upload,
@@ -32,7 +26,14 @@ import {
     Zap,
 } from "lucide-react";
 import BrandLogo from "../../components/common/logo/BrandLogo";
+import TriangleField from "../../components/common/canvas/TriangleField";
 import UserProfileModal from "../modals/UserProfileModal";
+import { clearSession, getSessionUser } from "../../components/common/utils/session";
+import { useTheme } from "../../context/ThemeContext";
+import { themeMeta, THEMES } from "../../components/common/theme/themeMeta";
+import ThemePicker from "../../components/common/theme/ThemePicker";
+import { useToast } from "../../context/ToastContext";
+import { academyHomeApi, documentApi, projectApi, request, taskApi } from "../../api";
 import "./Overview.css";
 
 const HUBS_CONFIG = [
@@ -41,9 +42,8 @@ const HUBS_CONFIG = [
         name: "Developer Hub",
         badge: "ENGINEERING",
         tagline: "Code inspection, architecture modeling, and static security auditing.",
-        accentColor: "#0284c7",
+        accentClass: "hub-accent-dev",
         hubRoute: "/developer-hub",
-        metrics: { repositories: 14, issuesFound: 3, coverage: "94%" },
         tools: [
             {
                 id: "code_review",
@@ -54,7 +54,6 @@ const HUBS_CONFIG = [
                 status: "Live Audit",
                 statusType: "active",
                 targetRoute: "/chat?tool=code_review",
-                metricBadge: "3 alerts",
             },
             {
                 id: "canvas",
@@ -65,7 +64,6 @@ const HUBS_CONFIG = [
                 status: "Ready",
                 statusType: "neutral",
                 targetRoute: "/canvas",
-                metricBadge: "v2.1 topology",
             },
             {
                 id: "knowledge",
@@ -76,7 +74,6 @@ const HUBS_CONFIG = [
                 status: "Synchronized",
                 statusType: "success",
                 targetRoute: "/chat?tool=knowledge_assistant",
-                metricBadge: "128 documents",
             },
         ],
     },
@@ -85,9 +82,8 @@ const HUBS_CONFIG = [
         name: "Academy Hub",
         badge: "EDUCATION",
         tagline: "Interactive coding tutoring, rubric evaluation, and exam generation.",
-        accentColor: "#059669",
+        accentClass: "hub-accent-edu",
         hubRoute: "/academy-hub", // Đã chuyển hướng sang trang Academy Hub mới
-        metrics: { courses: 6, quizzesTaken: 48, mastery: "89%" },
         tools: [
             {
                 id: "tutor",
@@ -98,7 +94,6 @@ const HUBS_CONFIG = [
                 status: "Interactive",
                 statusType: "active",
                 targetRoute: "/chat?tool=tutor",
-                metricBadge: "Module 4",
             },
             {
                 id: "exam_prep",
@@ -109,7 +104,6 @@ const HUBS_CONFIG = [
                 status: "Ready",
                 statusType: "neutral",
                 targetRoute: "/chat?tool=exam_prep",
-                metricBadge: "24 questions",
             },
             {
                 id: "assignment_grader",
@@ -120,7 +114,6 @@ const HUBS_CONFIG = [
                 status: "Graded",
                 statusType: "success",
                 targetRoute: "/chat?tool=assignment_grader",
-                metricBadge: "Rubric active",
             },
             {
                 id: "courseware",
@@ -131,74 +124,53 @@ const HUBS_CONFIG = [
                 status: "Indexed",
                 statusType: "success",
                 targetRoute: "/chat?tool=courseware",
-                metricBadge: "42 files",
             },
         ],
     },
 ];
 
-const PINNED_ITEMS = [
-    {
-        id: "pin-1",
-        title: "SecurityConfig.java",
-        type: "code",
-        hub: "Developer Hub",
-        route: "/chat?tool=code_review",
-        meta: "Spring Security filter chain",
-    },
-    {
-        id: "pin-2",
-        title: "Spring Security Architecture Guide.pdf",
-        type: "doc",
-        hub: "Developer Hub",
-        route: "/chat?tool=knowledge_assistant",
-        meta: "p.42 (Active context)",
-    },
-    {
-        id: "pin-3",
-        title: "CS204: Algorithms (Module 3)",
-        type: "course",
-        hub: "Academy Hub",
-        route: "/chat?tool=exam_prep",
-        meta: "Midterm practice pool",
-    },
-];
+const normalizeStatus = (value) => (value || "").toString().toUpperCase();
 
-const RECENT_ACTIVITIES = [
-    {
-        id: 1,
-        hubName: "Developer Hub",
-        action: "Security vulnerability detected",
-        target: "auth-service/src/UserRepository.java",
-        detail: "CWE-89 SQL Injection concatenated at line 84",
-        timestamp: "12 minutes ago",
-        statusType: "critical",
-        route: "/chat?tool=code_review",
-    },
-    {
-        id: 2,
-        hubName: "Developer Hub",
-        action: "Knowledge Base sync completed",
-        target: "Spring Security Architecture Guide.pdf",
-        detail: "324 embeddings stored in Vector DB",
-        timestamp: "1 hour ago",
-        statusType: "success",
-        route: "/chat?tool=knowledge_assistant",
-    },
-    {
-        id: 3,
-        hubName: "Academy Hub",
-        action: "Practice quiz session finished",
-        target: "CS204: Algorithms & Complexity",
-        detail: "Score: 92% (18/20 questions correct)",
-        timestamp: "Yesterday",
-        statusType: "neutral",
-        route: "/chat?tool=exam_prep",
-    },
-];
+const isDoneTask = (task) => {
+    const status = normalizeStatus(task.status);
+    return status === "DONE" || status === "COMPLETED";
+};
+
+const mapTaskStatusType = (status) => {
+    const s = normalizeStatus(status);
+    if (s === "COMPLETED" || s === "DONE") return "success";
+    if (s === "IN_PROGRESS") return "active";
+    if (s === "BLOCKED" || s === "FAILED") return "critical";
+    return "neutral";
+};
+
+const formatRelative = (iso) => {
+    if (!iso) return "";
+    const then = new Date(iso).getTime();
+    if (Number.isNaN(then)) return "";
+    const diffMs = Date.now() - then;
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+    return new Date(iso).toLocaleDateString();
+};
+
+const computeGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "morning";
+    if (hour < 18) return "afternoon";
+    return "evening";
+};
 
 const Overview = () => {
     const navigate = useNavigate();
+    const { theme, setTheme } = useTheme();
+    const { showToast } = useToast();
+    const sessionUser = getSessionUser();
     const [activeHubFilter, setActiveHubFilter] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [isCmdOpen, setIsCmdOpen] = useState(false);
@@ -212,16 +184,95 @@ const Overview = () => {
     const [quickSnippetText, setQuickSnippetText] = useState("");
     const fileInputRef = useRef(null);
 
-    const session = JSON.parse(
-        localStorage.getItem("rag_session") ||
-            '{"role":"USER","name":"Huy Tran","email":"huy@prismstudio.dev"}',
-    );
+    // Real data fetched from backend
+    const [loading, setLoading] = useState(true);
+    const [projects, setProjects] = useState([]);
+    const [tasks, setTasks] = useState([]);
+    const [workspaces, setWorkspaces] = useState([]);
+    const [documents, setDocuments] = useState([]);
+    const [academy, setAcademy] = useState(null);
+    const [backendOnline, setBackendOnline] = useState(true);
+    const [ragOnline, setRagOnline] = useState(true);
+    const [backendLatency, setBackendLatency] = useState(null);
+    const [ragLatency, setRagLatency] = useState(null);
 
     const handleLogout = () => {
-        localStorage.removeItem("rag_session");
-        localStorage.removeItem("token");
+        clearSession();
         navigate("/login");
     };
+
+    const loadOverview = useCallback(
+        async (signal) => {
+            const userId = sessionUser?.id;
+            if (!userId) {
+                setLoading(false);
+                return;
+            }
+            try {
+                setLoading(true);
+
+                const backendStart = performance.now();
+                const [projectList, taskList, workspaceList] = await Promise.all([
+                    projectApi.list({ ownerId: userId }),
+                    taskApi.list({ ownerId: userId, archived: false }),
+                    request("/workspaces").catch(() => []),
+                ]);
+                if (signal?.cancelled) return;
+                setProjects(projectList || []);
+                setTasks(taskList || []);
+                setWorkspaces(workspaceList || []);
+                setBackendLatency(Math.round(performance.now() - backendStart));
+                setBackendOnline(true);
+
+                const workspaceId = (workspaceList || [])[0]?.id;
+                if (!workspaceId) {
+                    setDocuments([]);
+                    setRagLatency(null);
+                    setRagOnline(true);
+                    setAcademy(null);
+                    return;
+                }
+
+                const ragStart = performance.now();
+                const [academyData, docList] = await Promise.all([
+                    academyHomeApi
+                        .get({ ownerId: userId, workspaceId, range: "all" })
+                        .catch(() => null),
+                    documentApi
+                        .getByWorkspace(workspaceId)
+                        .then((r) => {
+                            if (!signal?.cancelled) {
+                                setRagLatency(Math.round(performance.now() - ragStart));
+                                setRagOnline(true);
+                            }
+                            return r;
+                        })
+                        .catch(() => {
+                            if (!signal?.cancelled) setRagOnline(false);
+                            return [];
+                        }),
+                ]);
+                if (signal?.cancelled) return;
+                setAcademy(academyData);
+                setDocuments(docList || []);
+            } catch (err) {
+                if (signal?.cancelled) return;
+                setBackendOnline(false);
+                showToast(err.message || "Unable to load workspace overview.", "error");
+            } finally {
+                if (!signal?.cancelled) setLoading(false);
+            }
+        },
+        [sessionUser?.id, showToast],
+    );
+
+    useEffect(() => {
+        const signal = { cancelled: false };
+        loadOverview(signal);
+        return () => {
+            signal.cancelled = true;
+        };
+    }, [loadOverview]);
 
     // Close user dropdown when clicking outside
     useEffect(() => {
@@ -257,20 +308,191 @@ const Overview = () => {
         navigate("/chat?tool=code_review");
     };
 
-    const filteredHubs = HUBS_CONFIG.filter((hub) => {
+    // ---- Real metrics derived from backend data ----
+    const devStats = useMemo(() => {
+        const total = projects.length;
+        const active = projects.filter((p) => normalizeStatus(p.status) === "ACTIVE").length;
+        const totalTasks = tasks.length;
+        const doneTasks = tasks.filter(isDoneTask).length;
+        const openTasks = totalTasks - doneTasks;
+        const completion = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : null;
+        return { total, active, totalTasks, doneTasks, openTasks, completion };
+    }, [projects, tasks]);
+
+    const docStats = useMemo(() => {
+        const total = documents.length;
+        const indexed = documents.filter((d) => normalizeStatus(d.status) === "READY").length;
+        const chunkTotal = documents.reduce((acc, d) => acc + (d.chunkCount || 0), 0);
+        return { total, indexed, chunkTotal };
+    }, [documents]);
+
+    const academyKpis = useMemo(() => {
+        const map = {};
+        (academy?.kpis || []).forEach((kpi) => {
+            map[kpi.id] = kpi;
+        });
+        return map;
+    }, [academy]);
+
+    const eduStats = useMemo(() => {
+        const courses = academy?.courses?.length ?? null;
+        const masteryKpi = academyKpis.average_mastery;
+        const quizzesKpi = academyKpis.quizzes_solved;
+        const streak = academy?.streak ?? null;
+        return {
+            courses,
+            mastery: masteryKpi?.hasData ? masteryKpi.value : null,
+            quizzes: quizzesKpi?.hasData ? quizzesKpi.value : null,
+            streakDays: streak?.days ?? null,
+        };
+    }, [academy, academyKpis]);
+
+    const servicesOnline = backendOnline && ragOnline;
+
+    const greeting = useMemo(() => {
+        const g = academy?.greeting || computeGreeting();
+        return g.charAt(0).toUpperCase() + g.slice(1);
+    }, [academy]);
+
+    // Hubs with real metrics merged into the static config
+    const hubs = useMemo(
+        () =>
+            HUBS_CONFIG.map((hub) => {
+                if (hub.id === "dev") {
+                    return {
+                        ...hub,
+                        metrics: {
+                            repositories: loading ? null : devStats.total,
+                            completion: devStats.completion,
+                            openTasks: devStats.openTasks,
+                        },
+                        tools: hub.tools.map((tool) => {
+                            let metricBadge = null;
+                            if (tool.id === "code_review" && !loading && devStats.openTasks > 0) {
+                                metricBadge = `${devStats.openTasks} open task${devStats.openTasks > 1 ? "s" : ""}`;
+                            }
+                            if (tool.id === "knowledge" && !loading && docStats.total > 0) {
+                                metricBadge = `${docStats.total} document${docStats.total > 1 ? "s" : ""}`;
+                            }
+                            return { ...tool, metricBadge };
+                        }),
+                    };
+                }
+                return {
+                    ...hub,
+                    metrics: {
+                        courses: loading ? null : (eduStats.courses ?? 0),
+                        mastery: loading ? null : (eduStats.mastery ?? "—"),
+                        quizzes: eduStats.quizzes,
+                        streakDays: eduStats.streakDays,
+                    },
+                    tools: hub.tools.map((tool) => {
+                        let metricBadge = null;
+                        if (tool.id === "tutor" && !loading && eduStats.streakDays > 0) {
+                            metricBadge = `${eduStats.streakDays}-day streak`;
+                        }
+                        if (tool.id === "exam_prep" && !loading && eduStats.quizzes) {
+                            metricBadge = `${eduStats.quizzes} quizzes solved`;
+                        }
+                        if (tool.id === "assignment_grader" && !loading && eduStats.mastery) {
+                            metricBadge = `${eduStats.mastery} avg mastery`;
+                        }
+                        if (tool.id === "courseware" && !loading && docStats.indexed > 0) {
+                            metricBadge = `${docStats.indexed} files indexed`;
+                        }
+                        return { ...tool, metricBadge };
+                    }),
+                };
+            }),
+        [loading, devStats, eduStats, docStats],
+    );
+
+    // Pinned items = real pinned projects from backend
+    const pinnedItems = useMemo(
+        () =>
+            projects
+                .filter((p) => p.pinned)
+                .slice(0, 3)
+                .map((p) => ({
+                    id: p.id,
+                    title: p.name,
+                    type: "code",
+                    route: "/developer-hub",
+                    meta: `${p.tasks ?? 0} tasks · updated ${formatRelative(p.updatedAt || p.createdAt)}`,
+                })),
+        [projects],
+    );
+
+    // Recent activities assembled from real projects, tasks and documents
+    const recentActivities = useMemo(() => {
+        const items = [];
+        tasks.forEach((task) => {
+            items.push({
+                id: `task-${task.id}`,
+                hubName: "Developer Hub",
+                action: isDoneTask(task) ? "Task completed" : "Task updated",
+                target: task.title,
+                detail: `${task.projectName || "Unassigned"} · ${task.statusLabel || normalizeStatus(task.status)}`,
+                timestamp: task.updatedAt || task.createdAt,
+                statusType: mapTaskStatusType(task.status),
+                route: "/developer-hub",
+            });
+        });
+        projects.forEach((project) => {
+            items.push({
+                id: `project-${project.id}`,
+                hubName: "Developer Hub",
+                action: "Project updated",
+                target: project.name,
+                detail: `${project.tasks ?? 0} tasks · ${normalizeStatus(project.status)}`,
+                timestamp: project.updatedAt || project.createdAt,
+                statusType: "neutral",
+                route: "/developer-hub",
+            });
+        });
+        documents.forEach((doc) => {
+            items.push({
+                id: `document-${doc.id}`,
+                hubName: "Academy Hub",
+                action: "Document uploaded",
+                target: doc.title || doc.filename,
+                detail: `${doc.courseCode || "GEN"} · ${doc.status} · ${doc.fileSizeFormatted || ""}`.trim(),
+                timestamp: doc.createdAt,
+                statusType:
+                    normalizeStatus(doc.status) === "READY"
+                        ? "success"
+                        : normalizeStatus(doc.status) === "FAILED"
+                          ? "critical"
+                          : "neutral",
+                route: "/academy-hub",
+            });
+        });
+        return items
+            .filter((item) => item.timestamp)
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 6);
+    }, [tasks, projects, documents]);
+
+    const currentWorkspaceName = workspaces[0]?.name || null;
+
+    const filteredHubs = hubs.filter((hub) => {
         if (activeHubFilter !== "all" && hub.id !== activeHubFilter) return false;
         return true;
-    }).map((hub) => ({
-        ...hub,
-        tools: hub.tools.filter(
-            (t) =>
-                t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                t.description.toLowerCase().includes(searchQuery.toLowerCase()),
-        ),
-    }));
+    });
+
+    const displayName = sessionUser?.name || "there";
+    const avatarInitials = (sessionUser?.name || sessionUser?.email || "U")
+        .replace(/[^a-zA-Z ]/g, "")
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part.charAt(0).toUpperCase())
+        .join("") || "U";
 
     return (
         <div className="overview-page-wrapper">
+            {/* Nền tam giác động (chỉ trang Overview) */}
+            <TriangleField />
             {/* Topbar */}
             <header className="overview-navbar">
                 <div className="navbar-brand-unit">
@@ -297,21 +519,24 @@ const Overview = () => {
 
                 {/* USER PROFILE CLUSTER WITH POPOVER MENU */}
                 <div className="navbar-user-cluster" ref={userMenuRef}>
+                    <ThemePicker
+                        direction="down"
+                        align="right"
+                        iconSize={16}
+                        triggerClassName="theme-toggle-btn"
+                    />
+
                     <button
                         type="button"
                         className={`user-profile-trigger-btn ${isUserMenuOpen ? "active" : ""}`}
                         onClick={() => setIsUserMenuOpen((prev) => !prev)}
                         title="Open Account Menu"
                     >
-                        <div className="user-avatar-box">
-                            {(session.name || "HU").slice(0, 2).toUpperCase()}
-                        </div>
+                        <div className="user-avatar-box">{avatarInitials}</div>
                         <div className="user-text-column">
-                            <span className="profile-display-name">
-                                {session.name || "Huy Tran"}
-                            </span>
+                            <span className="profile-display-name">{displayName}</span>
                             <span className="profile-role-tag">
-                                {session.role || "Software Engineer"}
+                                {sessionUser?.role || "MEMBER"}
                             </span>
                         </div>
                     </button>
@@ -319,30 +544,30 @@ const Overview = () => {
                     {isUserMenuOpen && (
                         <div className="user-dropdown-popover">
                             <div className="popover-identity-header">
-                                <div className="popover-avatar-large">
-                                    {(session.name || "HU").slice(0, 2).toUpperCase()}
-                                </div>
+                                <div className="popover-avatar-large">{avatarInitials}</div>
                                 <div className="popover-identity-meta">
                                     <div className="identity-name-line">
-                                        <strong>{session.name || "Huy Tran"}</strong>
+                                        <strong>{displayName}</strong>
                                         <span className="identity-role-badge">
-                                            {session.role || "MEMBER"}
+                                            {sessionUser?.role || "MEMBER"}
                                         </span>
                                     </div>
                                     <span className="identity-email-text">
-                                        {session.email || "huy@prismstudio.dev"}
+                                        {sessionUser?.email || "—"}
                                     </span>
                                 </div>
                             </div>
 
                             <div className="popover-workspace-card">
                                 <div className="popover-meta-row">
-                                    <span>Tenant ID</span>
-                                    <code>prism-prod-default</code>
+                                    <span>Workspace</span>
+                                    <code>{currentWorkspaceName || "—"}</code>
                                 </div>
                                 <div className="popover-meta-row">
-                                    <span>Workspace Mode</span>
-                                    <strong className="status-live-green">Standard Dev Hub</strong>
+                                    <span>Connected Workspaces</span>
+                                    <strong className="status-live-green">
+                                        {loading ? "…" : workspaces.length}
+                                    </strong>
                                 </div>
                             </div>
 
@@ -358,6 +583,28 @@ const Overview = () => {
                                     <User size={15} />
                                     <span>Account & Profile Information</span>
                                 </button>
+                                <div className="popover-theme-row" role="group" aria-label="Appearance">
+                                    <span className="popover-theme-label">Appearance</span>
+                                    <div className="popover-theme-options">
+                                        {THEMES.map((value) => {
+                                            const itemMeta = themeMeta(value);
+                                            const ItemIcon = itemMeta.icon;
+                                            const active = theme === value;
+                                            return (
+                                                <button
+                                                    key={value}
+                                                    type="button"
+                                                    className={`theme-swatch ${active ? "active" : ""}`}
+                                                    onClick={() => setTheme(value)}
+                                                    aria-pressed={active}
+                                                    title={itemMeta.title}
+                                                >
+                                                    <ItemIcon size={14} />
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                                 <button
                                     type="button"
                                     className="popover-menu-item"
@@ -405,7 +652,7 @@ const Overview = () => {
                     <div className="overview-greeting-card">
                         <div className="greeting-main-content">
                             <span className="greeting-eyebrow">UNIFIED AI WORKSPACE</span>
-                            <h1>Good evening, {session.name?.split(" ")[0] || "Huy"}.</h1>
+                            <h1>Good {greeting.toLowerCase()}, {displayName}.</h1>
                             <p>
                                 Access engineering suites and learning assistants from a centralized
                                 command center. Use the quick action tray to audit snippets or
@@ -415,15 +662,31 @@ const Overview = () => {
                         <div className="workspace-stat-pills">
                             <div className="stat-pill-item">
                                 <span className="stat-pill-label">Connected Repos</span>
-                                <strong>14 active</strong>
+                                <strong>
+                                    {loading ? "…" : `${devStats.active} active`}
+                                </strong>
                             </div>
                             <div className="stat-pill-item">
                                 <span className="stat-pill-label">Knowledge Docs</span>
-                                <strong>128 indexed</strong>
+                                <strong>
+                                    {loading ? "…" : `${docStats.indexed} indexed`}
+                                </strong>
                             </div>
                             <div className="stat-pill-item">
-                                <span className="stat-pill-label">Security Health</span>
-                                <strong style={{ color: "#10b981" }}>98.4% passing</strong>
+                                <span className="stat-pill-label">Task Completion</span>
+                                <strong
+                                    style={
+                                        devStats.completion !== null
+                                            ? { color: "var(--success-bright)" }
+                                            : undefined
+                                    }
+                                >
+                                    {loading
+                                        ? "…"
+                                        : devStats.completion !== null
+                                          ? `${devStats.completion}% done`
+                                          : "—"}
+                                </strong>
                             </div>
                         </div>
                     </div>
@@ -437,7 +700,7 @@ const Overview = () => {
                                 className="action-pill-btn"
                                 onClick={() => setActiveModal("snippet")}
                             >
-                                <Code2 size={15} color="#0284c7" />
+                                <Code2 size={15} color="var(--accent)" />
                                 <span>Quick Snippet Audit</span>
                             </button>
                             <button
@@ -445,7 +708,7 @@ const Overview = () => {
                                 className="action-pill-btn"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <Upload size={15} color="#059669" />
+                                <Upload size={15} color="var(--success)" />
                                 <span>Drop PDF to Vector Store</span>
                             </button>
                             <input
@@ -460,46 +723,47 @@ const Overview = () => {
                                 className="action-pill-btn"
                                 onClick={() => navigate("/chat?tool=exam_prep")}
                             >
-                                <Sparkles size={15} color="#f59e0b" />
+                                <Sparkles size={15} color="var(--warning)" />
                                 <span>Generate Practice Quiz</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* Pinned Contexts Tray */}
-                    <div className="pinned-workspaces-tray">
-                        <div className="tray-heading-row">
-                            <div className="tray-title-group">
-                                <Pin size={14} color="#64748b" />
-                                <span>PINNED CONTEXTS</span>
-                            </div>
-                            <span className="tray-hint">Click to resume immediate inspection</span>
-                        </div>
-                        <div className="pinned-cards-grid">
-                            {PINNED_ITEMS.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="pinned-item-card"
-                                    onClick={() => navigate(item.route)}
-                                >
-                                    <div className="pinned-icon-wrapper">
-                                        {item.type === "code" ? (
-                                            <FileCode2 size={16} color="#0284c7" />
-                                        ) : item.type === "doc" ? (
-                                            <FileText size={16} color="#059669" />
-                                        ) : (
-                                            <Library size={16} color="#f59e0b" />
-                                        )}
-                                    </div>
-                                    <div className="pinned-text-meta">
-                                        <strong className="pinned-file-title">{item.title}</strong>
-                                        <span className="pinned-file-note">{item.meta}</span>
-                                    </div>
-                                    <span className="pinned-badge-hub">{item.hub}</span>
+                    {/* Pinned Contexts Tray — chỉ render khi có project đã pin */}
+                    {!loading && pinnedItems.length > 0 && (
+                        <div className="pinned-workspaces-tray">
+                            <div className="tray-heading-row">
+                                <div className="tray-title-group">
+                                    <Pin size={13} color="var(--violet)" />
+                                    <span>PINNED CONTEXTS</span>
+                                    <span className="tray-count">{pinnedItems.length}</span>
                                 </div>
-                            ))}
+                                <span className="tray-hint">Pick up where you left off</span>
+                            </div>
+                            <div className="pinned-cards-grid">
+                                {pinnedItems.map((item) => (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        className="pinned-item-card"
+                                        onClick={() => navigate(item.route)}
+                                    >
+                                        <span className="pinned-icon-wrapper">
+                                            <FileCode2 size={15} />
+                                        </span>
+                                        <span className="pinned-text-meta">
+                                            <strong className="pinned-file-title">
+                                                {item.title}
+                                            </strong>
+                                            <span className="pinned-file-note">{item.meta}</span>
+                                        </span>
+                                        <ArrowRight size={14} className="pinned-go-arrow" />
+                                        <Pin size={40} className="pinned-watermark" />
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Suite Category Navigation */}
                     <div className="hub-filter-bar">
@@ -545,13 +809,15 @@ const Overview = () => {
                                         <div className="hub-header-meta">
                                             {hub.id === "dev" ? (
                                                 <span>
-                                                    {hub.metrics.repositories} Repos ·{" "}
-                                                    {hub.metrics.coverage} Audit Score
+                                                    {hub.metrics.repositories ?? "—"} Repos ·{" "}
+                                                    {hub.metrics.completion !== null
+                                                        ? `${hub.metrics.completion}% Completion`
+                                                        : "— Completion"}
                                                 </span>
                                             ) : (
                                                 <span>
-                                                    {hub.metrics.courses} Syllabi ·{" "}
-                                                    {hub.metrics.mastery} Overall Score
+                                                    {hub.metrics.courses} Courses ·{" "}
+                                                    {hub.metrics.mastery} Avg Mastery
                                                 </span>
                                             )}
                                         </div>
@@ -580,11 +846,7 @@ const Overview = () => {
                                             >
                                                 <div className="tool-card-top-row">
                                                     <div
-                                                        className="tool-card-icon-frame"
-                                                        style={{
-                                                            color: hub.accentColor,
-                                                            backgroundColor: `${hub.accentColor}12`,
-                                                        }}
+                                                        className={`tool-card-icon-frame ${hub.accentClass}`}
                                                     >
                                                         <ToolIcon size={20} />
                                                     </div>
@@ -601,9 +863,11 @@ const Overview = () => {
                                                 </div>
 
                                                 <div className="tool-card-footer">
-                                                    <span className="tool-metric-badge">
-                                                        {tool.metricBadge}
-                                                    </span>
+                                                    {tool.metricBadge && (
+                                                        <span className="tool-metric-badge">
+                                                            {tool.metricBadge}
+                                                        </span>
+                                                    )}
                                                     <span className="tool-launch-arrow">
                                                         Launch <ArrowRight size={13} />
                                                     </span>
@@ -627,86 +891,161 @@ const Overview = () => {
                                         courseware.
                                     </p>
                                 </div>
-                                <span className="activity-sync-indicator">Realtime Feed</span>
+                                <span className="activity-sync-indicator">
+                                    {loading
+                                        ? "Syncing…"
+                                        : `${recentActivities.length} recent event${recentActivities.length === 1 ? "" : "s"}`}
+                                </span>
                             </div>
 
                             <div className="activity-list-container">
-                                {RECENT_ACTIVITIES.map((act) => (
-                                    <div
-                                        key={act.id}
-                                        className="activity-row-item"
-                                        onClick={() => navigate(act.route)}
-                                    >
-                                        <span className={`status-signal-dot ${act.statusType}`} />
-                                        <div className="activity-core-col">
-                                            <div className="activity-primary-line">
-                                                <span className="activity-hub-tag">
-                                                    {act.hubName}
-                                                </span>
-                                                <strong>{act.action}</strong>
-                                                <span className="activity-target-code">
-                                                    {act.target}
+                                {loading ? (
+                                    <div className="overview-empty-state">
+                                        <Loader2 size={15} className="overview-spin" />
+                                        <span>Loading activity feed…</span>
+                                    </div>
+                                ) : recentActivities.length === 0 ? (
+                                    <div className="overview-empty-state">
+                                        <span>
+                                            No activity yet — updates from your projects, tasks
+                                            and courseware will appear here.
+                                        </span>
+                                    </div>
+                                ) : (
+                                    recentActivities.map((act) => (
+                                        <div
+                                            key={act.id}
+                                            className="activity-row-item"
+                                            onClick={() => navigate(act.route)}
+                                        >
+                                            <span
+                                                className={`status-signal-dot ${act.statusType}`}
+                                            />
+                                            <div className="activity-core-col">
+                                                <div className="activity-primary-line">
+                                                    <span className="activity-hub-tag">
+                                                        {act.hubName}
+                                                    </span>
+                                                    <strong>{act.action}</strong>
+                                                    <span className="activity-target-code">
+                                                        {act.target}
+                                                    </span>
+                                                </div>
+                                                <span className="activity-detail-line">
+                                                    {act.detail}
                                                 </span>
                                             </div>
-                                            <span className="activity-detail-line">
-                                                {act.detail}
+                                            <span className="activity-time-stamp">
+                                                {formatRelative(act.timestamp)}
                                             </span>
+                                            <ArrowRight size={14} className="activity-hover-arrow" />
                                         </div>
-                                        <span className="activity-time-stamp">{act.timestamp}</span>
-                                        <ArrowRight size={14} className="activity-hover-arrow" />
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </section>
 
                         <aside className="system-health-panel">
                             <div className="health-panel-header">
                                 <h3>Engine & Service Quota</h3>
-                                <span className="badge-online">Online</span>
+                                {servicesOnline ? (
+                                    <span className="badge-online">Online</span>
+                                ) : (
+                                    <span className="badge-offline">Degraded</span>
+                                )}
                             </div>
 
                             <div className="health-status-items">
                                 <div className="health-item-row">
                                     <div className="health-item-meta">
                                         <span className="health-item-name">
-                                            <Database size={14} color="#0284c7" /> Vector Store
+                                            <Database size={14} color="var(--accent)" /> Vector Store
                                             (RAG)
                                         </span>
-                                        <small>FastAPI Server connected</small>
+                                        <small>
+                                            {loading
+                                                ? "Checking connection…"
+                                                : ragOnline
+                                                  ? `${docStats.indexed}/${docStats.total} docs indexed`
+                                                  : "Vector store unreachable"}
+                                        </small>
                                     </div>
-                                    <span className="health-value-green">142ms</span>
+                                    <span
+                                        className={
+                                            ragOnline ? "health-value-green" : "health-value-red"
+                                        }
+                                    >
+                                        {loading
+                                            ? "…"
+                                            : ragOnline
+                                              ? ragLatency !== null
+                                                  ? `${ragLatency}ms`
+                                                  : "—"
+                                              : "Offline"}
+                                    </span>
                                 </div>
 
                                 <div className="health-item-row">
                                     <div className="health-item-meta">
                                         <span className="health-item-name">
-                                            <Terminal size={14} color="#059669" /> Inspection
-                                            Sandbox
+                                            <Terminal size={14} color="var(--success)" /> Backend
+                                            API
                                         </span>
-                                        <small>Read-only isolated container</small>
+                                        <small>
+                                            {loading
+                                                ? "Checking connection…"
+                                                : backendOnline
+                                                  ? "Spring Boot services connected"
+                                                  : "Backend unreachable"}
+                                        </small>
                                     </div>
-                                    <span className="health-value-green">Healthy</span>
+                                    <span
+                                        className={
+                                            backendOnline
+                                                ? "health-value-green"
+                                                : "health-value-red"
+                                        }
+                                    >
+                                        {loading
+                                            ? "…"
+                                            : backendOnline
+                                              ? backendLatency !== null
+                                                  ? `${backendLatency}ms`
+                                                  : "—"
+                                              : "Offline"}
+                                    </span>
                                 </div>
 
                                 <div className="health-item-row">
                                     <div className="health-item-meta">
                                         <span className="health-item-name">
-                                            <Zap size={14} color="#f59e0b" /> Daily AI Audits
+                                            <Zap size={14} color="var(--warning)" /> Task
+                                            Throughput
                                         </span>
-                                        <small>18 / 100 queries consumed today</small>
+                                        <small>
+                                            {loading
+                                                ? "Loading tasks…"
+                                                : `${devStats.doneTasks} / ${devStats.totalTasks} tasks completed`}
+                                        </small>
                                     </div>
                                     <div className="quota-progress-track">
-                                        <div className="quota-fill-bar" style={{ width: "18%" }} />
+                                        <div
+                                            className="quota-fill-bar"
+                                            style={{
+                                                width: `${devStats.completion ?? 0}%`,
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="health-footer-info">
                                 <span>
-                                    Tenant: <strong>prism-prod-default</strong>
+                                    Workspace: <strong>{currentWorkspaceName || "—"}</strong>
                                 </span>
                                 <span>
-                                    Region: <strong>ap-southeast-1</strong>
+                                    Workspaces:{" "}
+                                    <strong>{loading ? "…" : workspaces.length}</strong>
                                 </span>
                             </div>
                         </aside>
@@ -720,7 +1059,7 @@ const Overview = () => {
                     <div className="quick-audit-dialog" onClick={(e) => e.stopPropagation()}>
                         <div className="dialog-header-bar">
                             <div className="dialog-title-wrap">
-                                <Code2 size={18} color="#0284c7" />
+                                <Code2 size={18} color="var(--accent)" />
                                 <strong>Quick Code Snippet Audit</strong>
                             </div>
                             <button
@@ -792,7 +1131,7 @@ const Overview = () => {
                                     setIsCmdOpen(false);
                                 }}
                             >
-                                <Terminal size={16} color="#0284c7" />
+                                <Terminal size={16} color="var(--accent)" />
                                 <span>Developer Hub Workspace</span>
                                 <span className="cmd-subtext-note">
                                     Engineering Sandboxes, Projects & Code Audits
@@ -806,7 +1145,7 @@ const Overview = () => {
                                     setIsCmdOpen(false);
                                 }}
                             >
-                                <GraduationCap size={16} color="#059669" />
+                                <GraduationCap size={16} color="var(--success)" />
                                 <span>Academy Hub Workspace</span>
                                 <span className="cmd-subtext-note">
                                     Courseware RAG, Socratic Tutoring & Quizzes
@@ -822,7 +1161,7 @@ const Overview = () => {
                                     setIsCmdOpen(false);
                                 }}
                             >
-                                <Code2 size={16} color="#0284c7" />
+                                <Code2 size={16} color="var(--accent)" />
                                 <span>Source Code Review</span>
                                 <span className="cmd-subtext-note">
                                     Static Inspection & Vulnerability Detection
@@ -836,7 +1175,7 @@ const Overview = () => {
                                     setIsCmdOpen(false);
                                 }}
                             >
-                                <PenTool size={16} color="#0284c7" />
+                                <PenTool size={16} color="var(--accent)" />
                                 <span>Architecture Canvas</span>
                                 <span className="cmd-subtext-note">
                                     System Topology & Data Flow
@@ -850,7 +1189,7 @@ const Overview = () => {
                                     setIsCmdOpen(false);
                                 }}
                             >
-                                <BookOpen size={16} color="#0284c7" />
+                                <BookOpen size={16} color="var(--accent)" />
                                 <span>Knowledge Assistant</span>
                                 <span className="cmd-subtext-note">RAG Architecture Documents</span>
                             </button>
@@ -864,7 +1203,7 @@ const Overview = () => {
                                     setIsCmdOpen(false);
                                 }}
                             >
-                                <GraduationCap size={16} color="#059669" />
+                                <GraduationCap size={16} color="var(--success)" />
                                 <span>Code Tutor</span>
                                 <span className="cmd-subtext-note">
                                     Interactive Socratic Mentoring
@@ -878,7 +1217,7 @@ const Overview = () => {
                                     setIsCmdOpen(false);
                                 }}
                             >
-                                <Sparkles size={16} color="#059669" />
+                                <Sparkles size={16} color="var(--success)" />
                                 <span>Exam & Quiz Prep</span>
                                 <span className="cmd-subtext-note">
                                     Practice Assessments from Courseware
@@ -893,7 +1232,11 @@ const Overview = () => {
             <UserProfileModal
                 isOpen={activeModal === "profile_details"}
                 onClose={() => setActiveModal(null)}
-                session={session}
+                session={sessionUser}
+                workspaceName={currentWorkspaceName}
+                workspaceCount={workspaces.length}
+                docStats={docStats}
+                chunkTotal={docStats.chunkTotal}
             />
         </div>
     );

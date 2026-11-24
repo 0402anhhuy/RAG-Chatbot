@@ -4,15 +4,7 @@ import { academyToolApi } from "../../../../../api";
 import CustomSelector from "../../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../../context/ToastContext";
 import "./EduWorkspaces.css";
-
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
-};
+import { getSessionUser } from "../../../../../components/common/utils/session";
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 

@@ -9,9 +9,10 @@ import {
     Shield,
     Search,
     Globe,
-    Sun,
     Menu,
 } from "lucide-react";
+import { useTheme } from "../../../../context/ThemeContext";
+import ThemePicker from "../../../../components/common/theme/ThemePicker";
 import "./HubSidebar.css";
 
 const NAV_ITEMS = [
@@ -91,10 +92,12 @@ const HubSidebar = ({ activeTab, onTabChange, session, isCollapsed = false, onTo
                             <Globe size={14} />
                             <span>English</span>
                         </button>
-                        <button type="button" className="footer-action-row">
-                            <Sun size={14} />
-                            <span>Theme</span>
-                        </button>
+                        <ThemePicker
+                            direction="up"
+                            showLabel
+                            iconSize={14}
+                            triggerClassName="footer-action-row"
+                        />
                     </>
                 )}
 

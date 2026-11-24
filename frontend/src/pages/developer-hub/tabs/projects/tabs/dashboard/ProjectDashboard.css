@@ -1,6 +1,6 @@
 .project-dashboard-viewport {
     max-width: 1400px;
-    margin: 0 auto;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -19,10 +19,10 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background-color: #18181b;
-    color: #ffffff;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
     border: none;
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 7px 16px;
     font-size: 0.8rem;
     font-weight: 600;
@@ -31,34 +31,34 @@
 }
 
 .btn-open-workbench-solid:hover {
-    background-color: #27272a;
+    background-color: var(--solid-invert-bg-hover);
 }
 
 .btn-create-task-outline {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 7px 16px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.12s ease;
 }
 
 .btn-create-task-outline:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
 }
 
 /* Continue Card */
 .dashboard-continue-card {
-    background-color: #f0fdf4;
-    border: 1px solid #dcfce7;
-    border-radius: 12px;
+    background-color: var(--accent-soft);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    border-radius: 10px;
     padding: 20px 24px;
     display: flex;
     align-items: center;
@@ -69,8 +69,8 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background-color: #d1fae5;
-    color: #059669;
+    background-color: rgba(var(--accent-rgb), 0.16);
+    color: var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -84,7 +84,7 @@
 .continue-eyebrow {
     font-size: 0.65rem;
     font-weight: 700;
-    color: #059669;
+    color: var(--accent);
     letter-spacing: 0.05em;
 }
 
@@ -92,23 +92,23 @@
     margin: 2px 0 4px;
     font-size: 1.05rem;
     font-weight: 600;
-    color: #064e3b;
+    color: var(--text-primary);
 }
 
 .continue-content-meta p {
     margin: 0;
     font-size: 0.78rem;
-    color: #047857;
+    color: var(--text-muted);
 }
 
 .btn-continue-green {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background-color: #059669;
-    color: #ffffff;
+    background-color: var(--accent);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 8px 20px;
     font-size: 0.82rem;
     font-weight: 600;
@@ -117,7 +117,7 @@
 }
 
 .btn-continue-green:hover {
-    background-color: #047857;
+    background-color: var(--accent-hover);
 }
 
 /* Lưới 3 Thẻ KPI */
@@ -128,9 +128,9 @@
 }
 
 .kpi-surface-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 16px 20px;
     display: flex;
     flex-direction: column;
@@ -148,17 +148,17 @@
 .kpi-big-number {
     font-size: 1.55rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     line-height: 1;
 }
 
 .kpi-header-icon {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .kpi-label {
     font-size: 0.76rem;
-    color: #64748b;
+    color: var(--text-muted);
     margin-top: 4px;
 }
 
@@ -166,23 +166,23 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
     font-size: 0.68rem;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border);
     align-self: flex-start;
     margin-top: 6px;
 }
 
 /* My Tasks Area */
 .dashboard-my-tasks-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 22px 24px;
     display: flex;
     flex-direction: column;
@@ -192,30 +192,30 @@
     margin: 0 0 20px;
     font-size: 0.95rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .my-tasks-empty-panel {
     text-align: center;
     padding: 40px 0;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .my-tasks-empty-panel p {
     margin: 0 0 6px;
     font-size: 0.84rem;
-    color: #334155;
+    color: var(--text-secondary);
 }
 
 .my-tasks-empty-panel small {
     font-size: 0.76rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .inline-kanban-link {
     background: transparent;
     border: none;
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
     padding: 0;
     cursor: pointer;
@@ -223,27 +223,17 @@
 }
 
 @media (max-width: 1080px) {
-    .dashboard-stats-four-grid {
-        grid-template-columns: 1fr;
+    .dashboard-top-action-bar {
+        flex-wrap: wrap;
+        gap: 10px;
     }
-}
 
-/* Một dòng task được giao cho người đang xem (My Tasks) */
-.my-task-row {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 6px 0;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 0.8rem;
-    color: #334155;
-}
+    .dashboard-continue-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-.my-task-row:last-child {
-    border-bottom: none;
-}
-
-.my-task-row small {
-    font-size: 0.7rem;
-    color: #94a3b8;
+    .dashboard-stats-four-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

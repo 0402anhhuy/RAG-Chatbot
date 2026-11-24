@@ -1,23 +1,24 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
     ArrowLeft,
     ArrowRight,
-    Check,
     Eye,
     EyeOff,
     Lock,
     Mail,
     Phone,
     ShieldCheck,
-    Sparkles,
     User,
     UserPlus,
     Bot,
 } from "lucide-react";
 import { authApi } from "../../api";
+import { getSessionUser } from "../../components/common/utils/session";
 import { useToast } from "../../context/ToastContext";
 import BrandLogo from "../../components/common/logo/BrandLogo";
+import AuthDecor from "./AuthDecor";
+import { useShowcaseEntrance } from "./motionPrefs";
 import {
     validatePhone,
     validateEmail,
@@ -152,12 +153,16 @@ const Register = () => {
         }
     };
 
+    const showcaseRef = useRef(null);
+    useShowcaseEntrance(showcaseRef);
+
     return (
         <div className="auth-screen">
             {/* Left Column Showcase Viewport */}
-            <div className="auth-showcase">
-                <BrandLogo size="md" title="Prism Studio" onClick={() => navigate("/overview")} />
-                <div className="showcase-copy">
+            <div className="auth-showcase" ref={showcaseRef}>
+                <AuthDecor />
+                <BrandLogo size="md" title="Prism Studio" onClick={() => navigate(getSessionUser().id ? "/overview" : "/landing")} />
+                <div className="showcase-copy" data-animate>
                     <p className="auth-eyebrow">DEVELOPER ONBOARDING</p>
                     <h1>
                         Equip your team
@@ -170,28 +175,7 @@ const Register = () => {
                     </p>
                 </div>
 
-                <div className="showcase-preview">
-                    <div className="preview-top">
-                        <span>
-                            <ShieldCheck size={14} color="#0284c7" /> Identity Verification
-                        </span>
-                        <span className="preview-dot">Secure Step</span>
-                    </div>
-                    <div className="preview-message">
-                        Complete your profile verification to connect your repositories.
-                    </div>
-                    <div className="preview-answer">
-                        <span className="answer-icon">
-                            <Sparkles size={14} />
-                        </span>
-                        <span>Multi-tenant workspace ready for deployment.</span>
-                    </div>
-                    <div className="preview-source">
-                        <Check size={11} /> Enterprise security standards compliant
-                    </div>
-                </div>
-
-                <div className="showcase-footer">
+                <div className="showcase-footer" data-animate>
                     <span>
                         <ShieldCheck size={14} /> Private and isolated
                     </span>

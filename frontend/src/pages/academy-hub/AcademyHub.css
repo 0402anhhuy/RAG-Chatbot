@@ -3,8 +3,8 @@
     width: 100vw;
     height: 100dvh;
     flex-direction: column;
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
@@ -27,7 +27,7 @@
 .edu-canvas-body {
     flex: 1;
     overflow-y: auto;
-    padding: 24px;
+    padding: 14px 20px 24px 12px;
 }
 
 .edu-canvas-body.no-padding-full {
@@ -37,13 +37,13 @@
 
 /* Sidebar Custom Badge cho Edu */
 .sidebar-hub-tag.edu-badge {
-    background-color: #ecfdf5;
-    color: #059669;
+    background-color: var(--success-soft);
+    color: var(--success);
 }
 
 .user-avatar-tag.edu-avatar {
-    background-color: #ecfdf5;
-    color: #059669;
+    background-color: var(--success-soft);
+    color: var(--success);
 }
 
 .btn-primary-edu {
@@ -51,10 +51,10 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background-color: #059669;
-    color: #ffffff;
+    background-color: var(--success);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -62,11 +62,11 @@
 }
 
 .btn-primary-edu:hover {
-    background-color: #047857;
+    background-color: var(--success-strong);
 }
 
 .navbar-metric-chip.streak-chip {
-    background-color: #fffbeb;
-    color: #b45309;
+    background-color: var(--warning-soft);
+    color: var(--warning-deep);
     font-weight: 600;
 }

@@ -1,39 +1,42 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     BadgeCheck,
-    Calendar,
     Check,
     Code2,
     Copy,
     Database,
-    ExternalLink,
     GraduationCap,
     KeyRound,
+    Library,
     Mail,
     Phone,
     Server,
-    Shield,
     ShieldCheck,
-    User,
     X,
-    Zap,
 } from "lucide-react";
 import "./UserProfileModal.css";
 
-const UserProfileModal = ({ isOpen, onClose, session }) => {
+const UserProfileModal = ({
+    isOpen,
+    onClose,
+    session,
+    workspaceName,
+    workspaceCount,
+    docStats,
+    chunkTotal,
+}) => {
     const [copiedField, setCopiedField] = useState(null);
+    const navigate = useNavigate();
 
     if (!isOpen) return null;
 
     const user = {
-        name: session?.name || "Huy Tran",
-        email: session?.email || "huy@prismstudio.dev",
-        phone: session?.phone || "+84 (0) 90 123 4567",
+        name: session?.name || "—",
+        email: session?.email || "—",
+        phone: session?.phone || "—",
         role: session?.role || "USER",
-        id: session?.id || "usr_94a28f7c10b",
-        tenant: "prism-prod-default",
-        joinedDate: "September 2026",
-        region: "ap-southeast-1 (HCMC)",
+        id: session?.id || "—",
     };
 
     const handleCopy = (text, fieldName) => {
@@ -53,7 +56,7 @@ const UserProfileModal = ({ isOpen, onClose, session }) => {
                         </div>
                         <div className="header-text-block">
                             <h2>User Identity & Access Controls</h2>
-                            <p>Credential profile, permissions, and service resource quota</p>
+                            <p>Credential profile, permissions, and knowledge base usage</p>
                         </div>
                     </div>
                     <button type="button" className="close-action-btn" onClick={onClose}>
@@ -66,14 +69,16 @@ const UserProfileModal = ({ isOpen, onClose, session }) => {
                     {/* Identity Hero Card */}
                     <div className="identity-hero-card">
                         <div className="user-avatar-large">
-                            {user.name.slice(0, 2).toUpperCase()}
+                            {user.name !== "—" ? user.name.slice(0, 2).toUpperCase() : "—"}
                         </div>
                         <div className="identity-narrative">
                             <div className="name-status-row">
                                 <h3>{user.name}</h3>
-                                <span className="verified-pill">
-                                    <BadgeCheck size={13} /> Verified
-                                </span>
+                                {session?.active !== false && (
+                                    <span className="verified-pill">
+                                        <BadgeCheck size={13} /> Verified
+                                    </span>
+                                )}
                             </div>
                             <span className="identity-email">{user.email}</span>
                         </div>
@@ -91,18 +96,20 @@ const UserProfileModal = ({ isOpen, onClose, session }) => {
                             </div>
                             <div className="meta-tile-value-copy">
                                 <code>{user.id}</code>
-                                <button
-                                    type="button"
-                                    className="copy-mini-btn"
-                                    onClick={() => handleCopy(user.id, "id")}
-                                    title="Copy ID"
-                                >
-                                    {copiedField === "id" ? (
-                                        <Check size={13} color="#10b981" />
-                                    ) : (
-                                        <Copy size={13} />
-                                    )}
-                                </button>
+                                {user.id !== "—" && (
+                                    <button
+                                        type="button"
+                                        className="copy-mini-btn"
+                                        onClick={() => handleCopy(user.id, "id")}
+                                        title="Copy ID"
+                                    >
+                                        {copiedField === "id" ? (
+                                            <Check size={13} color="var(--success-bright)" />
+                                        ) : (
+                                            <Copy size={13} />
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -118,21 +125,21 @@ const UserProfileModal = ({ isOpen, onClose, session }) => {
 
                         <div className="meta-field-tile">
                             <div className="meta-tile-label">
-                                <Server size={13} />
-                                <span>Assigned Tenant</span>
+                                <Mail size={13} />
+                                <span>Email</span>
                             </div>
                             <div className="meta-tile-value">
-                                <code>{user.tenant}</code>
+                                <strong>{user.email}</strong>
                             </div>
                         </div>
 
                         <div className="meta-field-tile">
                             <div className="meta-tile-label">
-                                <Calendar size={13} />
-                                <span>Member Since</span>
+                                <Server size={13} />
+                                <span>Workspace</span>
                             </div>
                             <div className="meta-tile-value">
-                                <strong>{user.joinedDate}</strong>
+                                <code>{workspaceName || "—"}</code>
                             </div>
                         </div>
                     </section>
@@ -169,50 +176,55 @@ const UserProfileModal = ({ isOpen, onClose, session }) => {
                         </div>
                     </section>
 
-                    {/* AI & Resource Quota Tracking */}
+                    {/* Knowledge Base Usage — real numbers from backend */}
                     <section className="modal-section-group">
-                        <span className="section-small-title">RESOURCE USAGE & QUOTA</span>
+                        <span className="section-small-title">KNOWLEDGE BASE USAGE</span>
                         <div className="quota-metrics-container">
                             <div className="quota-card-row">
                                 <div className="quota-meta-header">
                                     <div className="quota-label-unit">
-                                        <Zap size={14} color="#f59e0b" />
-                                        <strong>Daily AI Audit Invocations</strong>
+                                        <Library size={14} color="var(--accent)" />
+                                        <strong>Documents</strong>
                                     </div>
-                                    <span className="quota-numeric-counter">18 / 100 used</span>
-                                </div>
-                                <div className="quota-bar-track">
-                                    <div
-                                        className="quota-bar-fill amber"
-                                        style={{ width: "18%" }}
-                                    />
+                                    <span className="quota-numeric-counter">
+                                        {(docStats?.total ?? 0).toLocaleString()} uploaded ·{" "}
+                                        {(docStats?.indexed ?? 0).toLocaleString()} indexed
+                                    </span>
                                 </div>
                             </div>
 
                             <div className="quota-card-row">
                                 <div className="quota-meta-header">
                                     <div className="quota-label-unit">
-                                        <Database size={14} color="#0284c7" />
-                                        <strong>Vector Embeddings Storage</strong>
+                                        <Database size={14} color="var(--accent)" />
+                                        <strong>Vector Chunks</strong>
                                     </div>
-                                    <span className="quota-numeric-counter">12.4 MB / 50 MB</span>
+                                    <span className="quota-numeric-counter">
+                                        {(chunkTotal ?? 0).toLocaleString()} chunks embedded
+                                    </span>
                                 </div>
-                                <div className="quota-bar-track">
-                                    <div
-                                        className="quota-bar-fill blue"
-                                        style={{ width: "24.8%" }}
-                                    />
+                            </div>
+
+                            <div className="quota-card-row">
+                                <div className="quota-meta-header">
+                                    <div className="quota-label-unit">
+                                        <Server size={14} color="var(--success)" />
+                                        <strong>Connected Workspaces</strong>
+                                    </div>
+                                    <span className="quota-numeric-counter">
+                                        {(workspaceCount ?? 0).toLocaleString()}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </section>
                 </div>
 
-                {/* Modal Footer */}    
+                {/* Modal Footer */}
                 <footer className="profile-modal-footer">
                     <div className="footer-status-pill">
                         <span className="status-live-dot" />
-                        <span>Active Session · {user.region}</span>
+                        <span>Active Session</span>
                     </div>
                     <button
                         type="button"

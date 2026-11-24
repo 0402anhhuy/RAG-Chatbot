@@ -16,5 +16,5 @@ img.document-type-icon {
 
 /* Giấy nền và ô thương hiệu có bóng nhẹ để nổi khối như icon ứng dụng */
 .document-type-icon .dti-sheet {
-    filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.08));
+    filter: drop-shadow(0 1px 1px rgba(var(--shadow-rgb), 0.08));
 }

@@ -3,15 +3,8 @@ import { ArrowLeft, BookOpen, Loader2, Search, Sparkles } from "lucide-react";
 import { academyToolApi } from "../../../../../api";
 import { useToast } from "../../../../../context/ToastContext";
 import "./EduWorkspaces.css";
+import { getSessionUser } from "../../../../../components/common/utils/session";
 
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
-};
 
 /**
  * Tra cứu trên chính tài liệu người học đã upload. BE tìm từ khoá trong nội dung
@@ -107,7 +100,7 @@ export const CoursewareRAGWorkspace = ({ onBackToHub }) => {
                             <div key={citation.documentId} className="rag-citation-card">
                                 <div className="citation-top">
                                     <div className="citation-source">
-                                        <BookOpen size={14} color="#7c3aed" />
+                                        <BookOpen size={14} color="var(--violet)" />
                                         <strong>{citation.name}</strong>
                                         <span className="citation-page">
                                             {citation.courseCode || "GEN"}

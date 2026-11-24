@@ -1,4 +1,7 @@
-import { Compass, HelpCircle, BookOpen, ChevronsUpDown } from "lucide-react";
+import { Compass, HelpCircle, BookOpen, ChevronsUpDown, Terminal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import Breadcrumb from "../../../../../../components/common/breadcrumb/Breadcrumb";
+import TriangleField from "../../../../../../components/common/canvas/TriangleField";
 import "./ProjectNavbar.css";
 
 const ProjectNavbar = ({
@@ -9,22 +12,33 @@ const ProjectNavbar = ({
     onCreateTask,
     onBackToProjects,
 }) => {
+    const navigate = useNavigate();
+
     return (
         <header className="vibe-project-navbar">
+            {/* Nền tam giác động nhẹ, giống navbar của Hub */}
+            <TriangleField />
+
             {/* Breadcrumb bên trái có dropdown project */}
             <div className="navbar-breadcrumb-cluster">
-                <span className="crumb-brand" onClick={onBackToProjects}>
-                    VibeFlow
-                </span>
-                <span className="crumb-slash">/</span>
-
-                <button type="button" className="crumb-project-dropdown" onClick={onSwitchProject}>
-                    <strong>{projectName}</strong>
-                    <ChevronsUpDown size={13} className="dropdown-caret" />
-                </button>
-
-                <span className="crumb-slash">/</span>
-                <span className="crumb-page-active">{activeTabName}</span>
+                <Breadcrumb
+                    onHomeClick={() => navigate("/overview")}
+                    items={[
+                        ...(onBackToProjects
+                            ? [{ label: "Projects", onClick: onBackToProjects }]
+                            : []),
+                        {
+                            label: (
+                                <>
+                                    <strong>{projectName}</strong>
+                                    <ChevronsUpDown size={13} className="dropdown-caret" />
+                                </>
+                            ),
+                            onClick: onSwitchProject,
+                        },
+                        { label: activeTabName },
+                    ]}
+                />
             </div>
 
             {/* Cụm điều khiển bên phải */}
@@ -41,6 +55,15 @@ const ProjectNavbar = ({
                         <BookOpen size={13} /> Ctrl H
                     </span>
                 </div>
+
+                <button
+                    type="button"
+                    className="btn-open-workbench-nav"
+                    onClick={onOpenWorkbench}
+                >
+                    <Terminal size={14} />
+                    <span>Open Workbench</span>
+                </button>
             </div>
         </header>
     );

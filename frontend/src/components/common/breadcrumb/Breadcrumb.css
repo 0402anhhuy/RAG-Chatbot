@@ -1,0 +1,70 @@
+.prism-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.crumb-home {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.crumb-home:hover {
+    opacity: 0.82;
+}
+
+.crumb-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.crumb-separator {
+    color: var(--text-faint);
+    font-size: 0.82rem;
+    user-select: none;
+}
+
+.crumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 260px;
+    padding: 3px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition:
+        color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.crumb-link:hover {
+    color: var(--accent);
+    background-color: var(--accent-soft);
+}
+
+.crumb-current {
+    max-width: 260px;
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

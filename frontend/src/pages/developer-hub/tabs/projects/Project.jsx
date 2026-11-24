@@ -3,14 +3,7 @@ import { Folder, Search, Star, Play, Archive, ExternalLink, GitBranch, Plus } fr
 import { projectApi } from "../../../../api";
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import "./Project.css";
-
-const getOwnerId = () => {
-    try {
-        return JSON.parse(localStorage.getItem("rag_session") || "{}")?.user?.id;
-    } catch {
-        return null;
-    }
-};
+import { getSessionUserId } from "../../../../components/common/utils/session";
 
 const toProjectViewModel = (project) => ({
     ...project,
@@ -52,7 +45,7 @@ const Project = ({ onOpenProject, onNewProjectClick, refreshKey = 0 }) => {
                 setLoading(true);
                 setError("");
                 // Gọi API thực tế từ backend, không dùng mock data
-                const data = await projectApi.list({ ownerId: getOwnerId() });
+                const data = await projectApi.list({ ownerId: getSessionUserId() });
                 if (!cancelled) setProjects((data || []).map(toProjectViewModel));
             } catch (err) {
                 if (!cancelled) setError(err.message || "Unable to load projects.");

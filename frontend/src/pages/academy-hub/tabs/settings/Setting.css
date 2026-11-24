@@ -1,6 +1,6 @@
 .edu-settings-bounds {
     max-width: 1080px;
-    margin: 0 auto;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 18px;
@@ -18,13 +18,13 @@
 .edu-settings-header h2 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     margin: 0 0 4px;
 }
 
 .edu-settings-header span {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .btn-save-settings {
@@ -32,10 +32,10 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    background-color: #059669;
-    color: #ffffff;
+    background-color: var(--success);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -46,11 +46,11 @@
 }
 
 .btn-save-settings:hover {
-    background-color: #047857;
+    background-color: var(--success-strong);
 }
 
 .btn-save-settings.saved {
-    background-color: #0f172a;
+    background-color: var(--solid-invert-bg);
 }
 
 /* 2. Split Settings Grid */
@@ -63,9 +63,9 @@
 
 /* Left Sub-nav Column */
 .settings-nav-column {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 6px;
     display: flex;
     flex-direction: column;
@@ -77,10 +77,10 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    border-radius: 6px;
+    border-radius: 10px;
     border: none;
     background: transparent;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
@@ -89,21 +89,21 @@
 }
 
 .settings-nav-item:hover {
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: var(--surface-sunken);
+    color: var(--text-primary);
 }
 
 .settings-nav-item.active {
-    background-color: #ecfdf5;
-    color: #059669;
+    background-color: var(--success-soft);
+    color: var(--success);
     font-weight: 600;
 }
 
 /* Right Content Panel */
 .settings-content-panel {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 9px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 24px;
 }
 
@@ -114,7 +114,7 @@
 }
 
 .section-narrative-header {
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--surface-sunken-2);
     padding-bottom: 12px;
 }
 
@@ -122,13 +122,13 @@
     margin: 0 0 4px;
     font-size: 1rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .section-narrative-header p {
     margin: 0;
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 /* Form Fields Grid */
@@ -151,17 +151,17 @@
 .input-field-unit label {
     font-size: 0.74rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary);
 }
 
 .input-field-unit input,
 .select-dropdown-unit select {
     padding: 8px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
     font-size: 0.8rem;
-    color: #0f172a;
-    background-color: #ffffff;
+    color: var(--text-primary);
+    background-color: var(--surface-card);
     outline: none;
     transition: border-color 0.15s ease;
     font-family: inherit;
@@ -169,15 +169,15 @@
 
 .input-field-unit input:focus,
 .select-dropdown-unit select:focus {
-    border-color: #059669;
-    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+    border-color: var(--success);
+    box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.1);
 }
 
 /* Setting Card Blocks */
 .setting-card-block {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 14px 16px;
     display: flex;
     flex-direction: column;
@@ -187,7 +187,7 @@
 .block-title {
     font-size: 0.78rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .options-radio-cluster {
@@ -201,35 +201,35 @@
     align-items: flex-start;
     gap: 10px;
     padding: 10px 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    background-color: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--surface-card);
     cursor: pointer;
     transition: border-color 0.12s ease;
 }
 
 .radio-card-choice input[type="radio"] {
     margin-top: 3px;
-    accent-color: #059669;
+    accent-color: var(--success);
 }
 
 .radio-card-choice strong {
     display: block;
     font-size: 0.8rem;
-    color: #0f172a;
+    color: var(--text-primary);
     margin-bottom: 2px;
 }
 
 .radio-card-choice p {
     margin: 0;
     font-size: 0.74rem;
-    color: #64748b;
+    color: var(--text-muted);
     line-height: 1.4;
 }
 
 .radio-card-choice.selected {
-    border-color: #059669;
-    background-color: #ecfdf5;
+    border-color: var(--success);
+    background-color: var(--success-soft);
 }
 
 .setting-card-block.toggle-row {
@@ -240,7 +240,7 @@
 
 .setting-card-block.toggle-row strong {
     font-size: 0.8rem;
-    color: #0f172a;
+    color: var(--text-primary);
     display: block;
     margin-bottom: 2px;
 }
@@ -248,13 +248,13 @@
 .setting-card-block.toggle-row p {
     margin: 0;
     font-size: 0.74rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .setting-checkbox-toggle {
     width: 18px;
     height: 18px;
-    accent-color: #059669;
+    accent-color: var(--success);
     cursor: pointer;
 }
 
@@ -268,27 +268,27 @@
 .range-field-header label {
     font-size: 0.78rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .range-metric-chip {
     font-size: 0.72rem;
     font-weight: 700;
-    color: #059669;
-    background-color: #ecfdf5;
+    color: var(--success);
+    background-color: var(--success-soft);
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 10px;
 }
 
 .slider-range-input {
     width: 100%;
-    accent-color: #059669;
+    accent-color: var(--success);
     cursor: pointer;
 }
 
 .range-subtext {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 /* Responsive */

@@ -19,31 +19,31 @@
 .filter-pill-switch-group {
     display: flex;
     align-items: center;
-    background-color: #f1f5f9;
+    background-color: var(--surface-sunken-2);
     padding: 3px;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    border: 1px solid var(--border);
 }
 
 .btn-filter-pill {
     padding: 5px 14px;
     background: transparent;
     border: none;
-    border-radius: 18px;
+    border-radius: 999px;;
     font-size: 0.78rem;
     font-weight: 500;
-    color: #475569;
+    color: var(--text-tertiary);
     cursor: pointer;
     transition: all 0.12s ease;
 }
 
 .btn-filter-pill:hover {
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .btn-filter-pill.active {
-    background-color: #0f172a;
-    color: #ffffff;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
     font-weight: 600;
 }
 
@@ -52,10 +52,10 @@
     align-items: center;
     gap: 6px;
     padding: 6px 16px;
-    background-color: #0f172a;
-    color: #ffffff;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
     border: none;
-    border-radius: 20px;
+    border-radius: 16px;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -63,7 +63,7 @@
 }
 
 .btn-new-agent-black:hover {
-    background-color: #1e293b;
+    background-color: var(--solid-invert-bg-hover);
 }
 
 /* Selector filter (CustomSelector dùng chung) */
@@ -76,7 +76,7 @@
 /* Dòng đếm agent */
 .agents-count-row {
     font-size: 0.76rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 /* Trạng thái loading / lỗi */
@@ -85,11 +85,11 @@
     align-items: center;
     gap: 8px;
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .agents-state-error {
-    color: #b91c1c;
+    color: var(--danger-deep);
 }
 
 .agents-empty-well {
@@ -99,10 +99,10 @@
     justify-content: center;
     gap: 8px;
     padding: 36px 16px;
-    border: 1px dashed #cbd5e1;
-    border-radius: 12px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .agents-spin {
@@ -120,19 +120,19 @@
     align-items: center;
     gap: 6px;
     padding: 4px 12px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     font-size: 0.76rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.12s ease;
 }
 
 .btn-import-agent-white:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
 }
 
 /* Header Thẻ */
@@ -146,23 +146,23 @@
 .btn-card-more-menu {
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
-    border-radius: 4px;
+    border-radius: 10px;
     display: grid;
     place-items: center;
     transition: background-color 0.12s ease;
 }
 
 .btn-card-more-menu:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
 }
 
 .btn-card-remove:hover {
-    background-color: #fee2e2;
-    color: #ef4444;
+    background-color: var(--danger-soft);
+    color: var(--danger);
 }
 
 .btn-card-remove:disabled {
@@ -178,9 +178,9 @@
 }
 
 .agent-card-surface {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 16px 20px;
     display: flex;
     flex-direction: column;
@@ -188,7 +188,7 @@
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.03);
     transition:
         transform 0.12s ease,
         box-shadow 0.12s ease;
@@ -196,7 +196,7 @@
 
 .agent-card-surface:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+    box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.07);
 }
 
 /* Dải màu line ở mép đỉnh đầu */
@@ -225,7 +225,7 @@
 
 .agent-name-text {
     font-size: 0.95rem;
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
     letter-spacing: -0.01em;
 }
@@ -234,7 +234,7 @@
 .agent-desc-text {
     margin: 0;
     font-size: 0.76rem;
-    color: #64748b;
+    color: var(--text-muted);
     line-height: 1.45;
     min-height: 54px;
     display: -webkit-box;
@@ -255,11 +255,11 @@
 .agent-badge-type {
     font-size: 0.65rem;
     font-weight: 600;
-    color: #334155;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    color: var(--text-secondary);
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 10px;
     letter-spacing: 0.04em;
 }
 
@@ -268,21 +268,19 @@
     align-items: center;
     gap: 4px;
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .perm-shield-icon {
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 @media (max-width: 1100px) {
     .agents-cards-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-}
 
-@media (max-width: 720px) {
-    .agents-cards-grid {
-        grid-template-columns: 1fr;
+    .agents-filter-control-bar {
+        flex-wrap: wrap;
     }
 }

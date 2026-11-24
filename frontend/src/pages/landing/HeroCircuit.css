@@ -1,0 +1,251 @@
+/* HeroCircuit — cụm 3 khối bên phải hero:
+   knowledge.graph (beam bên trong) · diagram nối · flashcard.
+   Nền chỉ glow + lưới link mờ, không beam. Hiển thị độc lập CSS,
+   không phụ thuộc GSAP. */
+
+.hero-circuit {
+    position: absolute;
+    top: 30px;
+    bottom: 26px;
+    left: 50%;
+    right: -6px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Quầng radial thở */
+.circuit-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    will-change: transform, opacity;
+}
+
+.circuit-glow-a {
+    top: 4%;
+    right: 6%;
+    width: 280px;
+    height: 240px;
+    background: radial-gradient(closest-side, var(--accent-soft), transparent 72%);
+    animation: circuit-breathe 7.5s ease-in-out infinite;
+}
+
+.circuit-glow-b {
+    bottom: 8%;
+    left: 16%;
+    width: 240px;
+    height: 220px;
+    background: radial-gradient(closest-side, var(--violet-soft-2), transparent 72%);
+    animation: circuit-breathe 9.5s ease-in-out 1.4s infinite;
+}
+
+@keyframes circuit-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.75; }
+    50% { transform: scale(1.14); opacity: 1; }
+}
+
+/* Nền: KHÔNG graph/beam — chỉ để glow */
+
+/* ---- Khối chung ---- */
+.circuit-panel,
+.circuit-block .mock-panel {
+    box-shadow: var(--shadow-md);
+}
+
+.circuit-panel {
+    position: absolute;
+    background: color-mix(in srgb, var(--surface-card) 88%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    overflow: hidden;
+}
+
+.circuit-chrome {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-faint);
+    background: color-mix(in srgb, var(--surface-sunken) 72%, transparent);
+}
+
+.circuit-chrome i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--border-strong);
+}
+
+.circuit-chrome i:first-child { background: var(--danger); opacity: 0.5; }
+.circuit-chrome i:nth-child(2) { background: var(--warning); opacity: 0.5; }
+.circuit-chrome i:nth-child(3) { background: var(--success); opacity: 0.5; }
+
+.circuit-chrome-title {
+    margin-left: 5px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+}
+
+.circuit-badge {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--info-border);
+    padding: 1px 7px;
+    border-radius: var(--radius-pill);
+}
+
+/* ---- Đúng 3 khối XẾP LAYER — graph lớn nhất nằm lớp dưới ---- */
+
+/* Lớp trên: chat — dịch trái để lộ khối graph, chỉ đè nhẹ mép graph */
+.circuit-chat {
+    top: 0;
+    left: 0;
+    width: min(340px, 42%);
+    z-index: 3;
+    animation: circuit-drift 10s ease-in-out infinite;
+}
+
+/* Lớp dưới: knowledge.graph — hình chữ nhật LỚN HƠN hẳn 2 khối còn lại */
+.circuit-graph {
+    top: 10%;
+    right: 3%;
+    width: min(470px, 56%);
+    transform: rotate(-2deg);
+    animation: circuit-drift 11s ease-in-out infinite;
+    z-index: 1;
+}
+
+.circuit-svg {
+    display: block;
+    width: 100%;
+    padding: 6px 4px 8px;
+}
+
+.circuit-beam-track {
+    fill: none;
+    stroke: none;
+}
+
+/* Line nét đứt nối node — đậm, rõ */
+.circuit-link {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    opacity: 0.5;
+    stroke-dasharray: 5 6;
+    stroke-linecap: round;
+    animation: circuit-dash 22s linear infinite;
+}
+
+@keyframes circuit-dash {
+    to { stroke-dashoffset: -180; }
+}
+
+.circuit-beam {
+    fill: var(--accent-bright);
+    filter: drop-shadow(0 0 5px var(--accent-bright));
+    opacity: 0.9;
+}
+
+.beam-2 {
+    fill: var(--violet-bright);
+    filter: drop-shadow(0 0 5px var(--violet-bright));
+}
+
+.circuit-node .circuit-node-dot {
+    fill: var(--surface-card);
+    stroke: var(--border-strong);
+    stroke-width: 1.2;
+}
+
+.circuit-node .circuit-node-ring {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1;
+    opacity: 0.35;
+}
+
+.circuit-node.hot-accent .circuit-node-dot { stroke: var(--accent); }
+.circuit-node.hot-violet .circuit-node-dot { stroke: var(--violet); }
+.circuit-node.hot-violet .circuit-node-ring { stroke: var(--violet); }
+
+.circuit-node {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: circuit-node-pulse 3.6s ease-in-out infinite;
+}
+
+@keyframes circuit-node-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.16); }
+}
+
+/* ---- Lớp giữa: canvas diagram nối, đè lên graph ---- */
+.circuit-block {
+    position: absolute;
+}
+
+.circuit-block .mock-panel {
+    width: 100%;
+}
+
+.circuit-diagram {
+    top: 68%;
+    left: 32%;
+    width: min(360px, 44%);
+    transform: rotate(2deg);
+    animation: circuit-drift 12s ease-in-out 0.7s infinite;
+    z-index: 2;
+}
+
+@keyframes circuit-drift {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -8px; }
+}
+
+/* ---- Responsive + reduced motion ---- */
+@media (max-width: 1279px) {
+    .hero-circuit {
+        left: 52%;
+    }
+}
+
+@media (max-width: 1020px) {
+    .hero-circuit {
+        position: static;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: min(420px, 100%);
+        margin: 0 auto;
+    }
+
+    .circuit-glow,
+    .circuit-web {
+        display: none;
+    }
+
+    .circuit-panel,
+    .circuit-block {
+        position: static;
+        width: 100%;
+        transform: none;
+        animation: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .circuit-glow,
+    .circuit-graph,
+    .circuit-chat,
+    .circuit-diagram,
+    .circuit-link,
+    .circuit-node {
+        animation: none;
+    }
+}

@@ -2,7 +2,7 @@
 
 .edu-tools-bounds {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 18px;
@@ -20,13 +20,13 @@
 .edu-tools-header h2 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     margin: 0 0 4px;
 }
 
 .edu-tools-header span {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .edu-tools-active-chip {
@@ -35,9 +35,9 @@
     gap: 6px;
     padding: 5px 11px;
     border-radius: 999px;
-    background-color: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    color: #047857;
+    background-color: var(--success-soft);
+    border: 1px solid var(--success-border);
+    color: var(--success-strong);
     font-size: 0.72rem;
     font-weight: 600;
     white-space: nowrap;
@@ -50,17 +50,17 @@
     justify-content: center;
     gap: 8px;
     padding: 48px 16px;
-    background-color: #ffffff;
-    border: 1px dashed #e2e8f0;
+    background-color: var(--surface-card);
+    border: 1px dashed var(--border);
     border-radius: 10px;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.8rem;
     text-align: center;
 }
 
 .edu-tools-spinner {
     animation: edu-tools-spin 0.9s linear infinite;
-    color: #059669;
+    color: var(--success);
 }
 
 @keyframes edu-tools-spin {
@@ -85,8 +85,8 @@
     min-height: 196px;
     padding: 16px 18px 14px;
     text-align: left;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
     border-radius: 10px;
     cursor: pointer;
     font-family: inherit;
@@ -103,15 +103,15 @@
     position: absolute;
     inset: 0 0 auto 0;
     height: 3px;
-    background: linear-gradient(90deg, #059669, #0284c7);
+    background: linear-gradient(90deg, var(--success), var(--accent));
     opacity: 0;
     transition: opacity 0.15s ease;
 }
 
 .dev-tool-surface-card:hover,
 .dev-tool-surface-card:focus-visible {
-    border-color: #a7f3d0;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+    border-color: var(--success-border);
+    box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.07);
     transform: translateY(-2px);
     outline: none;
 }
@@ -122,7 +122,7 @@
 }
 
 .dev-tool-surface-card.is-blocked {
-    background-color: #fcfdff;
+    background-color: var(--surface-inset);
 }
 
 /* 4. Phần đầu card: icon + badge */
@@ -139,15 +139,15 @@
     justify-content: center;
     width: 38px;
     height: 38px;
-    border-radius: 9px;
+    border-radius: 10px;
     flex-shrink: 0;
 }
 
 .tool-category-badge {
     padding: 3px 8px;
-    border-radius: 4px;
-    background-color: #f1f5f9;
-    color: #475569;
+    border-radius: 10px;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
     font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -167,7 +167,7 @@
     margin: 0;
     font-size: 0.92rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     line-height: 1.35;
 }
 
@@ -175,7 +175,7 @@
     margin: 0;
     font-size: 0.76rem;
     line-height: 1.5;
-    color: #64748b;
+    color: var(--text-muted);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -188,13 +188,14 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    margin-top: 16px;
     padding-top: 12px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--surface-sunken-2);
 }
 
 .tool-health-meta {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -206,9 +207,9 @@
     align-items: center;
     gap: 5px;
     padding: 5px 11px;
-    border-radius: 5px;
-    background-color: #059669;
-    color: #ffffff;
+    border-radius: 10px;
+    background-color: var(--success);
+    color: var(--text-on-accent);
     font-size: 0.72rem;
     font-weight: 600;
     white-space: nowrap;
@@ -218,17 +219,17 @@
 
 .dev-tool-surface-card:hover .tool-launch-btn,
 .dev-tool-surface-card:focus-visible .tool-launch-btn {
-    background-color: #047857;
+    background-color: var(--success-strong);
 }
 
 /* Card chưa đủ điều kiện: nút trung tính để không hứa hẹn "chạy ngay" */
 .dev-tool-surface-card.is-blocked .tool-launch-btn {
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
 }
 
 .dev-tool-surface-card.is-blocked:hover .tool-launch-btn {
-    background-color: #e2e8f0;
+    background-color: var(--border);
 }
 
 /* 7. Màn hình hẹp */

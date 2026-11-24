@@ -1,7 +1,7 @@
 .workbench-sidebar {
     width: 220px;
-    background-color: #ffffff;
-    border-right: 1px solid #e2e8f0;
+    background-color: var(--frame-bg);
+    border-right: 1px solid var(--frame-border);
     display: flex;
     flex-direction: column;
     padding: 12px 10px;
@@ -34,10 +34,10 @@
     padding: 7px 10px;
     width: 100%;
     height: 36px;
-    border-radius: 6px;
+    border-radius: 10px;
     border: none;
     background: transparent;
-    color: #475569;
+    color: var(--text-tertiary);
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -46,8 +46,8 @@
 }
 
 .btn-wb-toggle-menu:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--frame-hover-bg);
+    color: var(--text-primary);
 }
 
 .collapsed-rail .wb-sidebar-brand-line {
@@ -72,10 +72,10 @@
     width: 100%;
     height: 34px;
     padding: 0 10px;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    color: #64748b;
+    background-color: var(--frame-field-bg);
+    border: 1px solid var(--frame-border);
+    border-radius: 10px;
+    color: var(--text-muted);
     font-size: 0.78rem;
     cursor: pointer;
     margin-bottom: 14px;
@@ -89,20 +89,20 @@
 
 .wb-sidebar-search-pill kbd {
     font-size: 0.65rem;
-    background-color: #ffffff;
+    background-color: var(--frame-key-bg);
     padding: 1px 5px;
-    border-radius: 3px;
-    border: 1px solid #cbd5e1;
-    font-family: monospace;
+    border-radius: 2px;
+    border: 1px solid var(--frame-border);
+    font-family: var(--font-mono);
 }
 
 .wb-sidebar-search-mini {
     width: 38px !important;
     height: 38px !important;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    color: #64748b;
+    background-color: var(--frame-field-bg);
+    border: 1px solid var(--frame-border);
+    border-radius: 10px;
+    color: var(--text-muted);
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -125,10 +125,10 @@
     gap: 10px;
     padding: 7px 10px;
     height: 36px;
-    border-radius: 6px;
+    border-radius: 10px;
     border: none;
     background: transparent;
-    color: #475569;
+    color: var(--text-tertiary);
     font-size: 0.82rem;
     font-weight: 500;
     cursor: pointer;
@@ -150,13 +150,13 @@
 }
 
 .wb-sidebar-nav-item:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--frame-hover-bg);
+    color: var(--text-primary);
 }
 
 .wb-sidebar-nav-item.active {
-    background-color: #e2e8f0;
-    color: #0f172a;
+    background-color: var(--frame-active-bg);
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -165,7 +165,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--frame-divider);
     padding-top: 10px;
     width: 100%;
     align-items: center;
@@ -178,11 +178,46 @@
     padding: 6px 8px;
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.76rem;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 10px;
     width: 100%;
+    transition: background-color 0.12s ease;
+}
+
+.wb-footer-action-row:hover {
+    background-color: var(--frame-hover-bg);
+    color: var(--text-primary);
+}
+
+/* Nút Theme trong footer: trải full-width, căn trái đều hàng English */
+.wb-sidebar-footer-cluster .theme-picker {
+    width: 100%;
+}
+
+.wb-sidebar-footer-cluster .theme-picker-trigger {
+    width: 100%;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    transition:
+        background-color 0.12s ease,
+        color 0.12s ease;
+}
+
+.wb-sidebar-footer-cluster .theme-picker-trigger:hover,
+.wb-sidebar-footer-cluster .theme-picker-trigger.open {
+    background-color: var(--frame-hover-bg);
+    border-color: transparent;
+    color: var(--text-primary);
+}
+
+.wb-sidebar-footer-cluster .theme-picker-label {
+    font-weight: 400;
 }
 
 .wb-sidebar-profile-card {
@@ -190,7 +225,7 @@
     align-items: center;
     gap: 8px;
     padding: 6px 8px;
-    border-radius: 6px;
+    border-radius: 10px;
     width: 100%;
     margin-top: 4px;
     box-sizing: border-box;
@@ -208,8 +243,8 @@
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background-color: #e2e8f0;
-    color: #475569;
+    background-color: var(--border);
+    color: var(--text-tertiary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -226,10 +261,10 @@
 
 .wb-user-text-info strong {
     font-size: 0.76rem;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .wb-user-text-info small {
     font-size: 0.65rem;
-    color: #94a3b8;
+    color: var(--text-faint);
 }

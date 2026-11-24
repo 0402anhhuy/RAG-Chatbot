@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BookOpen, Flame, Loader2, UploadCloud } from "lucide-react";
 import { academyHomeApi } from "../../../api";
-import BrandLogo from "../../../components/common/logo/BrandLogo";
+import Breadcrumb from "../../../components/common/breadcrumb/Breadcrumb";
+import { getSessionUser } from "../../../components/common/utils/session";
 import { useToast } from "../../../context/ToastContext";
 import "./EduNavbar.css";
 
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
-};
-
-const EduNavbar = ({ activeTabName, onUploadClick, hideControls = false, workspaceId }) => {
+const EduNavbar = ({
+    activeTabName,
+    onUploadClick,
+    hideControls = false,
+    workspaceId,
+    onHubClick,
+}) => {
     const sessionUser = getSessionUser();
+    const navigate = useNavigate();
     const { showToast } = useToast();
 
     const [metrics, setMetrics] = useState(null);
@@ -66,13 +66,15 @@ const EduNavbar = ({ activeTabName, onUploadClick, hideControls = false, workspa
     return (
         <header className="edu-navbar">
             <div className="navbar-identity">
-                <BrandLogo size="md" showText title="Prism Studio" />
-                <div className="navbar-breadcrumb">
-                    <span className="crumb-separator">/</span>
-                    <span className="crumb-hub">Academy Hub</span>
-                    <span className="crumb-separator">/</span>
-                    <span className="crumb-current">{activeTabName}</span>
-                </div>
+                <Breadcrumb
+                    onHomeClick={() => navigate("/overview")}
+                    items={[
+                        ...(onHubClick
+                            ? [{ label: "Academy Hub", onClick: onHubClick }]
+                            : [{ label: "Academy Hub" }]),
+                        { label: activeTabName },
+                    ]}
+                />
             </div>
 
             {!hideControls && (
@@ -88,7 +90,7 @@ const EduNavbar = ({ activeTabName, onUploadClick, hideControls = false, workspa
                                 : "Loading streak"
                         }
                     >
-                        <Flame size={14} color="#f59e0b" />
+                        <Flame size={14} color="var(--warning)" />
                         {loading && !metrics ? (
                             <Loader2 size={12} className="ws-spinner" />
                         ) : (
@@ -106,7 +108,7 @@ const EduNavbar = ({ activeTabName, onUploadClick, hideControls = false, workspa
                                 : "Loading indexed courseware"
                         }
                     >
-                        <BookOpen size={13} color="#059669" />
+                        <BookOpen size={13} color="var(--success)" />
                         {loading && !metrics ? (
                             <Loader2 size={12} className="ws-spinner" />
                         ) : (

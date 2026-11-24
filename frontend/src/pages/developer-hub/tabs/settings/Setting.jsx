@@ -1,17 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { Cpu, KeyRound, Loader2, Plus, RotateCw } from "lucide-react";
+import { Check, Cpu, KeyRound, Loader2, Plus, RotateCw, Unplug, Wallet } from "lucide-react";
 import { authApi, userSettingsApi } from "../../../../api";
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../context/ToastContext";
 import "./Setting.css";
-
-const getSessionUserId = () => {
-    try {
-        return JSON.parse(localStorage.getItem("rag_session") || "{}")?.user?.id || null;
-    } catch {
-        return null;
-    }
-};
+import { getSessionUserId } from "../../../../components/common/utils/session";
 
 const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`;
 
@@ -38,10 +31,13 @@ const ConnectedProviderRow = ({ provider, endpointOptions, onDisconnect, busy })
         : endpointOptions[0]?.value || "";
 
     return (
-        <div className="provider-input-item">
-            <div className="provider-name-line">
+        <div className="provider-row">
+            <div className="provider-row-head">
                 <strong>{provider.providerLabel}</strong>
-                <span className="provider-tag">Your key</span>
+                <span className="provider-status-pill">
+                    <Check size={11} />
+                    Connected
+                </span>
             </div>
             <div className="provider-input-group">
                 <input
@@ -57,15 +53,21 @@ const ConnectedProviderRow = ({ provider, endpointOptions, onDisconnect, busy })
                     placeholder="Endpoint..."
                 />
             </div>
-            <button
-                type="button"
-                className="btn-connect-provider"
-                onClick={() => onDisconnect(provider.provider)}
-                disabled={busy}
-            >
-                {busy ? <Loader2 size={13} className="setting-spin" /> : null}
-                {busy ? "Disconnecting..." : "Connected"}
-            </button>
+            <div className="provider-actions">
+                <button
+                    type="button"
+                    className="btn-provider ghost"
+                    onClick={() => onDisconnect(provider.provider)}
+                    disabled={busy}
+                >
+                    {busy ? (
+                        <Loader2 size={13} className="setting-spin" />
+                    ) : (
+                        <Unplug size={13} />
+                    )}
+                    {busy ? "Disconnecting..." : "Disconnect"}
+                </button>
+            </div>
         </div>
     );
 };
@@ -76,17 +78,19 @@ const DisconnectedProviderRow = ({ provider, endpointOptions, onConnect, busy })
     const [apiKey, setApiKey] = useState("");
     const [endpointCode, setEndpointCode] = useState(endpointOptions[0]?.value || "");
 
+    const closeForm = () => {
+        setIsOpen(false);
+        setApiKey("");
+    };
+
     const submit = async () => {
         const ok = await onConnect(provider.provider, { apiKey, endpointCode });
-        if (ok) {
-            setIsOpen(false);
-            setApiKey("");
-        }
+        if (ok) closeForm();
     };
 
     return (
-        <div className="provider-input-item">
-            <div className="provider-name-line">
+        <div className="provider-row">
+            <div className="provider-row-head">
                 <strong>{provider.providerLabel}</strong>
             </div>
 
@@ -99,6 +103,7 @@ const DisconnectedProviderRow = ({ provider, endpointOptions, onConnect, busy })
                             value={apiKey}
                             onChange={(e) => setApiKey(e.target.value)}
                             autoComplete="off"
+                            aria-label={`${provider.providerLabel} API key`}
                         />
                         {endpointOptions.length > 0 && (
                             <CustomSelector
@@ -109,20 +114,17 @@ const DisconnectedProviderRow = ({ provider, endpointOptions, onConnect, busy })
                             />
                         )}
                     </div>
-                    <div className="provider-form-actions">
+                    <div className="provider-actions">
                         <button
                             type="button"
-                            className="btn-connect-provider outlined"
-                            onClick={() => {
-                                setIsOpen(false);
-                                setApiKey("");
-                            }}
+                            className="btn-provider outline"
+                            onClick={closeForm}
                         >
                             Cancel
                         </button>
                         <button
                             type="button"
-                            className="btn-connect-provider"
+                            className="btn-provider solid"
                             onClick={submit}
                             disabled={busy || !apiKey.trim()}
                         >
@@ -132,14 +134,16 @@ const DisconnectedProviderRow = ({ provider, endpointOptions, onConnect, busy })
                     </div>
                 </>
             ) : (
-                <button
-                    type="button"
-                    className="btn-connect-provider outlined"
-                    onClick={() => setIsOpen(true)}
-                >
-                    <Plus size={13} />
-                    Connect {provider.providerLabel}
-                </button>
+                <div className="provider-actions">
+                    <button
+                        type="button"
+                        className="btn-provider outline"
+                        onClick={() => setIsOpen(true)}
+                    >
+                        <Plus size={13} />
+                        Connect {provider.providerLabel}
+                    </button>
+                </div>
             )}
         </div>
     );
@@ -273,11 +277,11 @@ const Setting = () => {
     const providers = settings?.llmProviders || [];
 
     return (
-        <div className="tab-body-container settings-narrow-wrap">
-            <div className="tab-header-banner">
+        <div className="settings-page">
+            <header className="settings-page-header">
                 <h2>User Settings</h2>
-                <span>Manage your personal AI model providers and Starter Kit budget.</span>
-            </div>
+                <p>Manage your personal AI model providers and Starter Kit budget.</p>
+            </header>
 
             {loading && (
                 <div className="settings-state-row">
@@ -291,7 +295,7 @@ const Setting = () => {
                     <span>{error}</span>
                     <button
                         type="button"
-                        className="btn-refresh-settings"
+                        className="btn-provider outline"
                         onClick={() => setRefreshKey((key) => key + 1)}
                     >
                         <RotateCw size={13} />
@@ -301,22 +305,28 @@ const Setting = () => {
             )}
 
             {!loading && !error && settings && (
-                <>
+                <div className="settings-stack">
                     {/* Starter Kit Usage */}
-                    <div className="settings-section-card">
-                        <div className="settings-section-header">
-                            <div className="header-meta-wrap">
-                                <strong>Prism Developer Kit Usage</strong>
-                                <small>
-                                    Spend on developer starter models · Resets{" "}
-                                    {formatDate(usage?.periodEnd)}
-                                </small>
+                    <section className="settings-section-card">
+                        <div className="settings-section-head">
+                            <div className="settings-section-title">
+                                <span className="settings-icon-chip">
+                                    <Wallet size={17} />
+                                </span>
+                                <div className="header-meta-wrap">
+                                    <strong>Prism Developer Kit Usage</strong>
+                                    <small>
+                                        Spend on developer starter models · Resets{" "}
+                                        {formatDate(usage?.periodEnd)}
+                                    </small>
+                                </div>
                             </div>
                             <span className="spend-number">
                                 {formatMoney(usage?.spent)} / {formatMoney(usage?.limit)} (
                                 {usage?.percentUsed ?? 0}%)
                             </span>
                         </div>
+
                         <div className="spend-progress-bar">
                             <div
                                 className="spend-bar-fill"
@@ -324,7 +334,13 @@ const Setting = () => {
                             />
                         </div>
 
-                        <div className="settings-limit-form">
+                        <form
+                            className="settings-limit-form"
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                handleSaveLimit();
+                            }}
+                        >
                             <label className="settings-inline-field">
                                 <span>Monthly limit ($)</span>
                                 <input
@@ -345,60 +361,61 @@ const Setting = () => {
                                     onChange={(e) => setResetDay(e.target.value)}
                                 />
                             </label>
-                            <button
-                                type="button"
-                                className="btn-connect-provider"
-                                onClick={handleSaveLimit}
-                                disabled={savingLimit}
-                            >
-                                {savingLimit ? "Saving..." : "Save"}
+                            <button type="submit" className="btn-save-limit" disabled={savingLimit}>
+                                {savingLimit ? "Saving..." : "Save changes"}
                             </button>
-                        </div>
-                    </div>
+                        </form>
+                    </section>
 
                     {/* LLM Providers */}
-                    <div className="settings-section-card">
-                        <div className="providers-title-row">
-                            <Cpu size={16} />
-                            <strong>LLM Providers</strong>
+                    <section className="settings-section-card">
+                        <div className="settings-section-title">
+                            <span className="settings-icon-chip">
+                                <Cpu size={17} />
+                            </span>
+                            <div className="header-meta-wrap">
+                                <strong>LLM Providers</strong>
+                                <small>
+                                    Connected models appear in the &quot;Personal&quot; section of
+                                    the model picker.
+                                </small>
+                            </div>
                         </div>
-                        <p className="providers-lead-text">
-                            Connect personal LLM providers. Models will appear in the
-                            &quot;Personal&quot; section of the model picker.
-                        </p>
 
                         {providers.length === 0 ? (
-                            <div className="settings-state-row">
+                            <div className="settings-state-row settings-state-inline">
                                 <KeyRound size={15} />
                                 <span>No providers are available yet.</span>
                             </div>
                         ) : (
-                            providers.map((provider) => {
-                                const endpointOptions = buildEndpointOptions(
-                                    endpoints,
-                                    provider.provider,
-                                );
-                                return provider.connected ? (
-                                    <ConnectedProviderRow
-                                        key={provider.provider}
-                                        provider={provider}
-                                        endpointOptions={endpointOptions}
-                                        onDisconnect={handleDisconnect}
-                                        busy={pendingProvider === provider.provider}
-                                    />
-                                ) : (
-                                    <DisconnectedProviderRow
-                                        key={provider.provider}
-                                        provider={provider}
-                                        endpointOptions={endpointOptions}
-                                        onConnect={handleConnect}
-                                        busy={pendingProvider === provider.provider}
-                                    />
-                                );
-                            })
+                            <div className="provider-list">
+                                {providers.map((provider) => {
+                                    const endpointOptions = buildEndpointOptions(
+                                        endpoints,
+                                        provider.provider,
+                                    );
+                                    return provider.connected ? (
+                                        <ConnectedProviderRow
+                                            key={provider.provider}
+                                            provider={provider}
+                                            endpointOptions={endpointOptions}
+                                            onDisconnect={handleDisconnect}
+                                            busy={pendingProvider === provider.provider}
+                                        />
+                                    ) : (
+                                        <DisconnectedProviderRow
+                                            key={provider.provider}
+                                            provider={provider}
+                                            endpointOptions={endpointOptions}
+                                            onConnect={handleConnect}
+                                            busy={pendingProvider === provider.provider}
+                                        />
+                                    );
+                                })}
+                            </div>
                         )}
-                    </div>
-                </>
+                    </section>
+                </div>
             )}
         </div>
     );

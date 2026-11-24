@@ -4,15 +4,8 @@ import { academyToolApi } from "../../../../../api";
 import CustomSelector from "../../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../../context/ToastContext";
 import "./EduWorkspaces.css";
+import { getSessionUser } from "../../../../../components/common/utils/session";
 
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
-};
 
 /**
  * Gia sư hỏi đáp trên tài liệu THẬT của người học: BE tìm các đoạn trong nguồn đã
@@ -126,7 +119,7 @@ export const SocraticTutorWorkspace = ({ onBackToHub }) => {
                 {/* Tài liệu đang dùng làm căn cứ */}
                 <div className="workspace-canvas-panel">
                     <div className="panel-tab-title">
-                        <FileText size={14} color="#059669" />
+                        <FileText size={14} color="var(--success)" />
                         <span>{loadingContext ? "Loading sources..." : "Source material"}</span>
                     </div>
 
@@ -179,7 +172,7 @@ export const SocraticTutorWorkspace = ({ onBackToHub }) => {
                 <div className="workspace-side-agent">
                     <div className="agent-title-bar">
                         <div className="agent-title-lead">
-                            <Bot size={15} color="#059669" />
+                            <Bot size={15} color="var(--success)" />
                             <strong>Socratic Mentoring Assistant</strong>
                         </div>
                         <span className="tutor-mode-tag">Guided Mode</span>

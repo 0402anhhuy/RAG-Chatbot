@@ -125,6 +125,14 @@ class VectorStoreSettings(BaseModel):
     vector_size: int | None = None
     distance: Literal["cosine", "dot", "l2"] = "cosine"
 
+    @field_validator("vector_size", mode="before")
+    @classmethod
+    def normalize_vector_size(cls, value: object) -> object:
+        # An empty value in .env (e.g. ``VECTOR_STORE__VECTOR_SIZE=``) means "unset".
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
     @field_validator("vector_size")
     @classmethod
     def validate_vector_size(cls, value: int | None) -> int | None:

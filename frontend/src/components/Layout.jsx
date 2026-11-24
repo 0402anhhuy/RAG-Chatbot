@@ -1,21 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-    Activity,
-    BookOpen,
-    Code2,
     Compass,
     FileText,
     HelpCircle,
-    LayoutDashboard,
     LogOut,
-    MessageSquare,
     PenTool,
     Settings,
-    Users,
-    Zap,
+    Shield,
 } from "lucide-react";
 import { gsap } from "gsap";
+import ThemePicker from "./common/theme/ThemePicker";
+import { clearSession, getSessionUser } from "./common/utils/session";
 import "./Layout.css";
 
 const Layout = () => {
@@ -26,11 +22,8 @@ const Layout = () => {
     const sidebarRef = useRef(null);
     const isInitialMount = useRef(true);
 
-    const session = JSON.parse(
-        localStorage.getItem("rag_session") ||
-            '{"role":"user","name":"Huy Tran","email":"huy@ragstudio.dev"}',
-    );
-    const isAdmin = session.role === "admin" || session.role === "ADMIN";
+    const session = getSessionUser();
+    const isAdmin = (session.role || "").toUpperCase() === "ADMIN";
     const isWorkspaceToolRoute =
         (location.pathname === "/chat" ||
             location.pathname === "/canvas" ||
@@ -38,8 +31,7 @@ const Layout = () => {
         !isAdmin;
 
     const handleLogout = () => {
-        localStorage.removeItem("rag_session");
-        localStorage.removeItem("token");
+        clearSession();
         navigate("/login");
     };
 
@@ -117,112 +109,82 @@ const Layout = () => {
                     </button>
 
                     <div className="sidebar-nav-container">
-                        {isAdmin ? (
-                            <>
-                                <div className="nav-section-block">
-                                    <span className="nav-section-label sidebar-expand-target">
-                                        PLATFORM
-                                    </span>
-                                    <NavLink to="/admin" className="sidebar-link" title="Dashboard">
-                                        <LayoutDashboard size={18} />
-                                        <span className="sidebar-expand-target">Dashboard</span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/activity"
-                                        className="sidebar-link"
-                                        title="Activity"
-                                    >
-                                        <Activity size={18} />
-                                        <span className="sidebar-expand-target">Activity</span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/integrations"
-                                        className="sidebar-link"
-                                        title="Integrations"
-                                    >
-                                        <Zap size={18} />
-                                        <span className="sidebar-expand-target">Integrations</span>
-                                    </NavLink>
-                                </div>
-                                <div className="nav-section-block">
-                                    <span className="nav-section-label sidebar-expand-target">
-                                        MANAGEMENT
-                                    </span>
-                                    <NavLink to="/team" className="sidebar-link" title="Team">
-                                        <Users size={18} />
-                                        <span className="sidebar-expand-target">Team Members</span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/settings"
-                                        className="sidebar-link"
-                                        title="Settings"
-                                    >
-                                        <Settings size={18} />
-                                        <span className="sidebar-expand-target">Organization</span>
-                                    </NavLink>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="nav-section-block">
-                                    <span className="nav-section-label sidebar-expand-target">
-                                        STUDIO SUITE
-                                    </span>
-                                    <NavLink
-                                        to="/chat"
-                                        className="sidebar-link"
-                                        title="AI Workspace Hub"
-                                    >
-                                        <Compass size={18} />
-                                        <span className="sidebar-expand-target">Workspace Hub</span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/canvas"
-                                        className="sidebar-link"
-                                        title="AI Architecture Canvas"
-                                    >
-                                        <PenTool size={18} />
-                                        <span className="sidebar-expand-target">
-                                            Architecture Canvas
-                                        </span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/documents"
-                                        className="sidebar-link"
-                                        title="Knowledge Base"
-                                    >
-                                        <FileText size={18} />
-                                        <span className="sidebar-expand-target">
-                                            Knowledge Base
-                                        </span>
-                                    </NavLink>
-                                </div>
-                                <div className="nav-section-block">
-                                    <span className="nav-section-label sidebar-expand-target">
-                                        WORKSPACE
-                                    </span>
-                                    <NavLink
-                                        to="/settings"
-                                        className="sidebar-link"
-                                        title="Preferences"
-                                    >
-                                        <Settings size={18} />
-                                        <span className="sidebar-expand-target">Preferences</span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/help"
-                                        className="sidebar-link"
-                                        title="Documentation & Guides"
-                                    >
-                                        <HelpCircle size={18} />
-                                        <span className="sidebar-expand-target">Documentation</span>
-                                    </NavLink>
-                                </div>
-                            </>
+                        <div className="nav-section-block">
+                            <span className="nav-section-label sidebar-expand-target">
+                                STUDIO SUITE
+                            </span>
+                            <NavLink
+                                to="/chat"
+                                className="sidebar-link"
+                                title="AI Workspace Hub"
+                            >
+                                <Compass size={18} />
+                                <span className="sidebar-expand-target">Workspace Hub</span>
+                            </NavLink>
+                            <NavLink
+                                to="/canvas"
+                                className="sidebar-link"
+                                title="AI Architecture Canvas"
+                            >
+                                <PenTool size={18} />
+                                <span className="sidebar-expand-target">
+                                    Architecture Canvas
+                                </span>
+                            </NavLink>
+                            <NavLink
+                                to="/documents"
+                                className="sidebar-link"
+                                title="Knowledge Base"
+                            >
+                                <FileText size={18} />
+                                <span className="sidebar-expand-target">
+                                    Knowledge Base
+                                </span>
+                            </NavLink>
+                        </div>
+                        <div className="nav-section-block">
+                            <span className="nav-section-label sidebar-expand-target">
+                                WORKSPACE
+                            </span>
+                            <NavLink
+                                to="/settings"
+                                className="sidebar-link"
+                                title="Preferences"
+                            >
+                                <Settings size={18} />
+                                <span className="sidebar-expand-target">Preferences</span>
+                            </NavLink>
+                            <NavLink
+                                to="/help"
+                                className="sidebar-link"
+                                title="Documentation & Guides"
+                            >
+                                <HelpCircle size={18} />
+                                <span className="sidebar-expand-target">Documentation</span>
+                            </NavLink>
+                        </div>
+                        {isAdmin && (
+                            <div className="nav-section-block">
+                                <span className="nav-section-label sidebar-expand-target">
+                                    ADMIN
+                                </span>
+                                <NavLink to="/admin" className="sidebar-link" title="Admin Console">
+                                    <Shield size={18} />
+                                    <span className="sidebar-expand-target">Admin Console</span>
+                                </NavLink>
+                            </div>
                         )}
                     </div>
 
                     <div className="sidebar-user-footer">
+                        <ThemePicker
+                            direction="up"
+                            align="left"
+                            showLabel
+                            iconSize={16}
+                            triggerClassName="sidebar-theme-btn"
+                            labelClassName="sidebar-expand-target"
+                        />
                         <div className="user-profile-badge">
                             <div className="user-avatar-initials">
                                 {(session.name || "HU").slice(0, 2).toUpperCase()}

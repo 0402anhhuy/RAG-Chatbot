@@ -15,21 +15,13 @@ import {
 import { learningAnalyticsApi } from "../../../../api";
 import { useToast } from "../../../../context/ToastContext";
 import "./Analytics.css";
+import { getSessionUser } from "../../../../components/common/utils/session";
 
 const RANGE_OPTIONS = [
     { value: "7d", label: "7 Days" },
     { value: "30d", label: "30 Days" },
     { value: "all", label: "Full Term" },
 ];
-
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
-};
 
 const pct = (value) => (value === null || value === undefined ? "—" : `${value}%`);
 const hours = (value) => (value === null || value === undefined ? "—" : `${value}h`);

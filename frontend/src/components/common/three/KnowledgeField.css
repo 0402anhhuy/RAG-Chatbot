@@ -1,0 +1,15 @@
+/* KnowledgeField — canvas WebGL nền landing, nằm trong .landing-bg-field */
+.knowledge-field {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    transition: opacity 0.9s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .knowledge-field {
+        transition: none;
+    }
+}

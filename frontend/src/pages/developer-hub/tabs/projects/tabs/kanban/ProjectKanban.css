@@ -23,9 +23,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 6px 12px;
     width: 220px;
     box-sizing: border-box;
@@ -33,11 +33,11 @@
 }
 
 .kanban-search-box:focus-within {
-    border-color: #059669;
+    border-color: var(--success);
 }
 
 .kanban-search-icon {
-    color: #94a3b8;
+    color: var(--text-faint);
     flex-shrink: 0;
 }
 
@@ -46,7 +46,7 @@
     outline: none;
     background: transparent;
     font-size: 0.78rem;
-    color: #0f172a;
+    color: var(--text-primary);
     width: 100%;
 }
 
@@ -61,30 +61,30 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 6px 12px;
     font-size: 0.78rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.12s ease;
 }
 
 .btn-kanban-workbench:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
 }
 
 .btn-kanban-new-task {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background-color: #18181b;
-    color: #ffffff;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
     border: none;
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 6px 14px;
     font-size: 0.78rem;
     font-weight: 600;
@@ -93,25 +93,25 @@
 }
 
 .btn-kanban-new-task:hover {
-    background-color: #27272a;
+    background-color: var(--solid-invert-bg-hover);
 }
 
 .btn-kanban-refresh {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 6px 10px;
     font-size: 0.74rem;
-    color: #475569;
+    color: var(--text-tertiary);
     cursor: pointer;
 }
 
 .btn-kanban-refresh:hover {
-    border-color: #94a3b8;
-    color: #0f172a;
+    border-color: var(--text-faint);
+    color: var(--text-primary);
 }
 
 /* Trạng thái tải / lỗi */
@@ -120,12 +120,12 @@
     align-items: center;
     gap: 8px;
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
     padding: 8px 2px;
 }
 
 .kanban-state-error {
-    color: #b91c1c;
+    color: var(--danger-deep);
 }
 
 .kanban-spin {
@@ -159,9 +159,9 @@
 }
 
 .kanban-column-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
     padding: 12px 10px 8px 10px;
@@ -173,8 +173,8 @@
 
 /* Cột đang được kéo task vào */
 .kanban-column-card.drop-target {
-    border-color: #059669;
-    background-color: #f0fdf4;
+    border-color: var(--success);
+    background-color: var(--success-soft);
 }
 
 .column-header-row {
@@ -195,7 +195,7 @@
 
 .column-title-cluster strong {
     font-size: 0.82rem;
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -204,7 +204,7 @@
 
 .column-count-chip {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 500;
     flex-shrink: 0;
 }
@@ -218,25 +218,25 @@
 }
 
 .status-color-dot.dot-backlog {
-    background-color: #64748b;
+    background-color: var(--text-muted);
 }
 .status-color-dot.dot-in-progress {
-    background-color: #3b82f6;
+    background-color: var(--info);
 }
 .status-color-dot.dot-review {
-    background-color: #f59e0b;
+    background-color: var(--warning);
 }
 .status-color-dot.dot-completed {
-    background-color: #10b981;
+    background-color: var(--success-bright);
 }
 
 .btn-col-header-add {
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 2px 4px;
-    border-radius: 4px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -245,8 +245,8 @@
 }
 
 .btn-col-header-add:hover {
-    color: #0f172a;
-    background-color: #f1f5f9;
+    color: var(--text-primary);
+    background-color: var(--surface-sunken-2);
 }
 
 .column-tasks-track {
@@ -260,16 +260,16 @@
 }
 
 .column-empty-dashed-well {
-    border: 1px dashed #cbd5e1;
-    border-radius: 8px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
     padding: 20px 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.78rem;
     font-weight: 500;
-    background-color: #fafbfc;
+    background-color: var(--surface-inset);
     box-sizing: border-box;
 }
 
@@ -277,8 +277,8 @@
 /* THẺ TASK HOVER EDIT CHUẨN GIAO DIỆN MẪU                   */
 /* ========================================================== */
 .kanban-task-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 10px 12px;
     display: flex;
@@ -294,8 +294,8 @@
 }
 
 .kanban-task-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    border-color: var(--border-strong);
+    box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.08);
 }
 
 .kanban-task-card.dragging {
@@ -306,9 +306,9 @@
     font-size: 0.68rem;
     font-weight: 500;
     padding: 2px 8px;
-    border-radius: 12px;
-    background-color: #f1f5f9;
-    color: #475569;
+    border-radius: 10px;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
     margin-left: 6px;
 }
 
@@ -329,7 +329,7 @@
 }
 
 .task-drag-handle {
-    color: #94a3b8;
+    color: var(--text-faint);
     font-size: 14px;
     cursor: grab;
     line-height: 1;
@@ -339,7 +339,7 @@
 
 .task-title-text {
     font-size: 0.85rem;
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -352,12 +352,12 @@
     align-items: center;
     gap: 4px;
     padding: 2px 8px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     font-size: 0.72rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     opacity: 0;
     pointer-events: none;
@@ -371,9 +371,9 @@
 }
 
 .btn-task-hover-edit:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
-    color: #0f172a;
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
+    color: var(--text-primary);
 }
 
 /* Badge Priority */
@@ -386,29 +386,29 @@
     font-size: 0.7rem;
     font-weight: 600;
     padding: 2px 8px;
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .task-priority-pill.medium {
-    background-color: #e0f2fe;
-    color: #0284c7;
+    background-color: var(--accent-soft);
+    color: var(--accent);
 }
 
 .task-priority-pill.low {
-    background-color: #f1f5f9;
-    color: #64748b;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-muted);
 }
 
 .task-priority-pill.high,
 .task-priority-pill.urgent {
-    background-color: #fee2e2;
-    color: #ef4444;
+    background-color: var(--danger-soft);
+    color: var(--danger);
 }
 
 /* Đường kẻ ngăn cách */
 .task-card-divider {
     height: 1px;
-    background-color: #f1f5f9;
+    background-color: var(--surface-sunken-2);
     margin: 2px 0;
 }
 
@@ -429,25 +429,25 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
     font-size: 0.65rem;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border);
 }
 
 .task-assignee-name {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .task-hash-id {
     font-size: 0.72rem;
-    color: #64748b;
-    font-family: monospace;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
 }
 
 /* Nút Add task ở đáy cột */
@@ -459,8 +459,8 @@
     padding: 6px 8px;
     background: transparent;
     border: none;
-    border-radius: 6px;
-    color: #64748b;
+    border-radius: 10px;
+    color: var(--text-muted);
     font-size: 0.76rem;
     font-weight: 500;
     cursor: pointer;
@@ -471,6 +471,6 @@
 }
 
 .btn-col-bottom-add:hover {
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: var(--surface-sunken);
+    color: var(--text-primary);
 }

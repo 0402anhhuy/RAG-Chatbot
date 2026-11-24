@@ -6,6 +6,7 @@ import { useToast } from "../../../../../../context/ToastContext";
 import CreateTaskModal from "../../components/modals/kanban-task/CreateTaskModal";
 import DetailTaskModal from "../../components/modals/kanban-task/DetailTaskModal";
 import "./ProjectKanban.css";
+import { getSessionUser } from "../../../../../../components/common/utils/session";
 // Cot hien thi: id khop TaskStatus cua BE, colorClass khop CSS co san
 const COLUMN_META = [
     { status: "BACKLOG", title: "Backlog", colorClass: "dot-backlog" },
@@ -13,14 +14,6 @@ const COLUMN_META = [
     { status: "REVIEW", title: "Review", colorClass: "dot-review" },
     { status: "COMPLETED", title: "Completed", colorClass: "dot-completed" },
 ];
-
-const getSessionUser = () => {
-    try {
-        return JSON.parse(localStorage.getItem("rag_session") || "{}")?.user || null;
-    } catch {
-        return null;
-    }
-};
 
 const initialsOf = (name) => (name || "?").trim().slice(0, 2).toUpperCase();
 

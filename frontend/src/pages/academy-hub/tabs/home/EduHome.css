@@ -1,6 +1,6 @@
 .edu-home-bounds {
     max-width: 1280px;
-    margin: 0 auto;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -12,15 +12,15 @@
 /* 1. HERO RESUME / EXPLORE BANNER                          */
 /* ======================================================== */
 .edu-resume-hero {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 18px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.03);
     box-sizing: border-box;
 }
 
@@ -36,9 +36,9 @@
     width: 44px;
     height: 44px;
     border-radius: 10px;
-    background-color: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
+    background-color: var(--success-soft);
+    color: var(--success);
+    border: 1px solid var(--success-border);
     display: grid;
     place-items: center;
     flex-shrink: 0;
@@ -55,7 +55,7 @@
 .edu-resume-hero .resume-eyebrow {
     font-size: 0.68rem;
     font-weight: 700;
-    color: #059669;
+    color: var(--success);
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -64,7 +64,7 @@
     margin: 0;
     font-size: 1.05rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -73,7 +73,7 @@
 .edu-resume-hero .resume-copy p {
     margin: 0;
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -91,27 +91,27 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 3px 6px;
 }
 
 .btn-reload-icon {
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
-    border-radius: 5px;
+    border-radius: 10px;
     display: grid;
     place-items: center;
     transition: all 0.15s ease;
 }
 
 .btn-reload-icon:hover:not(:disabled) {
-    background-color: #e2e8f0;
-    color: #0f172a;
+    background-color: var(--border);
+    color: var(--text-primary);
 }
 
 .btn-reload-icon:disabled {
@@ -124,10 +124,10 @@
     align-items: center;
     gap: 8px;
     padding: 9px 18px;
-    background-color: #059669;
-    color: #ffffff;
+    background-color: var(--success);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 0.84rem;
     font-weight: 600;
     cursor: pointer;
@@ -138,8 +138,8 @@
 }
 
 .btn-continue-edu:hover {
-    background-color: #047857;
-    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+    background-color: var(--success-strong);
+    box-shadow: 0 4px 12px rgba(var(--success-rgb), 0.2);
 }
 
 /* ======================================================== */
@@ -154,15 +154,15 @@
 }
 
 .edu-kpi-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 16px 18px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     min-height: 104px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.02);
     box-sizing: border-box;
     transition:
         transform 0.15s ease,
@@ -171,7 +171,7 @@
 
 .edu-kpi-card:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.05);
 }
 
 .edu-kpi-card .kpi-card-header {
@@ -183,18 +183,18 @@
 
 .edu-kpi-card .kpi-label {
     font-size: 0.76rem;
-    color: #475569;
+    color: var(--text-tertiary);
     font-weight: 500;
 }
 
 .edu-kpi-card .kpi-icon-muted {
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 .edu-kpi-card .kpi-value {
     font-size: 1.55rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     letter-spacing: -0.02em;
     line-height: 1.2;
     margin-bottom: 4px;
@@ -202,7 +202,7 @@
 
 .edu-kpi-card .kpi-sub-note {
     font-size: 0.72rem;
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 /* ======================================================== */
@@ -218,13 +218,13 @@
 
 .courses-progress-card,
 .ai-recs-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.02);
     min-height: 180px;
     box-sizing: border-box;
 }
@@ -235,19 +235,19 @@
     justify-content: space-between;
     margin-bottom: 12px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--surface-sunken-2);
 }
 
 .section-title-row strong {
     font-size: 0.92rem;
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
 .btn-text-link {
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.76rem;
     font-weight: 500;
     cursor: pointer;
@@ -256,19 +256,19 @@
 }
 
 .btn-text-link:hover {
-    color: #059669;
+    color: var(--success);
 }
 
 .section-empty-feedback {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
     line-height: 1.5;
     margin: 8px 0;
 }
 
 .ai-rec-intro {
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--text-muted);
     margin: 0 0 12px;
     line-height: 1.45;
 }
@@ -286,9 +286,9 @@
     flex-direction: column;
     gap: 6px;
     padding: 10px 14px;
-    background-color: #f8fafc;
-    border: 1px solid #f1f5f9;
-    border-radius: 8px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--surface-sunken-2);
+    border-radius: 10px;
 }
 
 .course-meta-head {
@@ -306,42 +306,42 @@
 .course-title-unit code {
     font-size: 0.7rem;
     font-weight: 700;
-    background-color: #ecfdf5;
-    color: #059669;
+    background-color: var(--success-soft);
+    color: var(--success);
     padding: 2px 6px;
-    border-radius: 4px;
-    font-family: monospace;
+    border-radius: 10px;
+    font-family: var(--font-mono);
 }
 
 .course-title-unit strong {
     font-size: 0.82rem;
-    color: #1e293b;
+    color: var(--text-secondary);
 }
 
 .progress-percent {
     font-size: 0.76rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .progress-bar-track {
     width: 100%;
     height: 6px;
-    background-color: #e2e8f0;
-    border-radius: 3px;
+    background-color: var(--border);
+    border-radius: 2px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background-color: #059669;
-    border-radius: 3px;
+    background-color: var(--success);
+    border-radius: 2px;
     transition: width 0.3s ease;
 }
 
 .course-next-row small {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 /* Drill boxes */
@@ -357,29 +357,29 @@
     align-items: flex-start;
     gap: 12px;
     padding: 12px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background-color: #fcfdfe;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--surface-inset);
     cursor: pointer;
     transition: all 0.15s ease;
 }
 
 .drill-box:hover {
-    border-color: #059669;
-    background-color: #f0fdf4;
+    border-color: var(--success);
+    background-color: var(--success-soft);
     transform: translateY(-1px);
 }
 
 .drill-box strong {
     display: block;
     font-size: 0.82rem;
-    color: #0f172a;
+    color: var(--text-primary);
     margin-bottom: 2px;
 }
 
 .drill-box small {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 /* Responsive */
@@ -397,8 +397,8 @@
         flex-direction: column;
         align-items: flex-start;
     }
-    .resume-hero-actions {
-        width: 100%;
-        justify-content: space-between;
+
+    .edu-kpi-grid {
+        grid-template-columns: 1fr;
     }
 }

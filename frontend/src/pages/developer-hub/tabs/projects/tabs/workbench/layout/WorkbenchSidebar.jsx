@@ -1,21 +1,21 @@
 import {
-    Activity,
-    MessageSquare,
-    GitCommit,
-    Workflow,
+    Code2,
+    MessageCircleMore,
+    GitCompare,
+    PersonStanding,
     Orbit,
     Globe,
     Menu,
     Search,
-    Sun,
 } from "lucide-react";
+import ThemePicker from "../../../../../../../components/common/theme/ThemePicker";
 import "./WorkbenchSidebar.css";
 
 const WORKBENCH_NAV_ITEMS = [
-    { id: "ide", label: "IDE", icon: Activity },
-    { id: "chat", label: "Chat", icon: MessageSquare },
-    { id: "changes", label: "Changes", icon: GitCommit },
-    { id: "canvas", label: "Canvas", icon: Workflow },
+    { id: "ide", label: "IDE", icon: Code2 },
+    { id: "chat", label: "Chat", icon: MessageCircleMore },
+    { id: "changes", label: "Changes", icon: GitCompare },
+    { id: "canvas", label: "Canvas", icon: PersonStanding },
     { id: "galaxy", label: "Galaxy", icon: Orbit },
     { id: "preview", label: "Preview", icon: Globe },
 ];
@@ -42,15 +42,24 @@ const WorkbenchSidebar = ({
                 </button>
             </div>
 
-            {/* Quick Search */}
+            {/* Quick Search: về IDE nơi có file search thật */}
             {!isCollapsed ? (
-                <button type="button" className="wb-sidebar-search-pill">
+                <button
+                    type="button"
+                    className="wb-sidebar-search-pill"
+                    onClick={() => onTabChange("ide")}
+                >
                     <Search size={14} />
                     <span>Search</span>
                     <kbd>Ctrl+K</kbd>
                 </button>
             ) : (
-                <button type="button" className="wb-sidebar-search-mini" title="Search (Ctrl+K)">
+                <button
+                    type="button"
+                    className="wb-sidebar-search-mini"
+                    title="Search (Ctrl+K)"
+                    onClick={() => onTabChange("ide")}
+                >
                     <Search size={15} />
                 </button>
             )}
@@ -84,10 +93,12 @@ const WorkbenchSidebar = ({
                             <Globe size={14} />
                             <span>English</span>
                         </button>
-                        <button type="button" className="wb-footer-action-row">
-                            <Sun size={14} />
-                            <span>Theme</span>
-                        </button>
+                        <ThemePicker
+                            direction="up"
+                            showLabel
+                            iconSize={14}
+                            triggerClassName="wb-footer-action-row"
+                        />
                     </>
                 )}
 

@@ -28,6 +28,7 @@ import DocumentTypeIcon from "../../../../components/common/document-icon/Docume
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../context/ToastContext";
 import "./Conversation.css";
+import { getSessionUser } from "../../../../components/common/utils/session";
 
 const TOOL_ICONS = {
     summary: Sparkles,
@@ -36,15 +37,6 @@ const TOOL_ICONS = {
     mindmap: Globe,
     presentation: Presentation,
     datatable: FileSpreadsheet,
-};
-
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
 };
 
 const Conversation = ({ workspaceId = null, onLaunchTool, initialDocument = null }) => {
@@ -773,7 +765,7 @@ const Conversation = ({ workspaceId = null, onLaunchTool, initialDocument = null
                     <div className="modal-note-container" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-note-header">
                             <div className="modal-note-title-cluster">
-                                <FileCheck size={18} color="#059669" />
+                                <FileCheck size={18} color="var(--success)" />
                                 <h3>Tạo ghi chú mới</h3>
                             </div>
                             <button

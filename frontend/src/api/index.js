@@ -22,3 +22,4 @@ export * from "./settings";
 export * from "./academySettings";
 export * from "./academyTools";
 export * from "./users";
+export * from "./admin";

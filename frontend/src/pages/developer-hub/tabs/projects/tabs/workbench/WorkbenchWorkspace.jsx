@@ -15,18 +15,36 @@ import {
     Maximize2,
     RotateCw,
     MessageSquare,
+    MessageCircleMore,
+    GitCompare,
     Paperclip,
     Bot,
     Sparkles,
-    Workflow,
-    Sliders,
+    Zap,
+    Check,
     EyeOff,
-    SendHorizontal,
     Save,
     Loader2,
     Trash2,
     Server,
     GitBranch,
+    BookOpen,
+    Orbit,
+    Pencil,
+    ArrowUp,
+    Code2,
+    Bug,
+    TestTube,
+    Globe,
+    X,
+    Play,
+    ZoomIn,
+    ZoomOut,
+    RotateCcw,
+    CheckCircle2,
+    PanelsTopLeft,
+    Layers,
+    Cpu,
 } from "lucide-react";
 import { agentApi, chatApi, workflowApi, workbenchApi } from "../../../../../../api";
 
@@ -34,16 +52,20 @@ import { agentApi, chatApi, workflowApi, workbenchApi } from "../../../../../../
 import CustomSelector from "../../../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../../../context/ToastContext";
 import WorkbenchFileTree from "./components/WorkbenchFileTree";
+import WorkbenchGalaxy from "./components/WorkbenchGalaxy";
+import GitMarkIcon from "./components/GitMarkIcon";
 import {
     buildFileTree,
     collectExtensions,
     collectFolderPaths,
-    extensionOfPath,
     formatBytes,
     languageOfPath,
 } from "./helpers/fileTree";
+import { highlightCode } from "./helpers/syntax";
+import { markdownToHtml } from "./helpers/markdown";
 import { buildTranscriptMarkdown, downloadTextFile } from "./helpers/transcript";
 import "./WorkbenchWorkspace.css";
+import { getSessionUser } from "../../../../../../components/common/utils/session";
 
 const CONVO_FILTERS = [
     { value: "ACTIVE", label: "Active" },
@@ -51,23 +73,93 @@ const CONVO_FILTERS = [
     { value: "ALL", label: "All" },
 ];
 
-const SKILL_OPTIONS = [
-    { value: "Auto", label: "Auto" },
-    { value: "Manual", label: "Manual" },
+/* Gợi ý mở đầu cho khung chat (2x2 như ảnh mẫu) */
+const CHAT_SUGGESTIONS = [
+    {
+        id: "explain",
+        icon: Code2,
+        title: "Explain codebase",
+        desc: "Understand the project structure",
+        prompt: "Explain the architecture of this project.",
+    },
+    {
+        id: "bugs",
+        icon: Bug,
+        title: "Find bugs",
+        desc: "Scan for issues and vulnerabilities",
+        prompt: "Scan this project for bugs and security issues.",
+    },
+    {
+        id: "tests",
+        icon: TestTube,
+        title: "Write tests",
+        desc: "Cover the riskiest paths first",
+        prompt: "Write tests for the most important modules in this project.",
+    },
+    {
+        id: "feature",
+        icon: Sparkles,
+        title: "Plan a feature",
+        desc: "Turn an idea into a task list",
+        prompt: "Help me plan a new feature end to end: ",
+    },
 ];
 
-const PLACEHOLDER_FILE = `// src/hello.js
-export const hello = (name) => \`Hello, \${name}!\`;
-`;
+/* Nhãn gợi ý cú pháp dưới ô prompt */
+const CHAT_SLASH_HINTS = [
+    { key: "!", label: "agents" },
+    { key: "/", label: "skills" },
+    { key: "#", label: "workflows" },
+    { key: "@", label: "files" },
+    { key: "↑", label: "history" },
+    { key: "?", label: "help" },
+];
 
-const getSessionUser = () => {
-    try {
-        const raw = localStorage.getItem("rag_session");
-        const parsed = raw ? JSON.parse(raw) : {};
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
+/* Icon cho item ở Canvas (workflow/agent đều có iconKey từ BE) */
+const CANVAS_ICON_MAP = {
+    bot: Bot,
+    cpu: Cpu,
+    server: Server,
+    code: Code2,
+    file: FileText,
+    fileplus: FileText,
+    "file-plus": FileText,
+    search: Search,
+    db: Layers,
+    cloud: Layers,
+    shield: Layers,
+    network: GitBranch,
+    git: GitBranch,
+    refresh: RotateCcw,
+    terminal: Code2,
+    palette: Sparkles,
+    monitor: PanelsTopLeft,
+    layers: Layers,
+};
+
+const canvasIconFor = (item) =>
+    CANVAS_ICON_MAP[item?.iconKey] || (item?.kind === "agent" ? Cpu : Layers);
+
+/* Cấu hình cho picker mở ra từ nút "+" */
+const PICKER_CONFIG = {
+    agent: {
+        title: "Filter agents…",
+        hint: "TYPE TO FILTER · ↑↓ NAVIGATE · ENTER PICK · ESC CLOSE",
+        empty: "No agents match that filter.",
+        badge: "agent",
+    },
+    skill: {
+        title: "Filter skills…",
+        hint: "TYPE TO FILTER · ↑↓ NAVIGATE · ENTER PICK · ESC CLOSE",
+        empty: "No skills match that filter.",
+        badge: "skill",
+    },
+    workflow: {
+        title: "Filter workflows…",
+        hint: "TYPE TO FILTER · ↑↓ NAVIGATE · ENTER PICK · ESC CLOSE",
+        empty: "No workflows match that filter.",
+        badge: "workflow",
+    },
 };
 
 const formatRelative = (value) => {
@@ -93,14 +185,55 @@ const downloadBlob = (blob, filename) => {
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 };
 
+/* Khung chào khi conversation chưa có tin nhắn (dùng cho cả tab IDE & Chat) */
+const ChatWelcome = ({ userName, onPick, disabled = false }) => (
+    <div className="wb-chat-welcome">
+        <div className="wb-welcome-orb" aria-hidden="true">
+            <Sparkles size={22} />
+        </div>
+        <h3>Hey {userName}, what to build today?</h3>
+        <p>I can write code, debug issues, explain architecture, and more.</p>
+
+        <div className="wb-suggest-grid">
+            {CHAT_SUGGESTIONS.map(({ id, icon: Icon, title, desc, prompt }) => (
+                <button
+                    key={id}
+                    type="button"
+                    className="wb-suggest-card"
+                    onClick={() => onPick(prompt)}
+                    disabled={disabled}
+                >
+                    <span className="wb-suggest-icon">
+                        <Icon size={15} />
+                    </span>
+                    <strong>{title}</strong>
+                    <small>{desc}</small>
+                </button>
+            ))}
+        </div>
+
+        <div className="wb-slash-hint-row">
+            {CHAT_SLASH_HINTS.map((hint) => (
+                <span key={hint.key}>
+                    <kbd>{hint.key}</kbd>
+                    {hint.label}
+                </span>
+            ))}
+        </div>
+    </div>
+);
+
 const WorkbenchWorkspace = ({
     project = null,
     activeSubView = "ide",
     conversation = null,
     onOpenConversation,
+    onSubViewChange,
+    onOpenWorkflows,
 }) => {
     const projectId = project?.id || null;
     const sessionUser = getSessionUser();
+    const firstName = (sessionUser?.name || "there").trim().split(/\s+/)[0] || "there";
     const { showToast } = useToast();
 
     // ---------------------------------------------------------------- files
@@ -120,6 +253,38 @@ const WorkbenchWorkspace = ({
     const [savingFile, setSavingFile] = useState(false);
     const fileInputRef = useRef(null);
     const folderInputRef = useRef(null);
+    const preRef = useRef(null);
+    const gutterRef = useRef(null);
+
+    // -------------------------------------------------- resizable IDE columns
+    const [filesWidth, setFilesWidth] = useState(280);
+    const [chatWidth, setChatWidth] = useState(440);
+
+    const startResize = (side) => (event) => {
+        event.preventDefault();
+        const startX = event.clientX;
+        const startWidth = side === "files" ? filesWidth : chatWidth;
+        const target = event.currentTarget;
+        target.setPointerCapture(event.pointerId);
+
+        const onMove = (moveEvent) => {
+            const delta = moveEvent.clientX - startX;
+            const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+            if (side === "files") {
+                setFilesWidth(clamp(startWidth + delta, 220, 600));
+            } else {
+                setChatWidth(clamp(startWidth - delta, 320, 640));
+            }
+        };
+        const onUp = () => {
+            target.removeEventListener("pointermove", onMove);
+            target.removeEventListener("pointerup", onUp);
+            target.removeEventListener("pointercancel", onUp);
+        };
+        target.addEventListener("pointermove", onMove);
+        target.addEventListener("pointerup", onUp);
+        target.addEventListener("pointercancel", onUp);
+    };
 
     // ----------------------------------------------------------- conversations
     const [conversations, setConversations] = useState([]);
@@ -134,10 +299,33 @@ const WorkbenchWorkspace = ({
     const [isToolsPopupOpen, setIsToolsPopupOpen] = useState(false);
     const [prompt, setPrompt] = useState("");
     const [sending, setSending] = useState(false);
+    const [expandedTool, setExpandedTool] = useState(null);
     const [canvasSidebarTab, setCanvasSidebarTab] = useState("workflows");
     const [workflows, setWorkflows] = useState([]);
     const [agents, setAgents] = useState([]);
     const [selectedWorkflowId, setSelectedWorkflowId] = useState(null);
+
+    // ------------------------------------------------------------- preview
+    const [previewFile, setPreviewFile] = useState(null);
+    const [previewHtml, setPreviewHtml] = useState("");
+    const [previewRaw, setPreviewRaw] = useState(false);
+    const [previewLoading, setPreviewLoading] = useState(false);
+
+    // ------------------------------------------------------ chat composer UI
+    const [pickerQuery, setPickerQuery] = useState("");
+    const pickerInputRef = useRef(null);
+
+    // --------------------------------------------------------- changes diff
+    const [changeFile, setChangeFile] = useState(null);
+    const [changeContent, setChangeContent] = useState("");
+    const [changeLoading, setChangeLoading] = useState(false);
+
+    // --------------------------------------------------------------- canvas
+    const [canvasFilter, setCanvasFilter] = useState("");
+    const [canvasNodes, setCanvasNodes] = useState([]);
+    const [canvasZoom, setCanvasZoom] = useState(1);
+    const [canvasDragOver, setCanvasDragOver] = useState(false);
+    const canvasGridRef = useRef(null);
 
     const activeConversation =
         conversations.find((item) => item.id === activeConversationId) || null;
@@ -151,6 +339,43 @@ const WorkbenchWorkspace = ({
     );
 
     const isDirty = activeFile ? draft !== (activeFile.content ?? "") : false;
+
+    // Preview có highlight syntax cho layer dưới editor
+    const highlightedCode = useMemo(
+        () =>
+            highlightCode(
+                draft,
+                activeFile ? languageOfPath(activeFile.path) : "plaintext",
+            ),
+        [draft, activeFile],
+    );
+    const draftLineCount = useMemo(() => (draft ? draft.split("\n").length : 1), [draft]);
+
+    // Workspace mặc định: chỉ có .gitignore → mở sẵn để người dùng thấy ngay
+    const autoOpenedRef = useRef(false);
+    useEffect(() => {
+        if (autoOpenedRef.current || filesLoading) return;
+        if (
+            files.length === 1 &&
+            files[0].path === ".gitignore" &&
+            !activeFile
+        ) {
+            autoOpenedRef.current = true;
+            handleOpenFile(files[0]);
+        }
+    }, [files, filesLoading, activeFile]);
+
+    // Đồng bộ scroll giữa textarea (có thật) và layer highlight + gutter
+    const handleEditorScroll = (event) => {
+        const source = event.target;
+        if (preRef.current) {
+            preRef.current.scrollTop = source.scrollTop;
+            preRef.current.scrollLeft = source.scrollLeft;
+        }
+        if (gutterRef.current) {
+            gutterRef.current.scrollTop = source.scrollTop;
+        }
+    };
 
     // ------------------------------------------------------------ load files
     const loadFiles = useCallback(
@@ -182,6 +407,18 @@ const WorkbenchWorkspace = ({
             signal.cancelled = true;
         };
     }, [loadFiles]);
+
+    // Ctrl+Shift+A: mở nhanh file picker (Add files or photos)
+    useEffect(() => {
+        const onKeyDown = (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "a") {
+                event.preventDefault();
+                fileInputRef.current?.click();
+            }
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, []);
 
     // Workspace mới: mở sẵn các folder cấp 1 để nhìn thấy cấu trúc ngay.
     // Chỉ chạy khi danh sách file đổi (không reset thao tác mở/đóng của người dùng).
@@ -294,6 +531,37 @@ const WorkbenchWorkspace = ({
         }
     };
 
+    // Mở file từ view khác (Galaxy / Changes): quay về IDE rồi load nội dung
+    const handleOpenFileFromView = async (file) => {
+        if (!file?.id) return;
+        onSubViewChange?.("ide");
+        await handleOpenFile(file);
+    };
+
+    // ------------------------------------------------------------- preview
+    const handlePreviewFile = async (file) => {
+        if (!projectId || !file?.id) return;
+        try {
+            setPreviewLoading(true);
+            const content = await workbenchApi.getFile(projectId, file.id);
+            setPreviewFile(content);
+            setPreviewHtml(markdownToHtml(content.content ?? ""));
+        } catch (err) {
+            showToast(err.message || "Unable to open the file.", "error");
+        } finally {
+            setPreviewLoading(false);
+        }
+    };
+
+    // Nút "Run App" của khung preview: mở file markdown đầu tiên để render
+    const handleRunPreview = () => {
+        if (markdownFiles.length) {
+            handlePreviewFile(previewFile || markdownFiles[0]);
+            return;
+        }
+        showToast("No previewable file in this workspace yet.", "info");
+    };
+
     const handleSaveFile = async () => {
         if (!projectId || !activeFile) return;
         try {
@@ -345,7 +613,7 @@ const WorkbenchWorkspace = ({
             setCreatingFile(true);
             const created = await workbenchApi.createFile(projectId, {
                 path,
-                content: extensionOfPath(path) === "" ? "" : PLACEHOLDER_FILE,
+                content: "",
             });
             setFiles((prev) => [...prev.filter((file) => file.id !== created.id), created]);
             setIsCreateFileOpen(false);
@@ -451,7 +719,7 @@ const WorkbenchWorkspace = ({
     const handleCreateConversation = async () => {
         if (!projectId || !sessionUser?.id) {
             showToast("Open a project first to start a conversation.", "info");
-            return;
+            return null;
         }
         try {
             setCreatingConvo(true);
@@ -461,6 +729,8 @@ const WorkbenchWorkspace = ({
             });
             setConversations((prev) => [created, ...prev]);
             setActiveConversationId(created.id);
+            setMessages([]);
+            setPrompt("");
             setIsConvoListOpen(false);
             onOpenConversation?.({
                 id: created.id,
@@ -469,11 +739,24 @@ const WorkbenchWorkspace = ({
                 lastActivity: "just now",
             });
             showToast("Conversation created.", "success");
+            return created;
         } catch (err) {
             showToast(err.message || "Unable to create a conversation.", "error");
+            return null;
         } finally {
             setCreatingConvo(false);
         }
+    };
+
+    // Gợi ý trong khung chào: tạo conversation nếu chưa có rồi gửi luôn câu hỏi
+    const handleSuggestionPick = async (text) => {
+        let conversationId = activeConversationId;
+        if (!conversationId) {
+            const created = await handleCreateConversation();
+            conversationId = created?.id || null;
+        }
+        if (!conversationId) return;
+        await handleSendPrompt(text, conversationId);
     };
 
     // --------------------------------------------------- settings handlers
@@ -502,15 +785,16 @@ const WorkbenchWorkspace = ({
         }
     };
 
-    const handleSendPrompt = async () => {
-        const content = prompt.trim();
-        if (!content || !activeConversationId) {
-            showToast("Pick a conversation and type a message first.", "info");
+    const handleSendPrompt = async (overrideText, overrideConversationId) => {
+        const content = String(overrideText ?? prompt).trim();
+        const conversationId = overrideConversationId || activeConversationId;
+        if (!content || !conversationId) {
+            showToast("Start a conversation and type a message first.", "info");
             return;
         }
         try {
             setSending(true);
-            const message = await chatApi.sendMessage(activeConversationId, {
+            const message = await chatApi.sendMessage(conversationId, {
                 content,
                 role: "USER",
             });
@@ -525,19 +809,18 @@ const WorkbenchWorkspace = ({
         }
     };
 
-    const handleDownloadTranscript = async () => {
-        if (!activeConversationId) {
-            showToast("Open a conversation first.", "info");
-            return;
-        }
-        // Transcript do BE dựng để luôn khớp dữ liệu đã lưu; nếu chưa có tin nào
-        // thì vẫn tải được file trống có tiêu đề.
+    // Nạp lại models/skills/agents từ BE cho conversation đang mở
+    const handleReloadSettings = async () => {
+        if (!projectId) return;
         try {
-            const blob = await workbenchApi.downloadTranscript(projectId, activeConversationId);
-            downloadBlob(blob, "transcript.md");
-            showToast("Transcript downloaded.", "success");
+            const fresh = await workbenchApi.getSettings(
+                projectId,
+                activeConversationId || undefined,
+            );
+            setSettings(fresh);
+            showToast("Models, skills & agents reloaded.", "success");
         } catch (err) {
-            showToast(err.message || "Unable to download the transcript.", "error");
+            showToast(err.message || "Unable to reload settings.", "error");
         }
     };
 
@@ -551,6 +834,192 @@ const WorkbenchWorkspace = ({
         showToast("Transcript downloaded.", "success");
     };
 
+    // ----------------------------------------------------- composer picker
+    const openPicker = (kind) => {
+        setPickerQuery("");
+        setIsToolsPopupOpen(false);
+        setExpandedTool((prev) => (prev === kind ? null : kind));
+    };
+
+    const agentPickerItems = useMemo(
+        () =>
+            (settings?.agents || []).map((agent) => ({
+                value: agent.id,
+                label: agent.name,
+                color: agent.color,
+                iconKey: agent.iconKey,
+                description: agent.description || agent.role || "",
+                example: agent.role || "",
+                kind: "agent",
+            })),
+        [settings?.agents],
+    );
+
+    const skillPickerItems = useMemo(
+        () => [
+            {
+                value: "Auto",
+                label: "Auto",
+                color: "#8B5CF6",
+                iconKey: "sparkles",
+                description: "The agent picks whichever skills the turn needs.",
+                example: "e.g. explain the module, then patch the bug",
+                kind: "skill",
+            },
+            {
+                value: "Manual",
+                label: "Manual",
+                color: "#0EA5E9",
+                iconKey: "wrench",
+                description: "You choose every skill before the agent runs.",
+                example: "e.g. only run the code-review skill",
+                kind: "skill",
+            },
+        ],
+        [],
+    );
+
+    const workflowPickerItems = useMemo(
+        () =>
+            (settings?.workflows || []).map((workflow) => ({
+                value: workflow.id,
+                label: workflow.name,
+                color: workflow.color,
+                iconKey: workflow.iconKey,
+                description: workflow.stepsSummary ? `Steps: ${workflow.stepsSummary}` : "",
+                example: workflow.type === "BUILT_IN" ? "Built-in workflow" : "Project workflow",
+                kind: "workflow",
+            })),
+        [settings?.workflows],
+    );
+
+    const pickerItems =
+        expandedTool === "agent"
+            ? agentPickerItems
+            : expandedTool === "skill"
+              ? skillPickerItems
+              : expandedTool === "workflow"
+                ? workflowPickerItems
+                : [];
+
+    const pickerMeta = expandedTool ? PICKER_CONFIG[expandedTool] : null;
+
+    const pickerQueryNormalized = pickerQuery.trim().toLowerCase();
+    const filteredPickerItems = pickerQueryNormalized
+        ? pickerItems.filter((item) =>
+              `${item.label} ${item.description || ""}`
+                  .toLowerCase()
+                  .includes(pickerQueryNormalized),
+          )
+        : pickerItems;
+
+    const choosePickerItem = (item) => {
+        if (expandedTool === "agent") {
+            patchSettings(
+                item.value ? { agentId: item.value } : { clearAgent: true },
+                item.value ? `Agent set to ${item.label}.` : "Agent cleared.",
+            );
+        } else if (expandedTool === "skill") {
+            patchSettings({ skillMode: item.value }, `Skill mode set to ${item.label}.`);
+        } else if (expandedTool === "workflow") {
+            patchSettings(
+                item.value ? { workflowId: item.value } : { clearWorkflow: true },
+                item.value ? `Workflow set to ${item.label}.` : "Workflow cleared.",
+            );
+        }
+        setExpandedTool(null);
+        setPickerQuery("");
+    };
+
+    // -------------------------------------------------------- changes diff
+    const handleSelectChangeFile = useCallback(
+        async (file) => {
+            if (!projectId || !file?.id) return;
+            setChangeFile(file);
+            setChangeLoading(true);
+            setChangeContent("");
+            try {
+                const data = await workbenchApi.getFile(projectId, file.id);
+                setChangeContent(data?.content ?? "");
+            } catch (err) {
+                showToast(err.message || "Unable to load the file.", "error");
+            } finally {
+                setChangeLoading(false);
+            }
+        },
+        [projectId, showToast],
+    );
+
+    // --------------------------------------------------------------- canvas
+    const handleCanvasDragStart = (event, item) => {
+        setSelectedWorkflowId(item.id);
+        event.dataTransfer.effectAllowed = "copy";
+        event.dataTransfer.setData(
+            "application/x-wb-canvas-item",
+            JSON.stringify({
+                id: item.id,
+                kind: canvasSidebarTab,
+                name: item.name,
+                color: item.color,
+                iconKey: item.iconKey,
+                stepsSummary: item.stepsSummary || "",
+                role: item.role || "",
+                type: item.type || "",
+            }),
+        );
+    };
+
+    const placeCanvasNode = (payload, x, y) => {
+        setCanvasNodes((prev) => [
+            ...prev,
+            {
+                key: `${payload.id}-${Date.now()}-${prev.length}`,
+                ...payload,
+                x: Math.max(8, Math.round(x)),
+                y: Math.max(8, Math.round(y)),
+            },
+        ]);
+    };
+
+    const handleCanvasDrop = (event) => {
+        event.preventDefault();
+        setCanvasDragOver(false);
+        const raw = event.dataTransfer.getData("application/x-wb-canvas-item");
+        if (!raw) return;
+        let payload;
+        try {
+            payload = JSON.parse(raw);
+        } catch {
+            return;
+        }
+        const rect = canvasGridRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        placeCanvasNode(
+            payload,
+            (event.clientX - rect.left) / canvasZoom - 110,
+            (event.clientY - rect.top) / canvasZoom - 30,
+        );
+        showToast(`${payload.name} added to the canvas.`, "success");
+    };
+
+    const handleCanvasAdd = (item) => {
+        setSelectedWorkflowId(item.id);
+        placeCanvasNode(
+            {
+                id: item.id,
+                kind: canvasSidebarTab,
+                name: item.name,
+                color: item.color,
+                iconKey: item.iconKey,
+                stepsSummary: item.stepsSummary || "",
+                role: item.role || "",
+                type: item.type || "",
+            },
+            36 + (canvasNodes.length % 4) * 44,
+            36 + (canvasNodes.length % 4) * 38,
+        );
+    };
+
     const modelOptions = useMemo(() => {
         const options = (settings?.models || []).map((model) => ({
             value: `${model.provider}::${model.model}`,
@@ -562,31 +1031,109 @@ const WorkbenchWorkspace = ({
     const currentModelValue =
         settings?.provider && settings?.model ? `${settings.provider}::${settings.model}` : "";
 
-    const agentOptions = useMemo(
-        () => [
-            { value: "", label: "None" },
-            ...(settings?.agents || []).map((agent) => ({
-                value: agent.id,
-                label: agent.name,
-                color: "blue",
-            })),
-        ],
-        [settings?.agents],
+    // ------------------------------------------------------ derived lists
+    // Changes: các file bạn đã tự chỉnh trong IDE (dữ liệu thật từ BE)
+    const changedFiles = useMemo(
+        () =>
+            files
+                .filter((file) => file.editedByUser)
+                .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)),
+        [files],
     );
 
-    const workflowOptions = useMemo(
-        () => [
-            { value: "", label: "None" },
-            ...(settings?.workflows || []).map((workflow) => ({
-                value: workflow.id,
-                label: workflow.name,
-                color: "amber",
-            })),
-        ],
-        [settings?.workflows],
+    // Preview: danh sách markdown trong workspace
+    const markdownFiles = useMemo(
+        () => files.filter((file) => (file.language || "") === "markdown"),
+        [files],
     );
 
-    const workflowById = (id) => workflows.find((workflow) => workflow.id === id) || null;
+    const selectedAgentName =
+        settings?.agents?.find((agent) => agent.id === settings?.agentId)?.name || "None";
+    const selectedWorkflowName =
+        settings?.workflows?.find((wf) => wf.id === settings?.workflowId)?.name || "None";
+    const selectedSkill = settings?.skillMode || "Auto";
+
+    // Changes: tổng số dòng thêm cho cột trái + nội dung file đang xem
+    const changesAddTotal = changedFiles.reduce((sum, file) => sum + (file.lineCount || 0), 0);
+    const changeLines = changeContent ? changeContent.split("\n") : [];
+
+    // Canvas: danh sách bên trái theo tab + filter realtime
+    const canvasItems = canvasSidebarTab === "workflows" ? workflows : agents;
+    const canvasQuery = canvasFilter.trim().toLowerCase();
+    const filteredCanvasItems = canvasItems.filter(
+        (item) => !canvasQuery || (item.name || "").toLowerCase().includes(canvasQuery),
+    );
+
+    // Tự mở file đầu tiên khi vào tab Changes
+    useEffect(() => {
+        if (activeSubView !== "changes") return;
+        if (!changedFiles.length) {
+            setChangeFile(null);
+            setChangeContent("");
+            return;
+        }
+        if (!changeFile || !changedFiles.some((file) => file.id === changeFile.id)) {
+            handleSelectChangeFile(changedFiles[0]);
+        }
+    }, [activeSubView, changedFiles, changeFile, handleSelectChangeFile]);
+
+    // Đóng popup/picker khi đổi tab hoặc đổi conversation
+    useEffect(() => {
+        setExpandedTool(null);
+        setIsToolsPopupOpen(false);
+        setPickerQuery("");
+    }, [activeSubView, activeConversationId]);
+
+    // Focus vào ô filter mỗi khi mở picker (autoFocus bị nút "+" lấy lại)
+    useEffect(() => {
+        if (!expandedTool) return undefined;
+        const timer = window.setTimeout(() => pickerInputRef.current?.focus(), 40);
+        return () => window.clearTimeout(timer);
+    }, [expandedTool]);
+
+    // Click ra vùng trống ngoài menu/picker/flyout thì đóng lại
+    useEffect(() => {
+        if (!isConvoListOpen && !isToolsPopupOpen && !isFilesMenuOpen && !expandedTool) {
+            return undefined;
+        }
+        const handlePointerDown = (event) => {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+
+            if (
+                isConvoListOpen &&
+                !target.closest(".wb-convo-flyout-card") &&
+                !target.closest(".btn-convo-dropdown")
+            ) {
+                setIsConvoListOpen(false);
+            }
+            if (
+                isFilesMenuOpen &&
+                !target.closest(".wb-files-dropdown-menu") &&
+                !target.closest(".wb-pane-more-relative")
+            ) {
+                setIsFilesMenuOpen(false);
+            }
+            if (
+                isToolsPopupOpen &&
+                !target.closest(".prompt-tools-popup-menu") &&
+                !target.closest(".btn-plus-tool-circle")
+            ) {
+                setIsToolsPopupOpen(false);
+            }
+            if (
+                expandedTool &&
+                !target.closest(".composer-picker-card") &&
+                !target.closest(".prompt-tools-popup-menu") &&
+                !target.closest(".btn-plus-tool-circle")
+            ) {
+                setExpandedTool(null);
+                setPickerQuery("");
+            }
+        };
+        document.addEventListener("mousedown", handlePointerDown);
+        return () => document.removeEventListener("mousedown", handlePointerDown);
+    }, [isConvoListOpen, isToolsPopupOpen, isFilesMenuOpen, expandedTool]);
 
     if (!projectId) {
         return (
@@ -602,7 +1149,12 @@ const WorkbenchWorkspace = ({
             {/* VIEW A: IDE (3 CỘT PILL CARD TÁCH RỜI)                   */}
             {/* ======================================================== */}
             {activeSubView === "ide" && (
-                <div className="workbench-three-col-layout">
+                <div
+                    className="workbench-three-col-layout"
+                    style={{
+                        gridTemplateColumns: `${filesWidth}px 3px minmax(0, 1fr) 3px ${chatWidth}px`,
+                    }}
+                >
                     {/* CỘT 1: FILES EXPLORER */}
                     <div className="wb-column-files-pane">
                         <div className="wb-pane-header-row">
@@ -621,14 +1173,12 @@ const WorkbenchWorkspace = ({
                             </div>
 
                             <div className="wb-header-right-controls">
-                                <button
-                                    type="button"
-                                    className="btn-sync-to-folder-pill"
-                                    onClick={handleSyncToFolder}
-                                >
-                                    <FolderSync size={12} />
-                                    <span>Sync to folder</span>
-                                </button>
+                                {filesLoading && (
+                                    <span className="wb-syncing-pill">
+                                        <RefreshCw size={11} className="wb-spin" />
+                                        <span>Syncing</span>
+                                    </span>
+                                )}
 
                                 <div className="wb-pane-more-relative">
                                     <button
@@ -663,7 +1213,14 @@ const WorkbenchWorkspace = ({
                                                 <Plus size={14} />
                                                 <span>New file</span>
                                             </button>
-                                            <div className="dropdown-menu-item with-caption">
+                                            <button
+                                                type="button"
+                                                className="dropdown-menu-item with-caption"
+                                                onClick={() => {
+                                                    setIsFilesMenuOpen(false);
+                                                    handleSyncToFolder();
+                                                }}
+                                            >
                                                 <div className="item-title-row">
                                                     <FolderSync size={14} />
                                                     <span>Sync to local folder</span>
@@ -672,7 +1229,7 @@ const WorkbenchWorkspace = ({
                                                     Picks a folder from your machine and uploads
                                                     every text file into this workspace.
                                                 </small>
-                                            </div>
+                                            </button>
                                             <button
                                                 type="button"
                                                 className="dropdown-menu-item"
@@ -738,6 +1295,7 @@ const WorkbenchWorkspace = ({
                                 onChange={setExtensionFilter}
                                 placeholder="Type"
                                 className="wb-extension-selector"
+                                portal
                             />
                         </div>
 
@@ -815,11 +1373,24 @@ const WorkbenchWorkspace = ({
                         })()}
                     </div>
 
+                    {/* Tay nầm kéo giãn cột Files ↔ Editor */}
+                    <div
+                        className="wb-col-resizer"
+                        role="separator"
+                        aria-orientation="vertical"
+                        title="Drag to resize"
+                        onPointerDown={startResize("files")}
+                    />
+
                     {/* CỘT 2: EDITOR VIEWPORT */}
                     <div className="wb-column-editor-pane">
                         <div className="wb-pane-header-row">
                             <div className="wb-pane-title-group">
-                                <SplitSquareVertical size={14} />
+                                {activeFile?.name === ".gitignore" ? (
+                                    <GitMarkIcon size={14} />
+                                ) : (
+                                    <SplitSquareVertical size={14} />
+                                )}
                                 <span>{activeFile ? activeFile.name : "No file open"}</span>
                                 {isDirty && (
                                     <span className="wb-dirty-dot" title="Unsaved changes" />
@@ -863,21 +1434,64 @@ const WorkbenchWorkspace = ({
 
                         {activeFile ? (
                             <div className="wb-editor-surface">
-                                <textarea
-                                    className="wb-editor-textarea"
-                                    spellCheck={false}
-                                    value={draft}
-                                    onChange={(event) => setDraft(event.target.value)}
-                                    onKeyDown={(event) => {
-                                        if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-                                            event.preventDefault();
-                                            handleSaveFile();
-                                        }
-                                    }}
-                                />
+                                <div className="wb-editor-body">
+                                    <div
+                                        className="wb-code-gutter"
+                                        ref={gutterRef}
+                                        aria-hidden="true"
+                                    >
+                                        {Array.from({ length: draftLineCount }, (_, index) => (
+                                            <span key={index}>{index + 1}</span>
+                                        ))}
+                                    </div>
+                                    <div className="wb-code-layer">
+                                        <pre
+                                            className="wb-code-highlight"
+                                            ref={preRef}
+                                            aria-hidden="true"
+                                        >
+                                            <code
+                                                dangerouslySetInnerHTML={{
+                                                    __html: `${highlightedCode}\n`,
+                                                }}
+                                            />
+                                        </pre>
+                                        <textarea
+                                            className="wb-editor-textarea"
+                                            spellCheck={false}
+                                            wrap="off"
+                                            value={draft}
+                                            onChange={(event) => setDraft(event.target.value)}
+                                            onScroll={handleEditorScroll}
+                                            onKeyDown={(event) => {
+                                                if (
+                                                    (event.ctrlKey || event.metaKey) &&
+                                                    event.key === "s"
+                                                ) {
+                                                    event.preventDefault();
+                                                    handleSaveFile();
+                                                    return;
+                                                }
+                                                // Tab chèn 2 space thay vì đổi focus
+                                                if (event.key === "Tab") {
+                                                    event.preventDefault();
+                                                    const el = event.target;
+                                                    const start = el.selectionStart;
+                                                    const end = el.selectionEnd;
+                                                    const next = `${draft.slice(0, start)}  ${draft.slice(end)}`;
+                                                    setDraft(next);
+                                                    requestAnimationFrame(() => {
+                                                        el.selectionStart = start + 2;
+                                                        el.selectionEnd = start + 2;
+                                                    });
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                                 <div className="wb-editor-statusbar">
                                     <span>
-                                        {draft ? draft.split("\n").length : 0} lines ·{" "}
+                                        {draftLineCount} lines ·{" "}
                                         {formatBytes(new Blob([draft]).size)}
                                     </span>
                                     <span>{isDirty ? "Unsaved changes" : "Saved"}</span>
@@ -891,18 +1505,60 @@ const WorkbenchWorkspace = ({
                         )}
                     </div>
 
+                    {/* Tay nầm kéo giãn cột Editor ↔ Chat */}
+                    <div
+                        className="wb-col-resizer"
+                        role="separator"
+                        aria-orientation="vertical"
+                        title="Drag to resize"
+                        onPointerDown={startResize("chat")}
+                    />
+
                     {/* CỘT 3: CHAT CONTROLS */}
                     <div className="wb-column-chat-pane">
-                        <div className="wb-pane-header-row">
-                            <div className="wb-convo-selector-wrap">
+                        <div className="wb-pane-header-row wb-chat-header-row">
+                            <div className="wb-chat-header-left">
                                 <button
                                     type="button"
-                                    className="btn-convo-dropdown"
+                                    className={`wb-convo-icon-btn ${
+                                        isConvoListOpen ? "open" : ""
+                                    }`}
                                     onClick={() => setIsConvoListOpen((prev) => !prev)}
+                                    title="Conversations"
                                 >
-                                    <MessageSquare size={13} />
-                                    <span>{activeConversation?.title || "New conversation"}</span>
+                                    <MessageCircleMore size={15} />
                                 </button>
+                                {activeConversationId &&
+                                    messages.length > 0 &&
+                                    activeConversation?.title && (
+                                        <span className="wb-chat-title">
+                                            {activeConversation.title}
+                                        </span>
+                                    )}
+                            </div>
+
+                            <div className="wb-header-right-controls">
+                                <button
+                                    type="button"
+                                    className="btn-icon-ghost"
+                                    title="Open this conversation in the Chat tab"
+                                    onClick={() => onSubViewChange?.("chat")}
+                                >
+                                    <Maximize2 size={13} />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn-icon-ghost"
+                                    title="Reload messages"
+                                    onClick={() =>
+                                        activeConversationId &&
+                                        chatApi.getMessages(activeConversationId).then(setMessages)
+                                    }
+                                >
+                                    <RotateCw size={13} />
+                                </button>
+                            </div>
+                        </div>
 
                                 {isConvoListOpen && (
                                     <div className="wb-convo-flyout-card">
@@ -978,30 +1634,7 @@ const WorkbenchWorkspace = ({
                                         </div>
                                     </div>
                                 )}
-                            </div>
 
-                            <div className="wb-header-right-controls">
-                                <button
-                                    type="button"
-                                    className="btn-icon-ghost"
-                                    title="Download transcript"
-                                    onClick={handleDownloadTranscript}
-                                >
-                                    <Maximize2 size={13} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn-icon-ghost"
-                                    title="Reload messages"
-                                    onClick={() =>
-                                        activeConversationId &&
-                                        chatApi.getMessages(activeConversationId).then(setMessages)
-                                    }
-                                >
-                                    <RotateCw size={13} />
-                                </button>
-                            </div>
-                        </div>
 
                         <div className="wb-chat-middle-content">
                             {messages.length ? (
@@ -1010,34 +1643,124 @@ const WorkbenchWorkspace = ({
                                         key={message.id}
                                         className={`wb-chat-bubble ${message.role === "USER" ? "user" : "assistant"}`}
                                     >
-                                        <div className="wb-chat-bubble-role">
-                                            {message.role === "USER" ? "You" : "Assistant"}
-                                        </div>
                                         <div className="wb-chat-bubble-body">{message.content}</div>
+                                        <div className="wb-chat-bubble-meta">
+                                            <span className="bubble-role">
+                                                {message.role === "USER" ? "You" : "Assistant"}
+                                            </span>
+                                            <span className="bubble-time">
+                                                {formatRelative(message.createdAt)}
+                                            </span>
+                                        </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="wb-chat-empty">
-                                    <MessageSquare size={26} />
-                                    <span>
-                                        {activeConversationId
-                                            ? "No messages yet. Ask something to start."
-                                            : "Select or create a conversation to chat."}
-                                    </span>
-                                </div>
+                                <ChatWelcome
+                                    userName={firstName}
+                                    disabled={sending || creatingConvo}
+                                    onPick={handleSuggestionPick}
+                                />
                             )}
                         </div>
 
                         {/* Thanh Prompt Input dưới đáy */}
                         <div className="wb-chat-prompt-footer">
+                            {expandedTool && pickerMeta && (
+                                <div
+                                    className="composer-picker-card"
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Escape") {
+                                            setExpandedTool(null);
+                                            setPickerQuery("");
+                                        }
+                                    }}
+                                >
+                                    <div className="composer-picker-search">
+                                        <Search size={13} />
+                                        <input
+                                            ref={pickerInputRef}
+                                            className="composer-picker-input"
+                                            placeholder={pickerMeta.title}
+                                            value={pickerQuery}
+                                            onChange={(event) => setPickerQuery(event.target.value)}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="composer-picker-close"
+                                            title="Close picker"
+                                            onClick={() => {
+                                                setExpandedTool(null);
+                                                setPickerQuery("");
+                                            }}
+                                        >
+                                            <X size={13} />
+                                        </button>
+                                    </div>
+                                    <div className="composer-picker-hint">{pickerMeta.hint}</div>
+                                    <div className="composer-picker-list">
+                                        {filteredPickerItems.length ? (
+                                            filteredPickerItems.map((item) => {
+                                                const ItemIcon = canvasIconFor(item);
+                                                const isActive =
+                                                    (expandedTool === "agent" &&
+                                                        (settings?.agentId || "") === item.value) ||
+                                                    (expandedTool === "skill" &&
+                                                        selectedSkill === item.value) ||
+                                                    (expandedTool === "workflow" &&
+                                                        (settings?.workflowId || "") === item.value);
+                                                return (
+                                                    <button
+                                                        key={`${expandedTool}-${item.value}`}
+                                                        type="button"
+                                                        className={`composer-picker-item ${
+                                                            isActive ? "active" : ""
+                                                        }`}
+                                                        onClick={() => choosePickerItem(item)}
+                                                    >
+                                                        <span
+                                                            className="composer-picker-icon"
+                                                            style={{
+                                                                color:
+                                                                    item.color || "var(--accent)",
+                                                            }}
+                                                        >
+                                                            <ItemIcon size={15} />
+                                                        </span>
+                                                        <span className="composer-picker-body">
+                                                            <span className="composer-picker-title">
+                                                                <strong>{item.label}</strong>
+                                                                <span className="composer-picker-badge">
+                                                                    by VibeFlow
+                                                                </span>
+                                                            </span>
+                                                            {item.description && (
+                                                                <span className="composer-picker-desc">
+                                                                    {item.description}
+                                                                </span>
+                                                            )}
+                                                            {item.example && (
+                                                                <em className="composer-picker-eg">
+                                                                    {item.example}
+                                                                </em>
+                                                            )}
+                                                        </span>
+                                                        {isActive && <Check size={14} />}
+                                                    </button>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="composer-picker-empty">
+                                                {pickerMeta.empty}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="prompt-input-surface-box">
                                 <textarea
                                     className="wb-prompt-textarea"
-                                    placeholder={
-                                        activeConversationId
-                                            ? "Ask the agent to change code, explain a file..."
-                                            : "Pick a conversation first"
-                                    }
+                                    placeholder="Type a prompt… (! agents, / skills, # workflows, @ files, ↑ history, ? help)"
                                     value={prompt}
                                     disabled={!activeConversationId}
                                     onChange={(event) => setPrompt(event.target.value)}
@@ -1052,8 +1775,14 @@ const WorkbenchWorkspace = ({
                                     <div className="prompt-left-tools-wrap">
                                         <button
                                             type="button"
-                                            className="btn-plus-tool-circle"
-                                            onClick={() => setIsToolsPopupOpen((prev) => !prev)}
+                                            className={`btn-plus-tool-circle ${
+                                                isToolsPopupOpen || expandedTool ? "open" : ""
+                                            }`}
+                                            onClick={() => {
+                                                setExpandedTool(null);
+                                                setIsToolsPopupOpen((prev) => !prev);
+                                            }}
+                                            title="Tools"
                                         >
                                             <Plus size={15} />
                                         </button>
@@ -1068,70 +1797,66 @@ const WorkbenchWorkspace = ({
                                                         fileInputRef.current?.click();
                                                     }}
                                                 >
-                                                    <Paperclip size={14} />
+                                                    <Paperclip size={14} className="tool-ic ic-muted" />
                                                     <span>Add files or photos</span>
                                                     <kbd>Ctrl+Shift+A</kbd>
                                                 </button>
-                                                <div className="tool-menu-row with-control">
-                                                    <Bot size={14} />
-                                                    <span>Agent</span>
-                                                </div>
-                                                <div className="tool-menu-select-row">
-                                                    <CustomSelector
-                                                        options={agentOptions}
-                                                        value={settings?.agentId || ""}
-                                                        onChange={(value) =>
-                                                            patchSettings(
-                                                                value
-                                                                    ? { agentId: value }
-                                                                    : { clearAgent: true },
-                                                                value
-                                                                    ? "Agent selected."
-                                                                    : "Agent cleared.",
-                                                            )
-                                                        }
-                                                        placeholder="None"
-                                                        className="wb-tool-selector"
-                                                    />
-                                                </div>
-                                                <div className="tool-menu-row with-control">
-                                                    <Sparkles size={14} />
-                                                    <span>Skill</span>
-                                                </div>
-                                                <div className="tool-menu-select-row">
-                                                    <CustomSelector
-                                                        options={SKILL_OPTIONS}
-                                                        value={settings?.skillMode || "Auto"}
-                                                        onChange={(value) =>
-                                                            patchSettings({ skillMode: value })
-                                                        }
-                                                        placeholder="Auto"
-                                                        className="wb-tool-selector"
-                                                    />
-                                                </div>
-                                                <div className="tool-menu-row with-control">
-                                                    <Workflow size={14} />
-                                                    <span>Workflow</span>
-                                                </div>
-                                                <div className="tool-menu-select-row">
-                                                    <CustomSelector
-                                                        options={workflowOptions}
-                                                        value={settings?.workflowId || ""}
-                                                        onChange={(value) =>
-                                                            patchSettings(
-                                                                value
-                                                                    ? { workflowId: value }
-                                                                    : { clearWorkflow: true },
-                                                                value
-                                                                    ? "Workflow selected."
-                                                                    : "Workflow cleared.",
-                                                            )
-                                                        }
-                                                        placeholder="None"
-                                                        className="wb-tool-selector"
-                                                    />
-                                                </div>
+
                                                 <div className="tool-menu-divider" />
+
+                                                <button
+                                                    type="button"
+                                                    className="tool-menu-row"
+                                                    onClick={() => openPicker("agent")}
+                                                >
+                                                    <Bot size={14} className="tool-ic ic-accent" />
+                                                    <span>Agent</span>
+                                                    <span className="tool-menu-val muted">
+                                                        {selectedAgentName}
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="tool-menu-row"
+                                                    onClick={() => openPicker("skill")}
+                                                >
+                                                    <Sparkles
+                                                        size={14}
+                                                        className="tool-ic ic-violet"
+                                                    />
+                                                    <span>Skill</span>
+                                                    <span className="tool-menu-val muted">
+                                                        {selectedSkill}
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="tool-menu-row"
+                                                    onClick={() => openPicker("workflow")}
+                                                >
+                                                    <GitBranch size={14} className="tool-ic ic-info" />
+                                                    <span>Workflow</span>
+                                                    <span className="tool-menu-val muted">
+                                                        {selectedWorkflowName}
+                                                    </span>
+                                                </button>
+
+                                                <div className="tool-menu-divider" />
+
+                                                <button
+                                                    type="button"
+                                                    className="tool-menu-row"
+                                                    onClick={() => {
+                                                        setIsToolsPopupOpen(false);
+                                                        handleReloadSettings();
+                                                    }}
+                                                >
+                                                    <RotateCw size={14} className="tool-ic ic-muted" />
+                                                    <span>Reload models, skills &amp; agents</span>
+                                                </button>
+
+                                                <div className="tool-menu-divider" />
+
                                                 <button
                                                     type="button"
                                                     className="tool-menu-row"
@@ -1144,7 +1869,7 @@ const WorkbenchWorkspace = ({
                                                         )
                                                     }
                                                 >
-                                                    <Sliders size={14} />
+                                                    <Zap size={14} className="tool-ic ic-muted" />
                                                     <span>Auto Approve</span>
                                                     <span className="tool-menu-val">
                                                         {settings?.autoApprove ? "ON" : "OFF"}
@@ -1165,12 +1890,15 @@ const WorkbenchWorkspace = ({
                                                         )
                                                     }
                                                 >
-                                                    <EyeOff size={14} />
+                                                    <EyeOff size={14} className="tool-ic ic-muted" />
                                                     <span>Hide Thinking</span>
                                                     <span className="tool-menu-val">
                                                         {settings?.hideThinking ? "ON" : "OFF"}
                                                     </span>
                                                 </button>
+
+                                                <div className="tool-menu-divider" />
+
                                                 <button
                                                     type="button"
                                                     className="tool-menu-row"
@@ -1179,7 +1907,7 @@ const WorkbenchWorkspace = ({
                                                         handleDownloadLocalTranscript();
                                                     }}
                                                 >
-                                                    <Download size={14} />
+                                                    <Download size={14} className="tool-ic ic-muted" />
                                                     <span>Download transcript (.md)</span>
                                                 </button>
                                             </div>
@@ -1199,175 +1927,619 @@ const WorkbenchWorkspace = ({
                                             }}
                                             placeholder="Select model"
                                             className="wb-model-selector"
+                                            portal
                                         />
                                         <button
                                             type="button"
-                                            className={`btn-send-message ${prompt.trim() ? "enabled" : ""}`}
+                                            className={`btn-send-message ${
+                                                prompt.trim() ? "enabled" : ""
+                                            }`}
                                             disabled={!prompt.trim() || sending}
-                                            onClick={handleSendPrompt}
+                                            onClick={() => handleSendPrompt()}
                                             title="Send (Enter)"
                                         >
                                             {sending ? (
-                                                <Loader2 size={14} className="wb-spin" />
+                                                <Loader2 size={13} className="wb-spin" />
                                             ) : (
-                                                <SendHorizontal size={14} />
+                                                <ArrowUp size={14} />
                                             )}
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                            <small className="ai-disclaimer-text">
-                                • {activeConversation?.model || "No model selected"} · AI can make
-                                mistakes. Review the results carefully.
-                            </small>
+                            <div className="wb-chat-status-line">
+                                <span className="wb-online-dot" />
+                                <span className="status-online">Online</span>
+                                <span className="status-sep">·</span>
+                                <span className="disclaimer">
+                                    {activeConversation?.model || "No model selected"} · AI can
+                                    make mistakes. Review the results carefully.
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* ======================================================== */}
-            {/* VIEW B: CANVAS (WORKFLOW NODE DESIGNER)                  */}
+            {/* ======================================================== */}
+            {/* VIEW B: CANVAS (WORKFLOW / AGENT BOARD)                  */}
             {/* ======================================================== */}
             {activeSubView === "canvas" && (
-                <div className="workbench-canvas-layout">
-                    <div className="canvas-left-picker-pane">
-                        <div className="canvas-picker-tabs-row">
+                <div className="wb-canvas-page">
+                    <aside className="wb-canvas-rail">
+                        <div className="wb-canvas-tabs">
                             <button
                                 type="button"
-                                className={`btn-canvas-subtab ${canvasSidebarTab === "workflows" ? "active" : ""}`}
+                                className={`wb-canvas-tab ${
+                                    canvasSidebarTab === "workflows" ? "active" : ""
+                                }`}
                                 onClick={() => setCanvasSidebarTab("workflows")}
                             >
                                 WORKFLOWS
                             </button>
                             <button
                                 type="button"
-                                className={`btn-canvas-subtab ${canvasSidebarTab === "agents" ? "active" : ""}`}
+                                className={`wb-canvas-tab ${
+                                    canvasSidebarTab === "agents" ? "active" : ""
+                                }`}
                                 onClick={() => setCanvasSidebarTab("agents")}
                             >
                                 AGENTS
                             </button>
                         </div>
 
-                        <div className="canvas-picker-items-list">
-                            {(canvasSidebarTab === "workflows" ? workflows : agents).length ? (
-                                (canvasSidebarTab === "workflows" ? workflows : agents).map(
-                                    (item) => (
+                        <div className="wb-canvas-filter">
+                            <Search size={13} />
+                            <input
+                                type="text"
+                                placeholder="Filter…"
+                                value={canvasFilter}
+                                onChange={(event) => setCanvasFilter(event.target.value)}
+                            />
+                        </div>
+
+                        <div className="wb-canvas-list">
+                            <span className="wb-canvas-group-label">BUILT-IN</span>
+                            {filteredCanvasItems.length ? (
+                                filteredCanvasItems.map((item) => {
+                                    const ItemIcon = canvasIconFor({
+                                        ...item,
+                                        kind: canvasSidebarTab,
+                                    });
+                                    const stepCount = String(item.stepsSummary || "")
+                                        .split("→")
+                                        .filter(Boolean).length;
+                                    return (
                                         <div
                                             key={item.id}
-                                            className={`canvas-item-entry ${
+                                            className={`wb-canvas-item ${
                                                 selectedWorkflowId === item.id ? "active" : ""
                                             }`}
-                                            onClick={() =>
-                                                setSelectedWorkflowId(
-                                                    selectedWorkflowId === item.id ? null : item.id,
-                                                )
+                                            style={{
+                                                "--item-color": item.color || "var(--accent)",
+                                            }}
+                                            draggable
+                                            onDragStart={(event) =>
+                                                handleCanvasDragStart(event, item)
                                             }
+                                            onClick={() => handleCanvasAdd(item)}
+                                            title={`Drag ${item.name} onto the grid`}
                                         >
-                                            <span className="indicator-line cyan" />
-                                            <span>{item.name}</span>
+                                            <span className="wb-canvas-item-strip" />
+                                            <span className="wb-canvas-item-icon">
+                                                <ItemIcon size={14} />
+                                            </span>
+                                            <span className="wb-canvas-item-body">
+                                                <strong>{item.name}</strong>
+                                                <small>
+                                                    {canvasSidebarTab === "workflows"
+                                                        ? `${stepCount} nodes`
+                                                        : item.type === "BUILT_IN"
+                                                          ? "built-in agent"
+                                                          : "project agent"}
+                                                </small>
+                                            </span>
                                         </div>
-                                    ),
-                                )
+                                    );
+                                })
                             ) : (
-                                <div className="canvas-empty-text">
-                                    No {canvasSidebarTab} in this project yet.
+                                <div className="wb-canvas-empty">
+                                    No {canvasSidebarTab} match “{canvasFilter}”.
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </aside>
 
-                    <div className="canvas-graph-main-pane">
-                        <div className="canvas-graph-top-actions">
-                            <span className="canvas-status-tag">
-                                {workflowById(selectedWorkflowId)?.stepsSummary
-                                    ? `Steps: ${workflowById(selectedWorkflowId).meta}`
-                                    : "Ready"}
-                            </span>
-                            <div className="canvas-top-btn-cluster">
+                    <section className="wb-canvas-stage">
+                        <div className="wb-canvas-topbar">
+                            <div className="wb-canvas-status">
+                                <span
+                                    className={`wb-canvas-dot ${
+                                        canvasNodes.length ? "live" : ""
+                                    }`}
+                                />
+                                <strong>
+                                    {canvasNodes.length
+                                        ? `${canvasNodes.length} item${
+                                              canvasNodes.length > 1 ? "s" : ""
+                                          } on canvas`
+                                        : "Drag a workflow onto the grid"}
+                                </strong>
+                            </div>
+                            <div className="wb-canvas-actions">
+                                <span className="wb-canvas-zoom-val">
+                                    {Math.round(canvasZoom * 100)}%
+                                </span>
                                 <button
                                     type="button"
-                                    className="btn-canvas-save"
-                                    onClick={() =>
-                                        showToast(
-                                            "Canvas is read-only in this version. Edit steps in the Workflows tab.",
-                                            "info",
-                                        )
-                                    }
+                                    className="btn-wb-mini"
+                                    onClick={() => onOpenWorkflows?.()}
+                                    title="Open the Workflows tab to edit steps"
                                 >
-                                    <Save size={13} />
-                                    <span>Save</span>
+                                    <PanelsTopLeft size={12} />
+                                    <span>Open in Workflows</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn-wb-mini primary"
+                                    onClick={() => setCanvasNodes([])}
+                                    disabled={!canvasNodes.length}
+                                >
+                                    <Trash2 size={12} />
+                                    <span>Clear</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div className="canvas-nodes-flow-container">
-                            {(() => {
-                                const selected = workflowById(selectedWorkflowId);
-                                if (!selected) {
-                                    return (
-                                        <div className="canvas-empty-text">
-                                            Select a workflow on the left to preview its steps.
-                                        </div>
-                                    );
-                                }
-                                // Chuỗi bước lưu dạng "A → (B || C) → D": tách theo mũi tên
-                                // để mỗi bước thành một node thật từ BE.
-                                const steps = String(selected.stepsSummary || "")
-                                    .split("→")
-                                    .map((step) => step.trim())
-                                    .filter(Boolean);
-                                if (!steps.length) {
-                                    return (
-                                        <div className="canvas-empty-text">
-                                            This workflow has no steps yet.
-                                        </div>
-                                    );
-                                }
-                                return steps.map((step, index) => {
-                                    const parallel = step.includes("||");
-                                    const roles = parallel
-                                        ? step
-                                              .replace(/[()]/g, "")
-                                              .split("||")
-                                              .map((r) => r.trim())
-                                        : [step];
-                                    return (
-                                        <div key={`${step}-${index}`} className="canvas-node-wrap">
-                                            {index > 0 && (
-                                                <div className="node-flow-connector-line" />
-                                            )}
-                                            <div className="canvas-node-card">
-                                                <div className="node-header-row">
-                                                    <div className="node-title-group">
-                                                        {parallel ? (
-                                                            <GitBranch size={16} />
-                                                        ) : index === 0 ? (
-                                                            <Bot size={16} />
-                                                        ) : (
-                                                            <Server size={16} />
-                                                        )}
-                                                        <strong>{step}</strong>
-                                                    </div>
-                                                    <span className="node-role-badge">
-                                                        {parallel ? "PARALLEL" : "SEQUENTIAL"}
+                        <div
+                            ref={canvasGridRef}
+                            className={`wb-canvas-grid ${canvasDragOver ? "drop-active" : ""}`}
+                            style={{ backgroundSize: `${22 * canvasZoom}px ${22 * canvasZoom}px` }}
+                            onDragOver={(event) => {
+                                event.preventDefault();
+                                setCanvasDragOver(true);
+                            }}
+                            onDragLeave={() => setCanvasDragOver(false)}
+                            onDrop={handleCanvasDrop}
+                        >
+                            <div
+                                className="wb-canvas-world"
+                                style={{ transform: `scale(${canvasZoom})` }}
+                            >
+                                {canvasNodes.length ? (
+                                    canvasNodes.map((node) => {
+                                        const NodeIcon = canvasIconFor(node);
+                                        const steps = String(node.stepsSummary || "")
+                                            .split("→")
+                                            .map((step) => step.trim())
+                                            .filter(Boolean);
+                                        return (
+                                            <div
+                                                key={node.key}
+                                                className="wb-canvas-node"
+                                                style={{
+                                                    left: `${node.x}px`,
+                                                    top: `${node.y}px`,
+                                                    "--node-color":
+                                                        node.color || "var(--accent)",
+                                                }}
+                                            >
+                                                <div className="wb-canvas-node-head">
+                                                    <span className="wb-canvas-node-icon">
+                                                        <NodeIcon size={13} />
                                                     </span>
+                                                    <strong>{node.name}</strong>
+                                                    <button
+                                                        type="button"
+                                                        className="wb-canvas-node-remove"
+                                                        title="Remove from canvas"
+                                                        onClick={() =>
+                                                            setCanvasNodes((prev) =>
+                                                                prev.filter(
+                                                                    (item) =>
+                                                                        item.key !== node.key,
+                                                                ),
+                                                            )
+                                                        }
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
                                                 </div>
-                                                {parallel && (
-                                                    <div className="node-parallel-agents-tags">
-                                                        {roles.map((role) => (
-                                                            <span key={role}>{role}</span>
+                                                <div className="wb-canvas-node-meta">
+                                                    <span>
+                                                        {node.kind === "agents"
+                                                            ? "agent"
+                                                            : "workflow"}
+                                                    </span>
+                                                    {node.type ? (
+                                                        <span>
+                                                            ·{" "}
+                                                            {node.type === "BUILT_IN"
+                                                                ? "built-in"
+                                                                : "project"}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                                {steps.length > 0 ? (
+                                                    <div className="wb-canvas-node-steps">
+                                                        {steps.slice(0, 4).map((step, index) => (
+                                                            <span key={`${node.key}-${index}`}>
+                                                                {step}
+                                                            </span>
                                                         ))}
+                                                        {steps.length > 4 && (
+                                                            <span>+{steps.length - 4}</span>
+                                                        )}
                                                     </div>
+                                                ) : (
+                                                    node.role && (
+                                                        <p className="wb-canvas-node-role">
+                                                            {node.role}
+                                                        </p>
+                                                    )
                                                 )}
                                             </div>
-                                        </div>
-                                    );
-                                });
-                            })()}
+                                        );
+                                    })
+                                ) : (
+                                    <div className="wb-canvas-hint">
+                                        <Layers size={26} />
+                                        <span>Drop a workflow or agent here.</span>
+                                        <small>
+                                            Hover an item on the left, then drag it onto the grid.
+                                        </small>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="wb-canvas-tools">
+                                <button
+                                    type="button"
+                                    title="Zoom in"
+                                    onClick={() =>
+                                        setCanvasZoom((zoom) =>
+                                            Math.min(1.6, Number((zoom + 0.1).toFixed(2))),
+                                        )
+                                    }
+                                >
+                                    <ZoomIn size={14} />
+                                </button>
+                                <button
+                                    type="button"
+                                    title="Zoom out"
+                                    onClick={() =>
+                                        setCanvasZoom((zoom) =>
+                                            Math.max(0.5, Number((zoom - 0.1).toFixed(2))),
+                                        )
+                                    }
+                                >
+                                    <ZoomOut size={14} />
+                                </button>
+                                <button
+                                    type="button"
+                                    title="Reset zoom"
+                                    onClick={() => setCanvasZoom(1)}
+                                >
+                                    <RotateCcw size={13} />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="danger"
+                                    title="Clear canvas"
+                                    onClick={() => setCanvasNodes([])}
+                                >
+                                    <Trash2 size={13} />
+                                </button>
+                            </div>
                         </div>
+
+                        {messages.length > 0 && (
+                            <div className="wb-canvas-messages">
+                                <span className="wb-canvas-messages-title">
+                                    <MessageSquare size={12} />
+                                    Messages
+                                    <span>{messages.length}</span>
+                                </span>
+                                <p>{messages[messages.length - 1]?.content}</p>
+                            </div>
+                        )}
+                    </section>
+                </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* VIEW D: CHANGES (FILES CHANGED + DIFF VIEWER)            */}
+            {/* ======================================================== */}
+            {activeSubView === "changes" && (
+                <div className="wb-changes-page">
+                    <aside className="wb-changes-files-pane">
+                        <div className="wb-changes-pane-head">
+                            <div className="wb-pane-title-group">
+                                <GitCompare size={14} />
+                                <strong>Files changed</strong>
+                                <span className="wb-changes-ratio">
+                                    {changedFiles.length}/{changedFiles.length}
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                className="btn-icon-ghost"
+                                title="Refresh"
+                                onClick={() => loadFiles()}
+                            >
+                                <RefreshCw size={13} />
+                            </button>
+                        </div>
+
+                        <div className="wb-changes-filter-row">
+                            <span className="wb-changes-filter-pill">All</span>
+                            <span className="wb-diffstat-add">+{changesAddTotal}</span>
+                            <span className="wb-diffstat-del">−0</span>
+                        </div>
+
+                        <div className="wb-changes-file-list">
+                            {changedFiles.length ? (
+                                changedFiles.map((file) => (
+                                    <button
+                                        key={file.id}
+                                        type="button"
+                                        className={`wb-changes-file ${
+                                            changeFile?.id === file.id ? "active" : ""
+                                        }`}
+                                        onClick={() => handleSelectChangeFile(file)}
+                                        title={file.path}
+                                    >
+                                        <CheckCircle2
+                                            size={13}
+                                            className="wb-change-check"
+                                            aria-hidden="true"
+                                        />
+                                        <span className="wb-change-badge">M</span>
+                                        <span className="wb-change-path">{file.path}</span>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="wb-changes-empty">
+                                    <GitCompare size={22} />
+                                    <span>No local changes yet</span>
+                                    <small>Files you edit in the IDE show up here.</small>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="wb-changes-pane-foot">
+                            <button
+                                type="button"
+                                className="btn-wb-mini"
+                                onClick={handleDownloadWorkspace}
+                            >
+                                <Download size={12} />
+                                <span>Download workspace</span>
+                            </button>
+                        </div>
+                    </aside>
+
+                    <section className="wb-diff-pane">
+                        <div className="wb-diff-head">
+                            <div className="wb-pane-title-group">
+                                <FileText size={14} />
+                                <span className="wb-diff-path">
+                                    {changeFile?.path || "Select a file to view its changes"}
+                                </span>
+                            </div>
+                            <div className="wb-header-right-controls">
+                                {changeFile && (
+                                    <>
+                                        <span className="wb-diffstat-add">
+                                            +{changeFile.lineCount || changeLines.length}
+                                        </span>
+                                        <span className="wb-diffstat-del">−0</span>
+                                        <button
+                                            type="button"
+                                            className="btn-wb-mini"
+                                            onClick={() => handleOpenFileFromView(changeFile)}
+                                        >
+                                            <Pencil size={12} />
+                                            <span>Edit</span>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="wb-diff-body">
+                            {changeLoading ? (
+                                <div className="wb-view-empty-stage">
+                                    <Loader2 size={22} className="wb-spin" />
+                                    <span>Loading diff…</span>
+                                </div>
+                            ) : changeFile ? (
+                                <>
+                                    <div className="wb-diff-fileheader">
+                                        <span className="wb-diff-hunk">
+                                            @@ {changeFile.path} @@
+                                        </span>
+                                        <span className="wb-diff-filemeta">
+                                            {changeFile.language} ·{" "}
+                                            {formatBytes(changeFile.sizeBytes)} · edited{" "}
+                                            {formatRelative(changeFile.updatedAt)}
+                                        </span>
+                                    </div>
+                                    <div className="wb-diff-lines">
+                                        {changeLines.map((line, index) => (
+                                            <div
+                                                key={`diff-${index}`}
+                                                className="wb-diff-line added"
+                                            >
+                                                <span className="wb-diff-ln">{index + 1}</span>
+                                                <span className="wb-diff-sign">+</span>
+                                                <code>{line || " "}</code>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="wb-view-empty-stage">
+                                    <GitCompare size={30} />
+                                    <span>Pick a file to see its changes</span>
+                                    <small>
+                                        Every file you edited in the IDE is listed on the left.
+                                    </small>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {/* VIEW E: GALAXY (BẢN ĐỒ CHÒM SAO CỦA WORKSPACE)           */}
+            {/* ======================================================== */}
+            {activeSubView === "galaxy" && (
+                <div className="workbench-galaxy-layout">
+                    <div className="wb-galaxy-header">
+                        <div className="wb-changes-title-group">
+                            <Orbit size={14} />
+                            <strong>Galaxy</strong>
+                            <span className="wb-changes-count">
+                                {files.length} file(s) · click a star to open it in the IDE
+                            </span>
+                        </div>
+                        <div className="wb-header-right-controls">
+                            <span className="wb-galaxy-legend">
+                                <i className="legend-dot edited" /> edited by you
+                            </span>
+                        </div>
+                    </div>
+                    <div className="wb-galaxy-stage">
+                        {files.length ? (
+                            <WorkbenchGalaxy
+                                files={files}
+                                onOpenFile={handleOpenFileFromView}
+                            />
+                        ) : (
+                            <div className="wb-view-empty-stage">
+                                <Orbit size={30} />
+                                <span>Nothing to map yet</span>
+                                <small>Upload files or sync a folder to see the galaxy.</small>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
+
+            {/* ======================================================== */}
+            {/* ======================================================== */}
+            {/* VIEW F: PREVIEW (RENDER MARKDOWN / APP PREVIEW STAGE)    */}
+            {/* ======================================================== */}
+            {activeSubView === "preview" && (
+                <div className="wb-preview-page">
+                    <aside className="wb-preview-rail">
+                        <div className="wb-rail-header-row">
+                            <BookOpen size={14} />
+                            <strong>Markdown</strong>
+                            <span className="wb-rail-count">{markdownFiles.length}</span>
+                        </div>
+                        <div className="wb-rail-list">
+                            {markdownFiles.length ? (
+                                markdownFiles.map((file) => (
+                                    <button
+                                        key={file.id}
+                                        type="button"
+                                        className={`wb-preview-item ${
+                                            previewFile?.id === file.id ? "active" : ""
+                                        }`}
+                                        onClick={() => handlePreviewFile(file)}
+                                        title={file.path}
+                                    >
+                                        <FileText size={13} />
+                                        <span>{file.name}</span>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="convo-empty-text">
+                                    No markdown files in this workspace yet.
+                                </div>
+                            )}
+                        </div>
+                    </aside>
+
+                    <section className="wb-preview-stage">
+                        <div className="wb-preview-topbar">
+                            <div className="wb-pane-title-group">
+                                <Globe size={14} />
+                                <strong>{previewFile?.name || "Preview"}</strong>
+                            </div>
+                            <div className="wb-header-right-controls">
+                                {previewFile && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className={`wb-preview-tab ${
+                                                previewRaw ? "" : "active"
+                                            }`}
+                                            onClick={() => setPreviewRaw(false)}
+                                        >
+                                            Preview
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`wb-preview-tab ${
+                                                previewRaw ? "active" : ""
+                                            }`}
+                                            onClick={() => setPreviewRaw(true)}
+                                        >
+                                            Raw
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-wb-mini"
+                                            onClick={() => handleOpenFileFromView(previewFile)}
+                                        >
+                                            <Pencil size={12} />
+                                            <span>Edit</span>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="wb-preview-body">
+                            {previewLoading ? (
+                                <div className="wb-view-empty-stage">
+                                    <Loader2 size={24} className="wb-spin" />
+                                    <span>Loading file…</span>
+                                </div>
+                            ) : previewFile && !previewRaw ? (
+                                <div
+                                    className="wb-md-render"
+                                    dangerouslySetInnerHTML={{ __html: previewHtml }}
+                                />
+                            ) : previewFile && previewRaw ? (
+                                <pre className="wb-md-raw">{previewFile.content}</pre>
+                            ) : (
+                                <div className="wb-preview-empty">
+                                    <Globe size={44} className="wb-preview-globe" />
+                                    <strong>No running apps detected</strong>
+                                    <button
+                                        type="button"
+                                        className="btn-preview-run"
+                                        onClick={handleRunPreview}
+                                    >
+                                        <Play size={13} />
+                                        <span>Run App</span>
+                                    </button>
+                                    <p>
+                                        Renders markdown from this workspace. Pick a file on the
+                                        left, or run the app to preview it here.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                </div>
+            )}
+
         </div>
     );
 };

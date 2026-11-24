@@ -1,6 +1,6 @@
 .vibe-projects-viewport {
     max-width: 1420px;
-    margin: 0 auto;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -18,13 +18,13 @@
     margin: 0;
     font-size: 1.28rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     letter-spacing: -0.01em;
 }
 
 .projects-total-count {
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 /* Controls & Filter Bar */
@@ -41,20 +41,20 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 6px 14px;
     box-sizing: border-box;
     transition: border-color 0.15s ease;
 }
 
 .search-pill-container:focus-within {
-    border-color: #059669;
+    border-color: var(--success);
 }
 
 .search-glyph-muted {
-    color: #94a3b8;
+    color: var(--text-faint);
     flex-shrink: 0;
 }
 
@@ -63,7 +63,7 @@
     outline: none;
     background: transparent;
     font-size: 0.78rem;
-    color: #0f172a;
+    color: var(--text-primary);
     width: 100%;
 }
 
@@ -76,13 +76,13 @@
 /* Thông báo tải / lỗi */
 .projects-loading-text {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
     margin: 12px 0;
 }
 
 .projects-error-text {
     font-size: 0.8rem;
-    color: #ef4444;
+    color: var(--danger);
     margin: 12px 0;
 }
 
@@ -100,7 +100,7 @@
 .projects-empty-group-title {
     font-size: 0.95rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary);
 }
 
 .projects-empty-grid {
@@ -116,8 +116,8 @@
     justify-content: center;
     gap: 10px;
     background-color: transparent;
-    border: 1.5px dashed #cbd5e1; /* Viền nét đứt màu xanh xám nhạt */
-    border-radius: 12px; /* Bo góc tròn */
+    border: 1.5px dashed var(--border-strong); /* Viền nét đứt màu xanh xám nhạt */
+    border-radius: 8px; /* Bo góc tròn */
     height: 150px;
     width: 100%;
     cursor: pointer;
@@ -126,12 +126,12 @@
 }
 
 .btn-create-project-dashed-card:hover {
-    border-color: #94a3b8;
+    border-color: var(--text-faint);
     background-color: rgba(248, 250, 252, 0.6);
 }
 
 .dashed-plus-icon {
-    color: #64748b;
+    color: var(--text-muted);
     transition:
         transform 0.15s ease,
         color 0.15s ease;
@@ -139,17 +139,17 @@
 
 .btn-create-project-dashed-card:hover .dashed-plus-icon {
     transform: scale(1.1);
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .dashed-label-text {
     font-size: 0.88rem;
     font-weight: 500;
-    color: #475569;
+    color: var(--text-tertiary);
 }
 
 .btn-create-project-dashed-card:hover .dashed-label-text {
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 /* ======================================================== */
@@ -162,9 +162,9 @@
 }
 
 .project-entity-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 16px 18px;
     display: flex;
     flex-direction: column;
@@ -177,7 +177,7 @@
 
 .project-entity-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 10px 24px -4px rgba(var(--shadow-rgb), 0.06);
 }
 
 /* Card Top Line */
@@ -195,13 +195,13 @@
 }
 
 .entity-folder-glyph {
-    color: #64748b;
+    color: var(--text-muted);
     flex-shrink: 0;
 }
 
 .entity-title-cluster strong {
     font-size: 0.94rem;
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -216,13 +216,13 @@
 }
 
 .glyph-star-pinned {
-    color: #eab308;
-    fill: #eab308;
+    color: var(--warning);
+    fill: var(--warning);
 }
 
 .glyph-star-muted,
 .glyph-archive-muted {
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 /* Status Pill */
@@ -232,36 +232,36 @@
     gap: 4px;
     font-size: 0.7rem;
     padding: 2px 7px;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    border: 1px solid var(--border);
 }
 
 .entity-status-tag.active {
-    color: #059669;
-    border-color: #a7f3d0;
-    background-color: #ecfdf5;
+    color: var(--success);
+    border-color: var(--success-border);
+    background-color: var(--success-soft);
     font-weight: 600;
 }
 
 .entity-status-tag.idle {
-    color: #64748b;
-    background-color: #f8fafc;
+    color: var(--text-muted);
+    background-color: var(--surface-sunken);
 }
 
 .entity-status-tag.archived {
-    color: #d97706;
-    background-color: #fef3c7;
-    border-color: #fde68a;
+    color: var(--warning-strong);
+    background-color: var(--warning-soft-2);
+    border-color: var(--warning-border);
 }
 
 /* Card Type Row */
 .entity-type-row {
     font-size: 0.76rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .local-project-label {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .remote-git-link {
@@ -272,7 +272,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #475569;
+    color: var(--text-tertiary);
 }
 
 .remote-git-link span {
@@ -282,7 +282,7 @@
 }
 
 .external-link-glyph {
-    color: #94a3b8;
+    color: var(--text-faint);
     flex-shrink: 0;
 }
 
@@ -292,7 +292,7 @@
     align-items: center;
     gap: 12px;
     font-size: 0.74rem;
-    color: #64748b;
+    color: var(--text-muted);
     margin-bottom: 6px;
 }
 
@@ -300,23 +300,23 @@
 .btn-open-project-pill {
     width: 100%;
     padding: 8px 0;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s ease;
 }
 
 .btn-open-project-pill:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
 }
 
 @media (max-width: 1100px) {
     .projects-catalog-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 }

@@ -2,7 +2,7 @@
 .task-modal-fixed-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(15, 23, 42, 0.45);
+    background-color: rgba(var(--shadow-rgb), 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -14,24 +14,24 @@
 
 /* Card Modal chính: Giới hạn chiều cao và chia 3 tầng rõ rệt */
 .task-modal-container-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;;
     width: 100%;
     max-width: 540px;
     max-height: 88vh; /* Không bao giờ tràn ra ngoài màn hình */
     display: flex;
     flex-direction: column;
-    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+    box-shadow: 0 24px 48px rgba(var(--shadow-rgb), 0.16);
     overflow: hidden; /* Che thanh cuộn ở viền ngoài cùng */
     box-sizing: border-box;
 }
 
 /* 1. Header cố định: Nền trắng, có viền ngăn cách */
 .task-modal-header-fixed {
-    background-color: #ffffff;
+    background-color: var(--surface-card);
     padding: 18px 24px 14px 24px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--surface-sunken-2);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -49,30 +49,30 @@
     margin: 0;
     font-size: 1.15rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .task-id-badge {
     font-size: 0.78rem;
-    color: #64748b;
-    font-family: monospace;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
 }
 
 .btn-modal-close-round {
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 10px;
     display: grid;
     place-items: center;
     transition: background-color 0.12s ease;
 }
 
 .btn-modal-close-round:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
 }
 
 /* 2. Body cuộn riêng biệt ở giữa */
@@ -88,8 +88,8 @@
     width: 6px;
 }
 .task-modal-body-scrollable::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 4px;
+    background-color: var(--border-strong);
+    border-radius: 10px;
 }
 .task-modal-body-scrollable::-webkit-scrollbar-track {
     background: transparent;
@@ -111,26 +111,26 @@
 .field-title-label {
     font-size: 0.8rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-secondary);
 }
 
 /* Title input */
 .pill-text-input {
     width: 100%;
     height: 38px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 0 14px;
     font-size: 0.82rem;
-    color: #0f172a;
+    color: var(--text-primary);
     box-sizing: border-box;
     outline: none;
     transition: border-color 0.12s ease;
 }
 
 .pill-text-input.active-border {
-    border: 1.5px solid #0f172a;
+    border: 1.5px solid var(--text-primary);
     height: 40px;
 }
 
@@ -147,7 +147,7 @@
     gap: 4px;
     background: transparent;
     border: none;
-    color: #0f172a;
+    color: var(--text-primary);
     font-size: 0.78rem;
     font-weight: 500;
     cursor: pointer;
@@ -155,12 +155,12 @@
 
 .textarea-field-box {
     width: 100%;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
     padding: 10px 14px;
     font-size: 0.8rem;
-    color: #0f172a;
+    color: var(--text-primary);
     box-sizing: border-box;
     outline: none;
     resize: vertical;
@@ -175,26 +175,26 @@
 }
 
 .attachment-clip-glyph {
-    color: #475569;
+    color: var(--text-tertiary);
 }
 
 .dropzone-dashed-box {
-    border: 1px dashed #cbd5e1;
-    border-radius: 8px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
     padding: 14px 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     font-size: 0.78rem;
-    color: #64748b;
-    background-color: #fafbfc;
+    color: var(--text-muted);
+    background-color: var(--surface-inset);
     cursor: pointer;
     transition: border-color 0.12s ease;
 }
 
 .dropzone-dashed-box:hover {
-    border-color: #94a3b8;
+    border-color: var(--text-faint);
 }
 
 /* Estimates 3 cột */
@@ -206,7 +206,7 @@
 
 .field-jira-help-text {
     font-size: 0.7rem;
-    color: #64748b;
+    color: var(--text-muted);
     margin-top: -6px;
 }
 
@@ -235,19 +235,19 @@
     gap: 6px;
     height: 34px;
     padding: 0 10px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background-color: #ffffff;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background-color: var(--surface-card);
     font-size: 0.75rem;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     box-sizing: border-box;
     transition: all 0.12s ease;
 }
 
 .btn-chip-status-selector.selected {
-    border: 1.5px solid #0f172a;
-    background-color: #f1f5f9;
+    border: 1.5px solid var(--text-primary);
+    background-color: var(--surface-sunken-2);
     font-weight: 500;
 }
 
@@ -259,16 +259,16 @@
 }
 
 .chip-color-dot.dot-backlog {
-    background-color: #64748b;
+    background-color: var(--text-muted);
 }
 .chip-color-dot.dot-in-progress {
-    background-color: #3b82f6;
+    background-color: var(--info);
 }
 .chip-color-dot.dot-review {
-    background-color: #f59e0b;
+    background-color: var(--warning);
 }
 .chip-color-dot.dot-completed {
-    background-color: #10b981;
+    background-color: var(--success-bright);
 }
 
 .priority-pills-horizontal {
@@ -282,15 +282,15 @@
     background: transparent;
     border: none;
     font-size: 0.76rem;
-    color: #64748b;
+    color: var(--text-muted);
     padding: 4px 8px;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
 }
 
 .btn-priority-toggle.selected {
-    background-color: #e0f2fe;
-    color: #0284c7;
+    background-color: var(--accent-soft);
+    color: var(--accent);
     font-weight: 600;
 }
 
@@ -300,8 +300,8 @@
     align-items: center;
     gap: 8px;
     height: 38px;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     padding: 0 14px;
     box-sizing: border-box;
 }
@@ -310,8 +310,8 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
     font-size: 0.62rem;
     font-weight: 700;
     display: grid;
@@ -320,7 +320,7 @@
 
 .assignee-display-name {
     font-size: 0.8rem;
-    color: #0f172a;
+    color: var(--text-primary);
     flex: 1;
 }
 
@@ -328,7 +328,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .clear-assignee-glyph,
@@ -341,7 +341,7 @@
     align-items: center;
     gap: 8px;
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--text-muted);
     padding-top: 4px;
 }
 
@@ -361,10 +361,10 @@
     justify-content: space-between;
     height: 36px;
     padding: 0 14px;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     font-size: 0.8rem;
-    color: #334155;
+    color: var(--text-secondary);
 }
 
 .btn-footer-save-pill:disabled {
@@ -374,9 +374,9 @@
 
 /* 3. Footer cố định: Nền trắng, nằm trên lớp cuộn */
 .task-modal-footer-fixed {
-    background-color: #ffffff;
+    background-color: var(--surface-card);
     padding: 14px 24px 18px 24px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--surface-sunken-2);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -390,17 +390,17 @@
     gap: 6px;
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.8rem;
     cursor: pointer;
     padding: 6px 8px;
-    border-radius: 6px;
+    border-radius: 10px;
     transition: background-color 0.12s ease;
 }
 
 .btn-action-archive-left:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
 }
 
 .footer-right-buttons-cluster {
@@ -411,26 +411,26 @@
 
 .btn-footer-close-pill {
     padding: 7px 18px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     font-size: 0.8rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.12s ease;
 }
 
 .btn-footer-close-pill:hover {
-    background-color: #f8fafc;
+    background-color: var(--surface-sunken);
 }
 
 .btn-footer-save-pill {
     padding: 7px 20px;
-    background-color: #71717a;
-    color: #ffffff;
+    background-color: var(--text-faint);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: 20px;
+    border-radius: 16px;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
@@ -438,5 +438,5 @@
 }
 
 .btn-footer-save-pill:hover {
-    background-color: #52525b;
+    background-color: var(--text-muted);
 }

@@ -1,116 +1,237 @@
-.settings-narrow-wrap {
-    max-width: 680px;
+/* ==========================================================================
+   Dev Hub · User Settings
+   Cùng ngôn ngữ thiết kế với Home / Projects / Tasks: nền page, card
+   surface-card viền mảnh, tiêu đề 1.28rem, chữ phụ 0.8rem.
+   ========================================================================== */
+.settings-page {
+    width: 100%;
+    max-width: 880px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-bottom: 32px;
+    box-sizing: border-box;
+}
+
+/* Header */
+.settings-page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settings-page-header h2 {
+    margin: 0;
+    font-size: 1.28rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.settings-page-header p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Stack card */
+.settings-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .settings-section-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 9px;
-    padding: 20px;
-    margin-top: 16px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.04);
+    box-sizing: border-box;
 }
 
-.settings-section-header {
+.settings-section-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    gap: 16px;
+}
+
+.settings-section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.settings-icon-chip {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    background-color: var(--accent-soft);
+    color: var(--accent);
+}
+
+.header-meta-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 
 .header-meta-wrap strong {
-    font-size: 0.88rem;
-    color: #0f172a;
-    display: block;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .header-meta-wrap small {
-    font-size: 0.72rem;
-    color: #64748b;
+    font-size: 0.74rem;
+    color: var(--text-muted);
 }
 
 .spend-number {
+    font-family: var(--font-mono);
     font-size: 0.78rem;
-    font-family: monospace;
-    color: #0f172a;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    padding-top: 3px;
 }
 
+/* Usage bar */
 .spend-progress-bar {
     width: 100%;
     height: 6px;
-    background-color: #f1f5f9;
-    border-radius: 3px;
+    border-radius: 999px;
+    background-color: var(--surface-sunken-2);
     overflow: hidden;
 }
 
 .spend-bar-fill {
     height: 100%;
-    background-color: #10b981;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+    transition: width 0.3s ease;
 }
 
-/* Form chỉnh hạn mức + ngày reset */
+/* Limit form — input và nút Save cùng hàng, cùng đáy */
 .settings-limit-form {
     display: flex;
     align-items: flex-end;
     gap: 12px;
     flex-wrap: wrap;
-    padding-top: 4px;
+    padding-top: 2px;
 }
 
 .settings-inline-field {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    font-size: 0.72rem;
-    color: #64748b;
+    gap: 6px;
+    font-size: 0.73rem;
+    font-weight: 500;
+    color: var(--text-muted);
 }
 
 .settings-inline-field input {
-    width: 120px;
-    padding: 6px 10px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 0.78rem;
-    color: #0f172a;
-    background-color: #ffffff;
+    width: 132px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--surface-sunken);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    box-sizing: border-box;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease;
 }
 
-.providers-title-row {
-    display: flex;
+.settings-inline-field input:hover {
+    border-color: var(--border-strong);
+}
+
+.settings-inline-field input:focus {
+    border-color: var(--accent);
+    background-color: var(--surface-card);
+}
+
+.btn-save-limit {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    color: #0f172a;
-    font-size: 0.92rem;
-}
-
-.providers-lead-text {
+    justify-content: center;
+    height: 36px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
     font-size: 0.78rem;
-    color: #64748b;
-    margin: 0;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background-color 0.15s ease,
+        opacity 0.15s ease;
 }
 
-.provider-input-item {
-    border-top: 1px solid #f8fafc;
-    padding-top: 12px;
+.btn-save-limit:hover {
+    background-color: var(--solid-invert-bg-hover);
+}
+
+.btn-save-limit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Provider list */
+.provider-list {
     display: flex;
     flex-direction: column;
+    gap: 10px;
+}
+
+.provider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--border-faint);
+    border-radius: 10px;
+    background-color: var(--surface-sunken);
+    box-sizing: border-box;
+}
+
+.provider-row-head {
+    display: flex;
+    align-items: center;
     gap: 8px;
 }
 
-.provider-name-line {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
+.provider-row-head strong {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-.provider-tag {
-    font-size: 0.65rem;
-    background-color: #f1f5f9;
-    padding: 1px 5px;
-    border-radius: 3px;
-    color: #64748b;
+.provider-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: var(--success-soft);
+    color: var(--success);
+    font-size: 0.66rem;
+    font-weight: 600;
 }
 
 .provider-input-group {
@@ -122,70 +243,122 @@
 .provider-input-group input {
     flex: 1;
     min-width: 0;
-    padding: 6px 10px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-family: monospace;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--surface-card);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
     font-size: 0.78rem;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
 }
 
-.provider-form-actions {
+.provider-input-group input:hover {
+    border-color: var(--border-strong);
+}
+
+.provider-input-group input:focus {
+    border-color: var(--accent);
+}
+
+.provider-input-group input[readonly] {
+    color: var(--text-muted);
+    cursor: default;
+}
+
+.provider-actions {
     display: flex;
     align-items: center;
     gap: 8px;
+    align-self: flex-start;
 }
 
-.btn-connect-provider {
-    align-self: flex-start;
+/* Nút dùng chung trong trang Settings */
+.btn-provider {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    border-radius: 5px;
-    border: 1px solid #10b981;
-    background-color: #ecfdf5;
-    color: #059669;
-    font-size: 0.74rem;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 10px;
+    font-size: 0.76rem;
     font-weight: 600;
     cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        opacity 0.15s ease;
 }
 
-.btn-connect-provider:disabled {
-    opacity: 0.65;
+.btn-provider.solid {
+    border: 1px solid transparent;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
+}
+
+.btn-provider.solid:hover {
+    background-color: var(--solid-invert-bg-hover);
+}
+
+.btn-provider.outline {
+    border: 1px solid var(--border-strong);
+    background-color: transparent;
+    color: var(--text-secondary);
+}
+
+.btn-provider.outline:hover {
+    border-color: var(--accent);
+    background-color: var(--accent-soft);
+    color: var(--accent);
+}
+
+.btn-provider.ghost {
+    border: 1px solid var(--border);
+    background-color: transparent;
+    color: var(--text-muted);
+}
+
+.btn-provider.ghost:hover:not(:disabled) {
+    border-color: var(--danger-border);
+    background-color: var(--danger-soft);
+    color: var(--danger);
+}
+
+.btn-provider:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-.btn-connect-provider.outlined {
-    border-color: #cbd5e1;
-    background-color: #ffffff;
-    color: #334155;
-}
-
-/* Trạng thái tải / lỗi */
+/* Trạng thái tải / lỗi / rỗng */
 .settings-state-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 16px;
+    gap: 10px;
+    padding: 16px 18px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 12px;
+    background-color: var(--surface-card);
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
+}
+
+.settings-state-inline {
+    padding: 14px 16px;
+    border-style: solid;
+    border-color: var(--border-faint);
+    border-radius: 10px;
+    background-color: var(--surface-sunken);
 }
 
 .settings-state-error {
-    color: #b91c1c;
-}
-
-.btn-refresh-settings {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: transparent;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 0.74rem;
-    color: #334155;
-    cursor: pointer;
+    color: var(--danger);
+    border-color: var(--danger-border);
+    justify-content: space-between;
 }
 
 .setting-spin {

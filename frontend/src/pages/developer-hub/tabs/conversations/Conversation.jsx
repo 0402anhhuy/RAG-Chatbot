@@ -12,17 +12,11 @@ import {
 import { chatApi } from "../../../../api";
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import "./Conversation.css";
+import { getSessionUserId } from "../../../../components/common/utils/session";
 
 const PAGE_SIZE = 50;
 const SEARCH_DEBOUNCE_MS = 350;
 
-const getOwnerId = () => {
-    try {
-        return JSON.parse(localStorage.getItem("rag_session") || "{}")?.user?.id;
-    } catch {
-        return null;
-    }
-};
 
 // Lựa chọn lọc trạng thái dùng CustomSelector chung (không dùng thẻ select mặc định)
 const STATUS_OPTIONS = [
@@ -120,7 +114,7 @@ const Conversation = ({ onOpenConversation }) => {
 
     const loadConversations = useCallback(
         async (signal) => {
-            const ownerId = getOwnerId();
+            const ownerId = getSessionUserId();
             if (!ownerId) {
                 setConversations([]);
                 setCounts({ active: 0, archived: 0, all: 0 });

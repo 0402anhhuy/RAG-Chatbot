@@ -1,7 +1,7 @@
 .edu-navbar {
     height: 48px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--frame-bg);
+    border-bottom: 1px solid var(--frame-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -26,21 +26,21 @@
 }
 
 .edu-navbar .crumb-root {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .edu-navbar .crumb-separator {
-    color: #cbd5e1;
+    color: var(--border-strong);
     font-size: 0.75rem;
 }
 
 .edu-navbar .crumb-hub {
-    color: #059669;
+    color: var(--success);
     font-weight: 500;
 }
 
 .edu-navbar .crumb-current {
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -58,18 +58,18 @@
     gap: 6px;
     font-size: 0.74rem;
     font-weight: 500;
-    color: #334155;
-    background-color: #f1f5f9;
+    color: var(--text-secondary);
+    background-color: var(--surface-sunken-2);
     padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    border: 1px solid var(--border);
 }
 
 /* Chip đếm chuỗi ngày học Streak (Tone màu Cam/Hổ phách) */
 .edu-navbar .navbar-metric-chip.streak-chip {
-    background-color: #fffbeb;
-    border-color: #fde68a;
-    color: #b45309;
+    background-color: var(--warning-soft);
+    border-color: var(--warning-border);
+    color: var(--warning-deep);
     font-weight: 600;
 }
 
@@ -79,10 +79,10 @@
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
-    background-color: #059669;
-    color: #ffffff;
+    background-color: var(--success);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -92,10 +92,10 @@
 }
 
 .edu-navbar .btn-primary-edu:hover {
-    background-color: #047857;
-    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+    background-color: var(--success-strong);
+    box-shadow: 0 2px 8px rgba(var(--success-rgb), 0.2);
 }
 
 .edu-navbar .btn-primary-edu:active {
-    background-color: #065f46;
+    background-color: var(--success-deep);
 }

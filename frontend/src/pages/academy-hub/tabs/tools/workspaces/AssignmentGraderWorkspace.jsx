@@ -4,15 +4,8 @@ import { academyToolApi } from "../../../../../api";
 import CustomSelector from "../../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../../context/ToastContext";
 import "./EduWorkspaces.css";
+import { getSessionUser } from "../../../../../components/common/utils/session";
 
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
-};
 
 /**
  * Chấm bài theo rubric. BE chưa có rubric engine nên lượt chạy được xếp hàng

@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronRight, FileCode, FileText, Folder, FolderOpen } from "lucide-react";
+import GitMarkIcon from "./GitMarkIcon";
 
 const FILE_ICON_BY_LANGUAGE = {
     java: FileCode,
@@ -13,6 +14,7 @@ const FILE_ICON_BY_LANGUAGE = {
 
 const iconFor = (node) => {
     if (node.kind === "folder") return null;
+    if (node.name === ".gitignore") return <GitMarkIcon size={13} />;
     return FILE_ICON_BY_LANGUAGE[node.language] || FileText;
 };
 
@@ -66,7 +68,11 @@ const TreeNode = ({ node, depth, expanded, activePath, onToggleFolder, onOpenFil
         >
             <Icon size={13} className="wb-tree-file-icon" />
             <span className="wb-tree-label">{node.name}</span>
-            {node.editedByUser && <span className="wb-tree-edited-dot" title="Edited by you" />}
+            {node.editedByUser && (
+                <span className="wb-git-badge modified" title="Edited by you">
+                    M
+                </span>
+            )}
         </button>
     );
 };

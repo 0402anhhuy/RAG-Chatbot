@@ -10,36 +10,38 @@
     align-items: center;
     gap: 7px;
     padding: 5px 10px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 7px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
     cursor: pointer;
     font-size: 0.74rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary);
     transition: all 0.15s ease;
     user-select: none;
     white-space: nowrap;
 }
 
 .custom-select-trigger:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
-    color: #0f172a;
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
+    color: var(--text-primary);
 }
 
 .custom-select-trigger.open {
-    border-color: #059669;
-    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.12);
 }
 
 .custom-select-label {
     flex: 1;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .custom-select-chevron {
-    color: #94a3b8;
+    color: var(--text-faint);
     transition: transform 0.2s ease;
     flex-shrink: 0;
 }
@@ -55,12 +57,12 @@
     left: 0;
     z-index: 100;
     min-width: 160px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     box-shadow:
-        0 10px 25px -4px rgba(15, 23, 42, 0.12),
-        0 4px 6px -2px rgba(15, 23, 42, 0.04);
+        0 10px 25px -4px rgba(var(--shadow-rgb), 0.12),
+        0 4px 6px -2px rgba(var(--shadow-rgb), 0.04);
     padding: 4px;
     display: flex;
     flex-direction: column;
@@ -79,6 +81,30 @@
     }
 }
 
+/* Chế độ portal: menu position fixed gắn theo trigger, không bị ancestor cắt */
+.custom-select-menu.portal {
+    position: fixed;
+    z-index: 200;
+    top: auto;
+    left: auto;
+    max-width: min(320px, calc(100vw - 16px));
+}
+
+.custom-select-menu.portal.up {
+    animation: selectMenuRise 0.15s ease-out;
+}
+
+@keyframes selectMenuRise {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Từng Option */
 .custom-select-option {
     display: flex;
@@ -88,10 +114,10 @@
     padding: 7px 10px;
     border: none;
     background: transparent;
-    border-radius: 5px;
+    border-radius: 10px;
     font-size: 0.74rem;
     font-weight: 500;
-    color: #475569;
+    color: var(--text-tertiary);
     cursor: pointer;
     text-align: left;
     transition: all 0.12s ease;
@@ -99,19 +125,19 @@
 }
 
 .custom-select-option:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
 }
 
 .custom-select-option.selected {
-    background-color: #ecfdf5;
-    color: #059669;
+    background-color: var(--accent-soft);
+    color: var(--accent);
     font-weight: 600;
 }
 
 .select-check-icon {
     margin-left: auto;
-    color: #059669;
+    color: var(--accent);
     flex-shrink: 0;
 }
 
@@ -124,26 +150,26 @@
 }
 
 .select-dot-indicator.green {
-    background-color: #10b981;
-    box-shadow: 0 0 0 2px #d1fae5;
+    background-color: var(--success-bright);
+    box-shadow: 0 0 0 2px var(--success-soft-2);
 }
 
 .select-dot-indicator.blue {
-    background-color: #0ea5e9;
-    box-shadow: 0 0 0 2px #e0f2fe;
+    background-color: var(--accent-bright);
+    box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 .select-dot-indicator.purple {
-    background-color: #8b5cf6;
-    box-shadow: 0 0 0 2px #ede9fe;
+    background-color: var(--violet-bright);
+    box-shadow: 0 0 0 2px var(--violet-soft-2);
 }
 
 .select-dot-indicator.amber {
-    background-color: #f59e0b;
-    box-shadow: 0 0 0 2px #fef3c7;
+    background-color: var(--warning);
+    box-shadow: 0 0 0 2px var(--warning-soft-2);
 }
 
 .select-dot-indicator.rose {
-    background-color: #f43f5e;
-    box-shadow: 0 0 0 2px #ffe4e6;
+    background-color: var(--danger-strong);
+    box-shadow: 0 0 0 2px var(--danger-soft);
 }

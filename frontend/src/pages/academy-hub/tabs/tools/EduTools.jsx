@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Loader2, Sparkles } 
 import { academyToolApi } from "../../../../api";
 import { useToast } from "../../../../context/ToastContext";
 import "./EduTools.css";
+import { getSessionUser } from "../../../../components/common/utils/session";
 
 // Icon theo tool id do BE trả về (BE chỉ trả id, FE giữ phần trình bày).
 const TOOL_ICONS = {
@@ -10,15 +11,6 @@ const TOOL_ICONS = {
     exam_prep: Sparkles,
     grader: CheckCircle2,
     courseware: BookOpen,
-};
-
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
 };
 
 const EduTools = ({ onLaunchTool }) => {

@@ -21,14 +21,14 @@
 }
 
 .analytics-title-glyph {
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .analytics-title-cluster h2 {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     letter-spacing: -0.01em;
 }
 
@@ -36,19 +36,19 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
     padding: 6px 14px;
     font-size: 0.78rem;
-    color: #0f172a;
+    color: var(--text-primary);
     cursor: pointer;
     user-select: none;
     transition: border-color 0.12s ease;
 }
 
 .analytics-month-pill-wrap:hover {
-    border-color: #94a3b8;
+    border-color: var(--text-faint);
 }
 
 /* Bộ lọc tháng + nút refresh ở góc phải header */
@@ -63,8 +63,8 @@
     padding: 6px 12px;
     font-size: 0.78rem;
     font-weight: 500;
-    color: #0f172a;
-    border-radius: 8px;
+    color: var(--text-primary);
+    border-radius: 10px;
     gap: 8px;
 }
 
@@ -79,20 +79,20 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
     font-size: 0.78rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.12s ease;
 }
 
 .btn-analytics-ghost:hover:not(:disabled) {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
-    color: #0f172a;
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
+    color: var(--text-primary);
 }
 
 .btn-analytics-ghost:disabled {
@@ -102,7 +102,7 @@
 
 .analytics-spinner {
     animation: analyticsSpin 0.9s linear infinite;
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 .spin {
@@ -117,18 +117,18 @@
 
 /* Thông báo trạng thái: đang tải / lỗi / không có dữ liệu */
 .analytics-state-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 18px 20px;
     font-size: 0.82rem;
-    color: #475569;
+    color: var(--text-tertiary);
 }
 
 .td-empty {
     padding: 22px 16px !important;
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-faint);
     font-size: 0.78rem;
 }
 
@@ -143,10 +143,10 @@
 .analytics-subtabs-pill-box {
     display: flex;
     align-items: center;
-    background-color: #f1f5f9;
+    background-color: var(--surface-sunken-2);
     padding: 3px;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    border: 1px solid var(--border);
 }
 
 .btn-subtab-pill {
@@ -156,21 +156,21 @@
     padding: 5px 14px;
     background: transparent;
     border: none;
-    border-radius: 18px;
+    border-radius: 999px;
     font-size: 0.76rem;
     font-weight: 500;
-    color: #475569;
+    color: var(--text-tertiary);
     cursor: pointer;
     transition: all 0.12s ease;
 }
 
 .btn-subtab-pill:hover {
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .btn-subtab-pill.active {
-    background-color: #ffffff;
-    color: #0f172a;
+    background-color: var(--surface-card);
+    color: var(--text-primary);
     font-weight: 600;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -190,12 +190,12 @@
     align-items: center;
     gap: 6px;
     padding: 5px 12px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     font-size: 0.76rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-secondary);
     cursor: pointer;
 }
 
@@ -204,12 +204,12 @@
     align-items: center;
     gap: 6px;
     padding: 5px 14px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     font-size: 0.76rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     cursor: pointer;
 }
 
@@ -234,9 +234,9 @@
 }
 
 .kpi-analytic-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 14px 16px;
     display: flex;
     flex-direction: column;
@@ -249,20 +249,20 @@
     align-items: center;
     gap: 4px;
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 500;
 }
 
 .kpi-analytic-value {
     font-size: 1.45rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     line-height: 1.1;
 }
 
 .kpi-analytic-sub {
     font-size: 0.68rem;
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 /* 4. COST PER OUTCOME */
@@ -275,7 +275,7 @@
 .outcome-section-title {
     font-size: 0.72rem;
     font-weight: 700;
-    color: #64748b;
+    color: var(--text-muted);
     letter-spacing: 0.04em;
 }
 
@@ -286,9 +286,9 @@
 }
 
 .kpi-outcome-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 14px 18px;
     display: flex;
     flex-direction: column;
@@ -301,25 +301,25 @@
     align-items: center;
     gap: 5px;
     font-size: 0.74rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .kpi-outcome-value {
     font-size: 1.35rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .kpi-outcome-sub {
     font-size: 0.7rem;
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 /* 5. Biểu đồ Vector Panels */
 .chart-panel-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 18px 22px 14px 22px;
     display: flex;
     flex-direction: column;
@@ -338,12 +338,12 @@
     margin: 0;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .chart-legend-text {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .chart-legend-cluster {
@@ -357,7 +357,7 @@
     align-items: center;
     gap: 5px;
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .legend-swatch {
@@ -367,26 +367,26 @@
 }
 
 .legend-swatch.amber {
-    background-color: #f59e0b;
+    background-color: var(--warning);
 }
 .legend-swatch.purple {
-    background-color: #8b5cf6;
+    background-color: var(--violet-bright);
 }
 .legend-swatch.green {
-    background-color: #10b981;
+    background-color: var(--success-bright);
 }
 .legend-swatch.rose {
-    background-color: #ef4444;
+    background-color: var(--danger);
 }
 
 .chart-empty-state {
     height: 180px;
     display: grid;
     place-items: center;
-    border: 1px dashed #e2e8f0;
-    border-radius: 8px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
     font-size: 0.78rem;
-    color: #94a3b8;
+    color: var(--text-faint);
 }
 
 .chart-svg-wrapper {
@@ -410,7 +410,7 @@
     flex-direction: column;
     justify-content: space-between;
     font-size: 0.68rem;
-    color: #64748b;
+    color: var(--text-muted);
     pointer-events: none;
 }
 
@@ -421,7 +421,7 @@
     right: 0;
     height: 14px;
     font-size: 0.68rem;
-    color: #64748b;
+    color: var(--text-muted);
     pointer-events: none;
 }
 
@@ -433,10 +433,10 @@
 }
 
 .dot-circle.green {
-    background-color: #10b981;
+    background-color: var(--success-bright);
 }
 .dot-circle.rose {
-    background-color: #ef4444;
+    background-color: var(--danger);
 }
 
 /* Tooltip nổi trên biểu đồ Cost & Usage */
@@ -444,11 +444,11 @@
     position: absolute;
     transform: translate(6px, -100%);
     margin-bottom: 6px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 8px 12px;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+    box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.1);
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -458,8 +458,8 @@
 
 .tooltip-date-header {
     font-weight: 600;
-    color: #0f172a;
-    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--surface-sunken-2);
     padding-bottom: 2px;
     margin-bottom: 2px;
 }
@@ -468,12 +468,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #475569;
+    color: var(--text-tertiary);
 }
 
 .tooltip-item-row strong {
     margin-left: auto;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .dot-circle {
@@ -482,13 +482,13 @@
     border-radius: 50%;
 }
 .dot-circle.blue {
-    background-color: #3b82f6;
+    background-color: var(--info);
 }
 .dot-circle.purple {
-    background-color: #8b5cf6;
+    background-color: var(--violet-bright);
 }
 .dot-circle.amber {
-    background-color: #f59e0b;
+    background-color: var(--warning);
 }
 
 /* 6. Bảng Dữ Liệu Analytics Tables */
@@ -502,7 +502,7 @@
     margin: 0;
     font-size: 0.88rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .section-header-caption-line {
@@ -513,13 +513,13 @@
 
 .caption-subtext {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .analytics-table-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     overflow-x: auto;
     box-sizing: border-box;
 }
@@ -533,17 +533,17 @@
 }
 
 .analytics-data-table th {
-    background-color: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--surface-sunken);
+    border-bottom: 1px solid var(--border);
     padding: 10px 16px;
     font-weight: 600;
-    color: #475569;
+    color: var(--text-tertiary);
 }
 
 .analytics-data-table td {
     padding: 11px 16px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
+    border-bottom: 1px solid var(--surface-sunken-2);
+    color: var(--text-secondary);
     vertical-align: middle;
 }
 
@@ -552,21 +552,21 @@
 }
 
 .td-provider {
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 500;
 }
 .td-model {
-    color: #64748b;
-    font-family: monospace;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
     font-size: 0.74rem;
 }
 .td-cost {
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 .td-percent {
     font-weight: 500;
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 /* User row styling */
@@ -580,22 +580,22 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
     font-size: 0.65rem;
     font-weight: 700;
     display: grid;
     place-items: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border);
 }
 
 .text-green-bold {
-    color: #10b981;
+    color: var(--success-bright);
     font-weight: 600;
 }
 
 .text-red-bold {
-    color: #ef4444;
+    color: var(--danger);
     font-weight: 600;
 }
 

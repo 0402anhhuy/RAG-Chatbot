@@ -1,5 +1,10 @@
 import { ToastProvider } from "./ToastContext";
+import { ThemeProvider } from "./ThemeContext";
 
 export const AppProviders = ({ children }) => {
-    return <ToastProvider>{children}</ToastProvider>;
+    return (
+        <ThemeProvider>
+            <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
+    );
 };

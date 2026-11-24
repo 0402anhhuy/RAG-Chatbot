@@ -69,15 +69,48 @@ public class WorkbenchServiceImpl implements WorkbenchService {
     private final UserLlmProviderRepository providerRepository;
     private final EntityMapper entityMapper;
 
+    /**
+     * Workspace mặc định: khi project chưa có file nào, seed sẵn một file
+     * .gitignore chuẩn để cây thư mục không trống trơn.
+     */
+    private static final String DEFAULT_GITIGNORE_PATH = ".gitignore";
+    private static final String DEFAULT_GITIGNORE_CONTENT = String.join("\n",
+            "# Dependencies",
+            "node_modules/",
+            "",
+            "# Build output",
+            "dist/",
+            "build/",
+            "",
+            "# Environment & secrets",
+            ".env",
+            ".env.local",
+            "",
+            "# OS / editor",
+            ".DS_Store",
+            "Thumbs.db",
+            ".idea/",
+            ".vscode/",
+            "",
+            "# Logs",
+            "*.log",
+            "");
+
     // ------------------------------------------------------------------ files
     @Override
-    @Transactional(readOnly = true)
     public List<WorkbenchFileResponse> listFiles(UUID projectId, String search, String extension, boolean tree) {
-        findProject(projectId);
+        Project project = findProject(projectId);
         String keyword = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
         String extFilter = extension == null ? "" : extension.trim().toLowerCase(Locale.ROOT);
 
         List<WorkbenchFile> files = fileRepository.findByProjectIdOrderByPathAsc(projectId);
+
+        // Workspace trống: seed .gitignore mặc định một lần duy nhất
+        if (files.isEmpty()
+                && (keyword.isEmpty() || DEFAULT_GITIGNORE_PATH.contains(keyword))
+                && (extFilter.isEmpty() || DEFAULT_GITIGNORE_PATH.endsWith("." + extFilter))) {
+            files = List.of(saveFile(project, DEFAULT_GITIGNORE_PATH, DEFAULT_GITIGNORE_CONTENT, false));
+        }
 
         if (tree) {
             // Chế độ cây: folder (suy ra từ path) đứng trước file trong cùng cấp cha.

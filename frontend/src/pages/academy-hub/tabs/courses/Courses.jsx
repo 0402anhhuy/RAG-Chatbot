@@ -19,6 +19,7 @@ import DocumentTypeIcon from "../../../../components/common/document-icon/Docume
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../context/ToastContext";
 import "./Courses.css";
+import { getSessionUser } from "../../../../components/common/utils/session";
 
 const FILTERS = [
     { value: "all", label: "All" },
@@ -37,15 +38,6 @@ const SEMESTER_OPTIONS = (() => {
     }
     return options.reverse();
 })();
-
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
-};
 
 const Courses = ({ onLaunchTool }) => {
     const sessionUser = getSessionUser();

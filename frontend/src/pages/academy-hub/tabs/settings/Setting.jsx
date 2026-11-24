@@ -4,6 +4,7 @@ import { academySettingApi } from "../../../../api";
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../context/ToastContext";
 import "./Setting.css";
+import { getSessionUser } from "../../../../components/common/utils/session";
 
 const SETTINGS_SECTIONS = [
     { id: "profile", label: "Student Profile", icon: User },
@@ -22,14 +23,6 @@ const TONE_OPTIONS = [
 const MIN_DAILY_TARGET = 15;
 const MAX_DAILY_TARGET = 180;
 
-const getSessionUser = () => {
-    try {
-        const parsed = JSON.parse(localStorage.getItem("rag_session") || "{}");
-        return parsed?.user || parsed || {};
-    } catch {
-        return {};
-    }
-};
 
 // Form chỉ giữ chuỗi/number đúng như UI, chuyển đổi khi gửi BE.
 const EMPTY_FORM = {

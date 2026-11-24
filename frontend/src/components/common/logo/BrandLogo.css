@@ -25,12 +25,12 @@
 
 /* Bộ màu mới: Violet - Cyan - Mint (thoát hoàn toàn vibe FPT) */
 .brand-mark-stripes i:nth-child(1) {
-    background: #f43f5e;
+    background: var(--danger-strong);
 }
 
 .brand-mark-stripes i:nth-child(2) {
     height: 20px;
-    background: #2563eb;
+    background: var(--info-strong);
 }
 
 .brand-mark-stripes i:nth-child(3) {
@@ -41,7 +41,7 @@
 .brand-title-text {
     font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     letter-spacing: -0.02em;
 }
 

@@ -1,7 +1,7 @@
 .vibe-navbar {
     height: 48px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--frame-bg);
+    border-bottom: 1px solid var(--frame-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -14,6 +14,18 @@
     position: sticky;
     top: 0;
     z-index: 40;
+}
+
+/* Nền tam giác động: canvas phủ trên màu nền, nội dung navbar nổi trên canvas.
+   Giảm opacity để hiệu ứng nhẹ nhàng hơn. */
+.vibe-navbar > .triangle-field {
+    opacity: 0.35;
+}
+
+.vibe-navbar > .navbar-breadcrumb,
+.vibe-navbar > .navbar-controls-cluster {
+    position: relative;
+    z-index: 1;
 }
 
 /* Khối nhận diện bên trái (Logo + Breadcrumb) */
@@ -30,27 +42,27 @@
     align-items: center;
     gap: 8px;
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
     white-space: nowrap;
 }
 
 .crumb-root {
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
 .crumb-separator {
-    color: #cbd5e1;
+    color: var(--border-strong);
     font-size: 0.75rem;
 }
 
 .crumb-project {
-    color: #475569;
+    color: var(--text-tertiary);
     font-weight: 500;
 }
 
 .crumb-current {
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -73,20 +85,20 @@
     align-items: center;
     gap: 5px;
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     transition: color 0.12s ease;
 }
 
 .key-shortcut-tag:hover {
-    color: #0f172a;
+    color: var(--text-primary);
 }
 
 .key-shortcut-tag.mini-kbd {
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
+    border: 1px solid var(--frame-border);
+    border-radius: 10px;
     padding: 1px 4px;
-    background-color: #f8fafc;
+    background-color: var(--frame-key-bg);
 }
 
 /* Nút New Project chính màu đen bo tròn chuẩn VibeFlow */
@@ -95,10 +107,10 @@
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
-    background-color: #18181b;
-    color: #ffffff;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -106,5 +118,5 @@
 }
 
 .btn-new-project-primary:hover {
-    background-color: #27272a;
+    background-color: var(--solid-invert-bg-hover);
 }

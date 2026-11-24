@@ -68,13 +68,13 @@ const DocumentTypeIcon = ({ ext = "", size = 26, labelled = true, className = ""
             {kind === "excel" && <ExcelBadge uid={uid} labelled={labelled} />}
             {kind === "slides" && <SlidesBadge uid={uid} labelled={labelled} />}
             {kind === "markdown" && (
-                <TextBadge uid={uid} color="#8b5cf6" short="MD" labelled={labelled} />
+                <TextBadge uid={uid} color="var(--violet-bright)" short="MD" labelled={labelled} />
             )}
             {kind === "text" && (
-                <TextBadge uid={uid} color="#64748b" short="TXT" labelled={labelled} />
+                <TextBadge uid={uid} color="var(--text-muted)" short="TXT" labelled={labelled} />
             )}
             {kind === "file" && (
-                <TextBadge uid={uid} color="#94a3b8" short="?" labelled={labelled} />
+                <TextBadge uid={uid} color="var(--text-faint)" short="?" labelled={labelled} />
             )}
         </svg>
     );
@@ -314,7 +314,7 @@ const PdfBadge = ({ uid, labelled }) => (
  */
 const TextBadge = ({ uid, color, short, labelled }) => (
     <>
-        <PaperSheet uid={uid} tint="#94a3b8" />
+        <PaperSheet uid={uid} tint="var(--text-faint)" />
         <defs>
             <linearGradient id={`flat-${uid}`} x1="0" y1="0" x2="0.8" y2="1">
                 <stop offset="0%" stopColor={color} />
@@ -332,7 +332,7 @@ const TextBadge = ({ uid, color, short, labelled }) => (
             opacity="0.4"
         />
         {labelled && <PlateText fontSize={short.length > 2 ? 7.4 : 11}>{short}</PlateText>}
-        <DocLines color="#64748b" opacity={0.3} />
+        <DocLines color="var(--text-muted)" opacity={0.3} />
     </>
 );
 

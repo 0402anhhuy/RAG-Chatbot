@@ -12,14 +12,8 @@ import { taskApi } from "../../../../api";
 import CustomSelector from "../../../../components/common/selector/CustomSelector";
 import { useToast } from "../../../../context/ToastContext";
 import "./Task.css";
+import { getSessionUserId } from "../../../../components/common/utils/session";
 
-const getOwnerId = () => {
-    try {
-        return JSON.parse(localStorage.getItem("rag_session") || "{}")?.user?.id;
-    } catch {
-        return null;
-    }
-};
 
 // Bộ lọc Active / Archived / All dùng CustomSelector chung của hệ thống
 const STATUS_FILTER_OPTIONS = [
@@ -51,7 +45,7 @@ const Task = ({ onOpenTask }) => {
                 setLoading(true);
                 setError("");
                 const data = await taskApi.list({
-                    ownerId: getOwnerId(),
+                    ownerId: getSessionUserId(),
                     archived: toArchivedParam(statusFilter),
                     search: searchQuery.trim() || undefined,
                 });
