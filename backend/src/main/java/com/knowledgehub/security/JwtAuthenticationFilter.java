@@ -20,6 +20,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> PUBLIC_AUTH_ROUTES = List.of(
             "/api/auth/login",
             "/api/auth/register",
+            "/api/auth/refresh",
             "/api/auth/send-otp",
             "/api/auth/verify-otp");
 

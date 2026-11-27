@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from app.rag.factories.embedding_factory import EmbeddingModel
 from app.rag.retrievers.bm25 import BM25Index
 from app.rag.retrievers.hybrid import fuse_results
-from app.rag.retrievers.reranker import rerank_results
+from app.rag.retrievers.reranker import SimpleReranker, create_reranker
 from app.rag.stores.base import VectorStorePort
 from app.rag.types import SearchResult
 from config.settings import RerankerSettings, RetrievalSettings
@@ -28,6 +28,7 @@ class HybridRetriever:
         self.embedding_model = embedding_model
         self.retrieval_settings = retrieval_settings
         self.reranker_settings = reranker_settings
+        self.reranker = create_reranker(reranker_settings)
 
     def search(
         self,
@@ -49,6 +50,11 @@ class HybridRetriever:
             top_k=self.retrieval_settings.top_k_dense,
             filters=filters,
         )
+        # Dense scores are normalised to 0..1, so the configured relevance floor is
+        # applied there. BM25 scores are unbounded and only used for rank fusion.
+        threshold = self.retrieval_settings.score_threshold
+        if threshold > 0.0:
+            dense_results = [result for result in dense_results if result.score >= threshold]
         sparse_hits = self.bm25_index.search(
             query,
             top_k=self.retrieval_settings.top_k_sparse,
@@ -72,9 +78,9 @@ class HybridRetriever:
             dense_weight=self.retrieval_settings.dense_weight,
             sparse_weight=self.retrieval_settings.sparse_weight,
         )
-        reranked = rerank_results(
-            fused,
-            provider=self.reranker_settings.provider,
-            query=query,
-        )
-        return reranked[: self.reranker_settings.top_k]
+        candidates = fused[: self.reranker_settings.top_n]
+        try:
+            reranked = self.reranker.rerank(candidates, query=query)
+        except Exception:  # noqa: BLE001 - reranker outage must not break retrieval
+            reranked = SimpleReranker().rerank(candidates, query=query)
+        return reranked[: self.retrieval_settings.rerank_top_k]

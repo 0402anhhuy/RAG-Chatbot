@@ -1,6 +1,7 @@
 package com.knowledgehub.service.interfaces;
 
 import com.knowledgehub.dto.request.LoginRequest;
+import com.knowledgehub.dto.request.RefreshTokenRequest;
 import com.knowledgehub.dto.request.RegisterRequest;
 import com.knowledgehub.dto.request.SendOtpRequest;
 import com.knowledgehub.dto.request.VerifyOtpRequest;
@@ -15,5 +16,6 @@ public interface AuthService {
     void verifyOtp(VerifyOtpRequest request);
     UserResponse register(RegisterRequest request);
     AuthResponse login(LoginRequest request);
+    AuthResponse refresh(RefreshTokenRequest request);
     AuthMeResponse me(UUID userId);
 }

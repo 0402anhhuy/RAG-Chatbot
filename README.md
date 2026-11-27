@@ -30,7 +30,12 @@ Copy-Item .env.example .env
 ```
 
 Set the same value in `RAG_SERVICE_API_KEY` for Spring and
-`SECURITY__API_KEY` in `rag-service/.env`. In another terminal, start Spring
+`SECURITY__API_KEY` in `rag-service/.env`. Provider resolution also uses a
+service token: set the same `RAG_INTERNAL_TOKEN` in Spring and
+`PROVIDER_CONFIG__INTERNAL_TOKEN` in `rag-service/.env`. Set
+`APP_SECURITY_CREDENTIAL_KEY` (base64, 32 bytes) so Spring encrypts LLM keys at
+rest; without it Spring falls back to a development key and logs a warning.
+In another terminal, start Spring
 Boot with a private signing key in `JWT_SECRET` (at least 32 random bytes;
 never commit it). For a local PowerShell session:
 
@@ -49,8 +54,11 @@ Set-Location backend
 mvn spring-boot:run
 ```
 
+If Spring uses `ddl-auto=none`, apply `backend/db/sprint3_provider_model.sql` once
+before deploying the provider/model changes.
+
 For deployments, configure `CORS_ALLOWED_ORIGINS` with the exact frontend
-origins. `JWT_TTL` defaults to one hour and cannot exceed 24 hours.
+origins. `JWT_TTL` defaults to seven days and cannot exceed 30 days.
 
 Alternatively, run `docker compose up --build` after starting Docker Desktop;
 the root stack runs Spring, `rag-service`, and PostgreSQL. An isolated second

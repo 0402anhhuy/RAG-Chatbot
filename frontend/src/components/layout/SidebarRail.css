@@ -1,0 +1,358 @@
+/* ==========================================================================
+   SidebarRail — rail điều hướng dùng chung cho mọi hub.
+   Một nguồn style duy nhất; khác biệt giữa các hub chỉ là `accent` + items.
+   ========================================================================== */
+.ui-rail {
+    --rail-accent: var(--accent);
+    --rail-accent-soft: var(--accent-soft);
+
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 220px;
+    height: 100%;
+    padding: 12px 10px;
+    background-color: var(--frame-bg);
+    border-right: 1px solid var(--frame-border);
+    box-sizing: border-box;
+    z-index: 20;
+    transition:
+        width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        padding 0.2s ease;
+}
+
+.ui-rail.accent-edu {
+    --rail-accent: var(--success);
+    --rail-accent-soft: var(--success-soft);
+}
+
+.ui-rail.is-collapsed {
+    width: 58px;
+    padding: 12px 0;
+    align-items: center;
+}
+
+/* ---- Brand / toggle ------------------------------------------------------ */
+.ui-rail-brand {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.ui-rail-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 36px;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-tertiary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.ui-rail-toggle:hover {
+    background-color: var(--frame-hover-bg);
+    color: var(--text-primary);
+}
+
+.is-collapsed .ui-rail-toggle {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    margin: 0 auto;
+    justify-content: center;
+}
+
+/* ---- Search -------------------------------------------------------------- */
+.ui-rail-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    margin-bottom: 8px;
+    background-color: var(--frame-field-bg);
+    border: 1px solid var(--frame-border);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.12s ease;
+}
+
+.ui-rail-search:hover {
+    background-color: var(--frame-field-bg-hover);
+    color: var(--text-primary);
+}
+
+.ui-rail-search span {
+    flex: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ui-rail-search kbd {
+    padding: 1px 5px;
+    border: 1px solid var(--frame-border);
+    border-radius: 2px;
+    background-color: var(--frame-key-bg);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+}
+
+.ui-rail-search-mini {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 8px;
+    background-color: var(--frame-field-bg);
+    border: 1px solid var(--frame-border);
+    border-radius: 10px;
+    color: var(--text-muted);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.12s ease;
+}
+
+.ui-rail-search-mini:hover {
+    background-color: var(--frame-field-bg-hover);
+    color: var(--text-primary);
+}
+
+/* ---- Navigation ---------------------------------------------------------- */
+.ui-rail-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.is-collapsed .ui-rail-nav {
+    align-items: center;
+    gap: 4px;
+}
+
+.ui-rail-item-wrap {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.ui-rail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 36px;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-tertiary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition:
+        background-color 0.12s ease,
+        color 0.12s ease;
+}
+
+.ui-rail-item:hover {
+    background-color: var(--frame-hover-bg);
+    color: var(--text-primary);
+}
+
+.ui-rail-item.active {
+    background-color: var(--frame-active-bg);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.ui-rail-glyph {
+    flex-shrink: 0;
+}
+
+.ui-rail-caret {
+    margin-left: auto;
+    color: var(--text-faint);
+    transition: transform 0.15s ease;
+}
+
+.ui-rail-caret.open {
+    transform: rotate(180deg);
+}
+
+.is-collapsed .ui-rail-item {
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+}
+
+.is-collapsed .ui-rail-item .ui-rail-glyph {
+    margin: 0 auto;
+}
+
+/* ---- Submenu (Edu tools) ------------------------------------------------- */
+.ui-rail-submenu {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: calc(100% - 16px);
+    margin: 3px 0 6px 16px;
+    padding-left: 12px;
+    border-left: 2px solid var(--rail-accent);
+    box-sizing: border-box;
+}
+
+.ui-rail-subitem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ui-rail-subitem:hover {
+    background-color: var(--frame-hover-bg);
+    color: var(--text-primary);
+}
+
+.ui-rail-subitem.active {
+    background-color: var(--rail-accent-soft);
+    color: var(--rail-accent);
+    font-weight: 600;
+}
+
+/* ---- Footer -------------------------------------------------------------- */
+.ui-rail-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding-top: 10px;
+    border-top: 1px solid var(--frame-divider);
+}
+
+.ui-rail-footer .theme-picker {
+    width: 100%;
+}
+
+.ui-rail-footer-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.ui-rail-footer-row:hover,
+.ui-rail-footer-row.open {
+    background-color: var(--frame-hover-bg);
+    color: var(--text-primary);
+}
+
+.ui-rail-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+    padding: 6px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.ui-rail-profile:hover {
+    background-color: var(--frame-hover-bg);
+}
+
+.ui-rail-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: var(--border);
+    color: var(--text-tertiary);
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.accent-edu .ui-rail-avatar {
+    background-color: var(--success-soft);
+    color: var(--success);
+}
+
+.ui-rail-user {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ui-rail-user strong {
+    font-size: 0.76rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ui-rail-user small {
+    font-size: 0.65rem;
+    color: var(--text-faint);
+}
+
+.is-collapsed .ui-rail-footer-row {
+    justify-content: center;
+    width: 38px;
+    padding: 0;
+    height: 38px;
+}
+
+.is-collapsed .ui-rail-profile {
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+}

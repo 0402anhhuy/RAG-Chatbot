@@ -17,6 +17,8 @@ public record ProjectLlmCredentialRequest(
         @NotBlank(message = "API key is required")
         @Size(max = 500)
         String apiKey,
-        String endpointCode) {
+        String endpointCode,
+        @Size(max = 120)
+        String model) {
 
 }

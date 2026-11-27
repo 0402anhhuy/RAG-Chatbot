@@ -9,6 +9,7 @@ import com.knowledgehub.entity.Workspace;
 import com.knowledgehub.mapper.EntityMapper;
 import com.knowledgehub.repository.DocumentRepository;
 import com.knowledgehub.repository.WorkspaceRepository;
+import com.knowledgehub.rag.RagCallContext;
 import com.knowledgehub.rag.RagServiceClient;
 import com.knowledgehub.service.exception.ServiceEntityNotFoundException;
 import com.knowledgehub.service.interfaces.DocumentService;
@@ -55,6 +56,11 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     @Transactional(noRollbackFor = ResponseStatusException.class)
     public DocumentResponse upload(MultipartFile file, UUID workspaceId, String courseCode) throws IOException {
+        return upload(file, workspaceId, courseCode, null);
+    }
+
+    @Override
+    public DocumentResponse upload(MultipartFile file, UUID workspaceId, String courseCode, UUID userId) throws IOException {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new ServiceEntityNotFoundException("Workspace not found: " + workspaceId));
 
@@ -109,7 +115,8 @@ public class DocumentServiceImpl implements DocumentService {
                     originalFilename,
                     workspaceId.toString(),
                     savedDocument.getId().toString(),
-                    document.getCourseCode());
+                    document.getCourseCode(),
+                    RagCallContext.of(userId, null, workspaceId));
             savedDocument.setChunkCount(chunkCount);
             savedDocument.setStatus(DocumentStatus.READY);
             documentRepository.save(savedDocument);
@@ -219,10 +226,16 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public void delete(UUID id) {
+        delete(id, null);
+    }
+
+    @Override
+    public void delete(UUID id, UUID userId) {
         Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new ServiceEntityNotFoundException("Document not found: " + id));
 
-        ragServiceClient.deleteDocument(id.toString());
+        UUID workspaceId = document.getWorkspace() != null ? document.getWorkspace().getId() : null;
+        ragServiceClient.deleteDocument(id.toString(), RagCallContext.of(userId, null, workspaceId));
         if (document.getStoragePath() != null) {
             try {
                 Path filePath = Paths.get(document.getStoragePath());

@@ -1,6 +1,8 @@
 package com.knowledgehub.entity;
 
+import com.knowledgehub.security.EncryptedStringConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -47,8 +49,15 @@ public class UserLlmProvider {
     @Column(name = "endpoint_code", length = 50)
     private String endpointCode;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "api_key", nullable = false, columnDefinition = "TEXT")
     private String apiKey;
+
+    /**
+     * Model mặc định của provider; null/blank → catalog default.
+     */
+    @Column(length = 120)
+    private String model;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

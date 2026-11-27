@@ -1,17 +1,19 @@
 package com.knowledgehub.rag;
 
 import java.time.Duration;
-import java.net.http.HttpClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
@@ -33,9 +35,9 @@ public class RagServiceClient {
             @Value("${rag.service.connect-timeout:PT2S}") Duration connectTimeout,
             @Value("${rag.service.read-timeout:PT5M}") Duration readTimeout,
             @Value("${rag.service.max-retries:2}") int maxRetries) {
-        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(connectTimeout).build();
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
-        requestFactory.setReadTimeout(readTimeout);
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout((int) connectTimeout.toMillis());
+        requestFactory.setReadTimeout((int) readTimeout.toMillis());
         this.client = RestClient.builder()
                 .baseUrl(baseUrl)
                 .requestFactory(requestFactory)
@@ -57,18 +59,41 @@ public class RagServiceClient {
             String workspaceId,
             List<String> documentIds,
             List<Map<String, String>> history) {
+        return sendMessage(sessionId, content, workspaceId, documentIds, history, RagCallContext.none());
+    }
+
+    public Map<String, Object> sendMessage(
+            String sessionId,
+            String content,
+            String workspaceId,
+            List<String> documentIds,
+            List<Map<String, String>> history,
+            RagCallContext context) {
         Map<String, Object> body = new HashMap<>();
         body.put("query", content);
         body.put("workspaceId", workspaceId);
         body.put("conversation_id", sessionId);
         body.put("chat_history", history);
+        if (context != null && context.projectId() != null) {
+            body.put("projectId", context.projectId());
+        }
+        if (context != null && context.hasUser()) {
+            body.put("userId", context.userId());
+        }
         if (documentIds != null && !documentIds.isEmpty()) {
             body.put("documentIds", documentIds);
+        }
+        final String json;
+        try {
+            json = new ObjectMapper().writeValueAsString(body);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to encode RAG request", exception);
         }
         return execute(() -> requireBody(client.post()
                 .uri("/api/v1/chat/completions")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
+                .headers(principalHeaders(context))
+                .body(json)
                 .retrieve()
                 .body(MAP_TYPE)));
     }
@@ -79,6 +104,16 @@ public class RagServiceClient {
             String workspaceId,
             String documentId,
             String courseCode) {
+        return indexDocument(content, filename, workspaceId, documentId, courseCode, RagCallContext.none());
+    }
+
+    public int indexDocument(
+            byte[] content,
+            String filename,
+            String workspaceId,
+            String documentId,
+            String courseCode,
+            RagCallContext context) {
         ByteArrayResource file = new ByteArrayResource(content) {
             @Override
             public String getFilename() {
@@ -96,6 +131,7 @@ public class RagServiceClient {
         Map<String, Object> response = execute(() -> requireBody(client.post()
                 .uri("/api/v1/documents/upload")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
+                .headers(principalHeaders(context))
                 .body(parts.build())
                 .retrieve()
                 .body(MAP_TYPE)));
@@ -111,9 +147,14 @@ public class RagServiceClient {
     }
 
     public void deleteDocument(String documentId) {
+        deleteDocument(documentId, RagCallContext.none());
+    }
+
+    public void deleteDocument(String documentId, RagCallContext context) {
         execute(() -> {
             client.delete()
                     .uri("/api/v1/documents/{documentId}", documentId)
+                    .headers(principalHeaders(context))
                     .retrieve()
                     .toBodilessEntity();
             return Boolean.TRUE;
@@ -121,24 +162,66 @@ public class RagServiceClient {
     }
 
     public Map<String, Object> generateFlashcards(String workspaceId, List<String> documentIds, int maxItems) {
-        return generateStudyItems("/api/v1/study/flashcards", workspaceId, documentIds, maxItems);
+        return generateStudyItems("/api/v1/study/flashcards", workspaceId, documentIds, maxItems,
+                RagCallContext.none());
+    }
+
+    public Map<String, Object> generateFlashcards(
+            String workspaceId, List<String> documentIds, int maxItems, RagCallContext context) {
+        return generateStudyItems("/api/v1/study/flashcards", workspaceId, documentIds, maxItems, context);
     }
 
     public Map<String, Object> generateExam(String workspaceId, List<String> documentIds, int maxItems) {
-        return generateStudyItems("/api/v1/study/exams", workspaceId, documentIds, maxItems);
+        return generateStudyItems("/api/v1/study/exams", workspaceId, documentIds, maxItems,
+                RagCallContext.none());
+    }
+
+    public Map<String, Object> generateExam(
+            String workspaceId, List<String> documentIds, int maxItems, RagCallContext context) {
+        return generateStudyItems("/api/v1/study/exams", workspaceId, documentIds, maxItems, context);
     }
 
     private Map<String, Object> generateStudyItems(
-            String path, String workspaceId, List<String> documentIds, int maxItems) {
+            String path,
+            String workspaceId,
+            List<String> documentIds,
+            int maxItems,
+            RagCallContext context) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("workspaceId", workspaceId);
+        body.put("documentIds", documentIds);
+        body.put("maxItems", maxItems);
+        if (context != null && context.projectId() != null) {
+            body.put("projectId", context.projectId());
+        }
+        if (context != null && context.hasUser()) {
+            body.put("userId", context.userId());
+        }
         return execute(() -> requireBody(client.post()
                 .uri(path)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of(
-                        "workspaceId", workspaceId,
-                        "documentIds", documentIds,
-                        "maxItems", maxItems))
+                .headers(principalHeaders(context))
+                .body(body)
                 .retrieve()
                 .body(MAP_TYPE)));
+    }
+
+    /**
+     * Header principal do Spring tự xác thực; RAG chỉ kiểm tra lại hình dạng và
+     * allowlist workspace.
+     */
+    private static Consumer<HttpHeaders> principalHeaders(RagCallContext context) {
+        return headers -> {
+            if (context == null) {
+                return;
+            }
+            if (context.hasUser()) {
+                headers.set("X-User-Id", context.userId());
+            }
+            if (context.workspaceIds() != null && !context.workspaceIds().isEmpty()) {
+                headers.set("X-User-Workspaces", String.join(",", context.workspaceIds()));
+            }
+        };
     }
 
     private <T> T execute(Supplier<T> request) {

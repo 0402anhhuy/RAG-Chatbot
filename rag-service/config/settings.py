@@ -24,6 +24,8 @@ class AppSettings(BaseModel):
     log_format: Literal["json", "text"] = "json"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000", "http://localhost:5173"])
     request_id_header: str = "X-Request-ID"
+    request_timeout_seconds: float = 120.0
+    max_concurrent_requests: int = 8
 
     @field_validator("port")
     @classmethod
@@ -45,6 +47,20 @@ class AppSettings(BaseModel):
     def validate_request_id_header(cls, value: str) -> str:
         if not value.isascii() or not value.replace("-", "").isalnum():
             raise ValueError("request_id_header must be a valid HTTP token")
+        return value
+
+    @field_validator("request_timeout_seconds")
+    @classmethod
+    def validate_request_timeout(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("app.request_timeout_seconds must be positive")
+        return value
+
+    @field_validator("max_concurrent_requests")
+    @classmethod
+    def validate_max_concurrent_requests(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("app.max_concurrent_requests must be positive")
         return value
 
     @field_validator("cors_origins")
@@ -78,6 +94,16 @@ class SecuritySettings(BaseModel):
     enabled: bool = True
     api_key: SecretStr = SecretStr("")
     api_keys: dict[str, SecretStr] = Field(default_factory=dict)
+    require_principal: bool = False
+    principal_header: str = "X-User-Id"
+    principal_workspaces_header: str = "X-User-Workspaces"
+
+    @field_validator("principal_header", "principal_workspaces_header")
+    @classmethod
+    def validate_principal_header(cls, value: str) -> str:
+        if not value.isascii() or not value.replace("-", "").replace("_", "").isalnum():
+            raise ValueError("principal headers must be valid HTTP tokens")
+        return value
 
 
 class RateLimitSettings(BaseModel):
@@ -106,6 +132,8 @@ class EmbeddingSettings(BaseModel):
     normalize: bool = True
     api_key: SecretStr = SecretStr("")
     base_url: str | None = None
+    cache_enabled: bool = True
+    cache_path: str = "./data/embedding_cache.sqlite3"
 
     @field_validator("dimension")
     @classmethod
@@ -114,16 +142,23 @@ class EmbeddingSettings(BaseModel):
             raise ValueError("embedding.dimension must be positive")
         return value
 
+    @field_validator("cache_path")
+    @classmethod
+    def validate_cache_path(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("embedding.cache_path cannot be empty")
+        return value
+
 
 class VectorStoreSettings(BaseModel):
     backend: Literal["in_memory", "qdrant", "faiss"] = "in_memory"
     collection: str = "documents"
     url: str = "http://localhost:6333"
-    host: str = "localhost"
-    port: int = 6333
+    api_key: SecretStr = SecretStr("")
     persist_path: str = "./data/vector_store"
     vector_size: int | None = None
     distance: Literal["cosine", "dot", "l2"] = "cosine"
+    timeout_seconds: float = 30.0
 
     @field_validator("vector_size", mode="before")
     @classmethod
@@ -146,12 +181,17 @@ class RetrievalSettings(BaseModel):
     top_k_sparse: int = 10
     rerank_top_k: int = 4
     score_threshold: float = 0.65
-    fusion_strategy: Literal["rrf", "weighted"] = "rrf"
+    fusion_strategy: Literal["rrf", "weighted"] = "weighted"
     rrf_k: int = 60
     dense_weight: float = 0.7
     sparse_weight: float = 0.3
     chunk_size: int = 600
     chunk_overlap: int = 100
+    chunk_unit: Literal["chars", "tokens"] = "tokens"
+    chunk_size_tokens: int = 512
+    chunk_overlap_tokens: int = 64
+    min_chunk_tokens: int = 24
+    index_version: str = "chunk-v3"
 
     @field_validator("top_k_dense", "top_k_sparse", "rerank_top_k", "chunk_size")
     @classmethod
@@ -167,22 +207,79 @@ class RetrievalSettings(BaseModel):
             raise ValueError("retrieval.score_threshold must be between 0 and 1")
         return value
 
+    @field_validator("chunk_size_tokens", "min_chunk_tokens")
+    @classmethod
+    def validate_token_sizes(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("token chunk sizes must be positive")
+        return value
+
+    @field_validator("chunk_overlap_tokens")
+    @classmethod
+    def validate_token_overlap(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("chunk_overlap_tokens must be non-negative")
+        return value
+
+    @field_validator("index_version")
+    @classmethod
+    def validate_index_version(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("retrieval.index_version cannot be empty")
+        return normalized
+
     @model_validator(mode="after")
     def validate_fusion(self) -> RetrievalSettings:
         if self.fusion_strategy == "weighted":
             total = self.dense_weight + self.sparse_weight
             if not math.isclose(total, 1.0, rel_tol=1e-6, abs_tol=1e-6):
                 raise ValueError("weighted retrieval fusion weights must sum to 1.0")
+        if self.chunk_overlap_tokens >= self.chunk_size_tokens:
+            raise ValueError("chunk_overlap_tokens must be smaller than chunk_size_tokens")
         return self
 
 
 class BM25Settings(BaseModel):
     persist_path: str = "./data/bm25_index.jsonl"
     rebuild_on_boot: bool = True
+    strip_diacritics: bool = False
+    expand_compounds: bool = True
+
+
+class ProviderConfigSettings(BaseModel):
+    enabled: bool = True
+    base_url: str = "http://localhost:8080"
+    internal_token: SecretStr = SecretStr("local-development-rag-internal-token-32")
+    cache_ttl_seconds: int = 60
+    timeout_seconds: float = 5.0
+    failure_cooldown_seconds: int = 30
+
+    @field_validator("base_url")
+    @classmethod
+    def validate_base_url(cls, value: str) -> str:
+        normalized = value.strip().rstrip("/")
+        if not normalized.startswith(("http://", "https://")):
+            raise ValueError("provider_config.base_url must be an http(s) URL")
+        return normalized
+
+    @field_validator("cache_ttl_seconds", "failure_cooldown_seconds")
+    @classmethod
+    def validate_ttl(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("provider_config TTL values must be >= 0")
+        return value
+
+    @field_validator("timeout_seconds")
+    @classmethod
+    def validate_timeout(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("provider_config.timeout_seconds must be positive")
+        return value
 
 
 class LLMSettings(BaseModel):
-    provider: Literal["mock", "gemini", "openai", "ollama", "vllm"] = "mock"
+    provider: Literal["mock", "gemini", "openai", "ollama", "vllm", "anthropic", "fpt"] = "mock"
     model: str = "mock-model"
     api_key: SecretStr = SecretStr("")
     base_url: str | None = None
@@ -191,7 +288,6 @@ class LLMSettings(BaseModel):
     request_timeout: int = 60
     max_retries: int = 2
     retry_backoff_ms: int = 500
-    max_context_chars: int = 12000
 
     @field_validator("request_timeout", "max_tokens")
     @classmethod
@@ -207,11 +303,11 @@ class LLMSettings(BaseModel):
             raise ValueError("llm.max_retries must be between 0 and 5")
         return value
 
-    @field_validator("max_context_chars")
+    @field_validator("retry_backoff_ms")
     @classmethod
-    def validate_max_context_chars(cls, value: int) -> int:
-        if value <= 0:
-            raise ValueError("llm.max_context_chars must be positive")
+    def validate_retry_backoff(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("llm.retry_backoff_ms must be >= 0")
         return value
 
     @field_validator("temperature")
@@ -247,9 +343,19 @@ class PromptSettings(BaseModel):
 
 class GraphSettings(BaseModel):
     max_rewrite_retries: int = 2
-    grade_batch: bool = True
     context_max_chars: int = 12000
     truncation_strategy: Literal["head", "tail", "middle-out"] = "tail"
+    skip_rewrite_max_words: int = 8
+    rewrite_cache_ttl_seconds: int = 600
+    grade_batch: bool = False
+    grade_batch_size: int = 5
+
+    @field_validator("skip_rewrite_max_words", "rewrite_cache_ttl_seconds", "grade_batch_size")
+    @classmethod
+    def validate_non_negative(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("graph cost-control values must be >= 0")
+        return value
 
     @field_validator("max_rewrite_retries")
     @classmethod
@@ -260,8 +366,26 @@ class GraphSettings(BaseModel):
 
 
 class RerankerSettings(BaseModel):
-    provider: Literal["none", "simple"] = "none"
-    top_k: int = 4
+    provider: Literal["none", "simple", "cross_encoder", "cohere"] = "none"
+    model: str = "BAAI/bge-reranker-v2-m3"
+    api_key: SecretStr = SecretStr("")
+    top_n: int = 30
+    timeout_seconds: float = 20.0
+    fallback_provider: Literal["none", "simple"] = "simple"
+
+    @field_validator("top_n")
+    @classmethod
+    def validate_top_n(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("reranker.top_n must be positive")
+        return value
+
+    @field_validator("timeout_seconds")
+    @classmethod
+    def validate_timeout(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("reranker.timeout_seconds must be positive")
+        return value
 
 
 class IngestSettings(BaseModel):
@@ -355,6 +479,7 @@ class Settings(BaseSettings):
     retrieval: RetrievalSettings = RetrievalSettings()
     bm25: BM25Settings = BM25Settings()
     llm: LLMSettings = LLMSettings()
+    provider_config: ProviderConfigSettings = ProviderConfigSettings()
     prompts: PromptSettings = PromptSettings()
     graph: GraphSettings = GraphSettings()
     reranker: RerankerSettings = RerankerSettings()
@@ -378,10 +503,18 @@ class Settings(BaseSettings):
                 raise ValueError("production API keys must contain at least 32 characters")
             if "*" in self.app.cors_origins:
                 raise ValueError("wildcard CORS origins are not allowed in production")
-            if self.llm.provider == "mock" or self.embedding.provider == "dummy":
-                raise ValueError("mock LLM and dummy embeddings are not allowed in production")
-            if self.llm.provider in {"openai", "gemini"} and not self.llm.api_key.get_secret_value().strip():
+            if self.embedding.provider == "dummy":
+                raise ValueError("dummy embeddings are not allowed in production")
+            if self.llm.provider == "mock" and not self.provider_config.enabled:
+                raise ValueError("mock LLM is not allowed in production unless provider_config is enabled")
+            live_providers = {"openai", "gemini", "anthropic", "fpt"}
+            if (
+                self.llm.provider in live_providers
+                and not self.llm.api_key.get_secret_value().strip()
+            ):
                 raise ValueError("a live LLM API key is required in production")
+            if self.provider_config.enabled and len(self.provider_config.internal_token.get_secret_value()) < 16:
+                raise ValueError("provider_config.internal_token must be at least 16 characters in production")
             if self.embedding.provider == "openai" and not self.embedding.api_key.get_secret_value().strip():
                 raise ValueError("an embedding API key is required in production")
         return self

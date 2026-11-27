@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request } from "@/api/client.js";
 
 // Cấu hình cá nhân: hạn mức Starter Kit + API key các LLM provider.
 export const userSettingsApi = {

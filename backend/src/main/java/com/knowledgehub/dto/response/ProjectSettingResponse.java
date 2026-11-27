@@ -44,6 +44,7 @@ public record ProjectSettingResponse(
             UUID id,
             ProviderType providerType,
             String endpointCode,
+            String model,
             String apiKeyMasked,
             boolean verified,
             Instant lastVerifiedAt) {
@@ -53,6 +54,7 @@ public record ProjectSettingResponse(
                     entity.getId(),
                     entity.getProviderType(),
                     entity.getEndpointCode(),
+                    entity.getModel(),
                     mask(entity.getApiKey()),
                     entity.isVerified(),
                     entity.getLastVerifiedAt());

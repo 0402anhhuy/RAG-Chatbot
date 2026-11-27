@@ -24,6 +24,8 @@ import com.knowledgehub.repository.DocumentRepository;
 import com.knowledgehub.repository.StudyNoteRepository;
 import com.knowledgehub.repository.UserRepository;
 import com.knowledgehub.repository.WorkspaceRepository;
+import com.knowledgehub.rag.RagCallContext;
+import com.knowledgehub.rag.RagUsageRecorder;
 import com.knowledgehub.rag.RagServiceClient;
 import com.knowledgehub.rag.RagWorkspaceAccess;
 import com.knowledgehub.service.exception.ServiceEntityNotFoundException;
@@ -88,10 +90,11 @@ public class StudyServiceImpl implements StudyService {
     private final WorkspaceRepository workspaceRepository;
     private final UserRepository userRepository;
     private final RagServiceClient ragServiceClient;
+    private final RagUsageRecorder ragUsageRecorder;
     private final RagWorkspaceAccess workspaceAccess;
     private final ObjectMapper objectMapper;
 
-    private record RagResult(String answer, List<Map<String, Object>> citations) {}
+    private record RagResult(String answer, List<Map<String, Object>> citations, Map<String, Object> usage) {}
 
     // ------------------------------------------------------------------ read
     /**
@@ -187,7 +190,7 @@ public class StudyServiceImpl implements StudyService {
                 .toList();
 
         saveMessage(session, MessageRole.USER, question);
-        RagResult result = askRag(session, question, sources, history);
+        RagResult result = askRag(ownerId, session, question, sources, history);
         saveAssistantMessage(session, result);
 
         return toResponse(session);
@@ -213,17 +216,24 @@ public class StudyServiceImpl implements StudyService {
         List<String> documentIds = selectedSources.stream()
                 .map(source -> source.getDocument().getId().toString())
                 .toList();
+        RagCallContext context = RagCallContext.of(
+                ownerId,
+                session.getProject() != null ? session.getProject().getId() : null,
+                session.getWorkspace().getId());
         RagResult result = switch (tool.id()) {
             case "flashcards" -> generateStudyItems(
                     ragServiceClient.generateFlashcards(
-                            session.getWorkspace().getId().toString(), documentIds, 20),
+                            session.getWorkspace().getId().toString(), documentIds, 20, context),
                     "flashcards",
-                    selectedSources);
+                    selectedSources,
+                    session);
             case "quiz" -> generateStudyItems(
-                    ragServiceClient.generateExam(session.getWorkspace().getId().toString(), documentIds, 20),
+                    ragServiceClient.generateExam(
+                            session.getWorkspace().getId().toString(), documentIds, 20, context),
                     "questions",
-                    selectedSources);
-            default -> askRag(session, tool.prompt(), selectedSources, List.of());
+                    selectedSources,
+                    session);
+            default -> askRag(ownerId, session, tool.prompt(), selectedSources, List.of());
         };
         saveAssistantMessage(session, result);
         return toResponse(session);
@@ -263,6 +273,7 @@ public class StudyServiceImpl implements StudyService {
     // --------------------------------------------------------------- answers
     // ---------------------------------------------------------------- helpers
     private RagResult askRag(
+            UUID ownerId,
             ChatSession session,
             String query,
             List<ChatSessionAttachment> sources,
@@ -273,24 +284,32 @@ public class StudyServiceImpl implements StudyService {
         List<String> documentIds = sources.stream()
                 .map(source -> source.getDocument().getId().toString())
                 .toList();
+        RagCallContext context = RagCallContext.of(
+                ownerId,
+                session.getProject() != null ? session.getProject().getId() : null,
+                session.getWorkspace().getId());
         Map<String, Object> response = ragServiceClient.sendMessage(
                 session.getId().toString(),
                 query,
                 session.getWorkspace().getId().toString(),
                 documentIds,
-                history);
+                history,
+                context);
         Map<String, Object> data = objectMap(response.get("data"), "RAG response data");
         String answer = Objects.toString(data.get("answer"), "").trim();
         if (answer.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "RAG service returned an empty answer");
         }
-        return new RagResult(answer, citationList(data.get("citations"), "RAG citations"));
+        Map<String, Object> usage = optionalMap(response.get("usage"));
+        recordUsage(ownerId, session, usage);
+        return new RagResult(answer, citationList(data.get("citations"), "RAG citations"), usage);
     }
 
     private RagResult generateStudyItems(
             Map<String, Object> response,
             String itemsKey,
-            List<ChatSessionAttachment> sources) {
+            List<ChatSessionAttachment> sources,
+            ChatSession session) {
         Map<String, Object> data = objectMap(response.get("data"), "RAG study response data");
         Object rawItems = data.get(itemsKey);
         if (!(rawItems instanceof List<?> items)) {
@@ -328,7 +347,33 @@ public class StudyServiceImpl implements StudyService {
         if (items.isEmpty()) {
             answer.append("Không tạo được nội dung từ các nguồn đã chọn.");
         }
-        return new RagResult(answer.toString().trim(), citations);
+        Map<String, Object> usage = optionalMap(response.get("usage"));
+        recordUsage(session.getOwner() != null ? session.getOwner().getId() : null, session, usage);
+        return new RagResult(answer.toString().trim(), citations, usage);
+    }
+
+    /**
+     * RAG trả usage của provider; ghi thành UsageEvent nếu conversation thuộc project.
+     * Lỗi ghi usage không được làm hỏng câu trả lời.
+     */
+    private void recordUsage(UUID userId, ChatSession session, Map<String, Object> usage) {
+        if (session.getProject() == null || usage == null || usage.isEmpty()) {
+            return;
+        }
+        ragUsageRecorder.record(session.getProject().getId(), userId, Map.of("usage", usage));
+    }
+
+    private static Map<String, Object> optionalMap(Object value) {
+        if (!(value instanceof Map<?, ?> map)) {
+            return Map.of();
+        }
+        Map<String, Object> result = new HashMap<>();
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            if (entry.getKey() instanceof String key) {
+                result.put(key, entry.getValue());
+            }
+        }
+        return result;
     }
 
     private Map<String, Object> objectMap(Object value, String fieldName) {

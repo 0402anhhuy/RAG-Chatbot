@@ -6,6 +6,7 @@ import com.knowledgehub.dto.response.StarterKitUsageResponse;
 import com.knowledgehub.dto.response.UserLlmProviderResponse;
 import com.knowledgehub.dto.response.UserSettingsResponse;
 import com.knowledgehub.entity.ProviderEndpoint;
+import com.knowledgehub.entity.ProviderModel;
 import com.knowledgehub.entity.ProviderType;
 import com.knowledgehub.entity.UserLlmProvider;
 import com.knowledgehub.entity.UserSetting;
@@ -13,6 +14,7 @@ import com.knowledgehub.repository.UserLlmProviderRepository;
 import com.knowledgehub.repository.UserRepository;
 import com.knowledgehub.repository.UserSettingRepository;
 import com.knowledgehub.service.exception.ServiceEntityNotFoundException;
+import com.knowledgehub.service.interfaces.ProviderCredentialResolver;
 import com.knowledgehub.service.interfaces.UserSettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ public class UserSettingsServiceImpl implements UserSettingsService {
     private final UserRepository userRepository;
     private final UserSettingRepository userSettingRepository;
     private final UserLlmProviderRepository userLlmProviderRepository;
+    private final ProviderCredentialResolver providerCredentialResolver;
 
     @Override
     @Transactional(readOnly = true)
@@ -82,13 +85,17 @@ public class UserSettingsServiceImpl implements UserSettingsService {
 
         provider.setApiKey(apiKey);
         provider.setEndpointCode(endpoint.name());
-        return UserLlmProviderResponse.fromEntity(userLlmProviderRepository.save(provider));
+        provider.setModel(ProviderModel.resolveChatModel(providerType, request.model()));
+        UserLlmProvider saved = userLlmProviderRepository.save(provider);
+        providerCredentialResolver.invalidate(null, userId);
+        return UserLlmProviderResponse.fromEntity(saved);
     }
 
     @Override
     public void disconnectProvider(UUID userId, ProviderType providerType) {
         userLlmProviderRepository.findByUserIdAndProviderType(userId, providerType)
                 .ifPresent(userLlmProviderRepository::delete);
+        providerCredentialResolver.invalidate(null, userId);
     }
 
     private UserSettingsResponse buildResponse(UUID userId, UserSetting setting) {

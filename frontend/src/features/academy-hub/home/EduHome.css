@@ -1,0 +1,30 @@
+.time-range-toggles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px 6px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .edu-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .edu-split-sections {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .edu-resume-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .edu-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}

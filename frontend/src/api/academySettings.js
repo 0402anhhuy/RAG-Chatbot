@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request } from "@/api/client.js";
 
 // Tuỳ chọn tab Settings của Academy Hub (hồ sơ sinh viên, AI Tutor, mục tiêu học
 // tập, nhắc nhở). Mọi giá trị đều do BE trả về; lần đầu chưa lưu thì BE trả mặc

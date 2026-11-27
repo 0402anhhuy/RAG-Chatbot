@@ -1,0 +1,228 @@
+.vibe-agents-viewport {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 24px;
+    box-sizing: border-box;
+}
+
+/* 1. Header & Filter Bar */
+.agents-filter-control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.btn-new-agent-black {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
+    border: none;
+    border-radius: 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-new-agent-black:hover {
+    background-color: var(--solid-invert-bg-hover);
+}
+
+/* Selector filter (CustomSelector dùng chung) */
+.agents-filter-selectors {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Dòng đếm agent */
+.agents-count-row {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+/* Trạng thái loading / lỗi */
+.agents-state-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.agents-state-error {
+    color: var(--danger-deep);
+}
+
+.agents-empty-well {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 36px 16px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.agents-spin {
+    animation: agentsSpin 0.9s linear infinite;
+}
+
+@keyframes agentsSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.btn-import-agent-white {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-import-agent-white:hover {
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
+}
+
+/* Header Thẻ */
+.agent-card-header-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+/* 2. Lưới Thẻ 3 Cột */
+.agents-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.agent-card-surface {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.03);
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
+.agent-card-surface:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.07);
+}
+
+/* Dải màu line ở mép đỉnh đầu */
+.agent-card-top-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+/* Header Thẻ */
+.agent-card-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+    overflow: hidden;
+}
+
+.agent-icon-well {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.agent-name-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Đoạn mô tả */
+.agent-desc-text {
+    margin: 0;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    min-height: 54px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+/* Chân Thẻ */
+.agent-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 6px;
+}
+
+.agent-badge-type {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 10px;
+    letter-spacing: 0.04em;
+}
+
+.agent-permission-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.perm-shield-icon {
+    color: var(--text-faint);
+}
+
+@media (max-width: 1100px) {
+    .agents-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .agents-filter-control-bar {
+        flex-wrap: wrap;
+    }
+}

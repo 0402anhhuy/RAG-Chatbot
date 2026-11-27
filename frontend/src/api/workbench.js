@@ -1,14 +1,14 @@
-import { request, requestBlob } from "./client";
+import { buildQuery, request, requestBlob } from "@/api/client.js";
 
 // Dữ liệu tab IDE của một project: cây file, editor, sync thư mục, transcript
 // và cấu hình thanh prompt. Mọi số liệu đều lấy từ BE, không dùng mock.
 export const workbenchApi = {
     listFiles: (projectId, { search, extension, tree = true } = {}) => {
-        const params = new URLSearchParams();
-        if (search) params.set("search", search);
-        if (extension) params.set("extension", extension);
-        params.set("tree", String(tree));
-        return request(`/projects/${projectId}/workbench/files?${params.toString()}`);
+        return request(`/projects/${projectId}/workbench/files${buildQuery({
+            search: search,
+            extension: extension,
+            tree: String(tree),
+        })}`);
     },
 
     createFile: (projectId, payload) =>

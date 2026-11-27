@@ -1,0 +1,70 @@
+{
+  "data": [
+    {
+      "id": "org/free-model",
+      "object": "model",
+      "owned_by": "org",
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["text"]
+      },
+      "providers": [
+        {
+          "provider": "groq",
+          "provider_name": "Groq",
+          "status": "live",
+          "context_length": 32768,
+          "pricing": {"input": 0, "output": 0},
+          "is_free": true,
+          "supports_tools": true,
+          "supports_structured_output": true,
+          "first_token_latency_ms": 300,
+          "throughput": 100,
+          "uptime_last_day_percent": 99.5,
+          "quantization": "fp8"
+        }
+      ]
+    },
+    {
+      "id": "org/paid-model",
+      "object": "model",
+      "owned_by": "org",
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["text"]
+      },
+      "providers": [
+        {
+          "provider": "nebius",
+          "provider_name": "Nebius",
+          "status": "live",
+          "context_length": 65536,
+          "pricing": {"input": 0.1, "output": 0.3},
+          "is_free": false,
+          "supports_tools": true,
+          "supports_structured_output": false,
+          "first_token_latency_ms": 500,
+          "throughput": 80,
+          "uptime_last_day_percent": 99.0
+        }
+      ]
+    },
+    {
+      "id": "org/unknown-model",
+      "object": "model",
+      "owned_by": "org",
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["text"]
+      },
+      "providers": [
+        {
+          "provider": "mystery",
+          "provider_name": "Mystery",
+          "status": "live",
+          "context_length": 8192
+        }
+      ]
+    }
+  ]
+}

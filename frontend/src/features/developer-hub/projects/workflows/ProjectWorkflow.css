@@ -1,0 +1,220 @@
+.vibe-workflows-viewport {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 24px;
+    box-sizing: border-box;
+}
+
+/* 1. Header & Filter Bar */
+.workflows-filter-control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.workflows-top-actions-cluster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-new-workflow-black {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
+    border: none;
+    border-radius: 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.btn-new-workflow-black:hover {
+    background-color: var(--solid-invert-bg-hover);
+}
+
+.btn-import-workflow-white {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-import-workflow-white:hover {
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
+}
+
+/* Selector filter (CustomSelector dùng chung) */
+.workflows-filter-selectors {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Dòng đếm workflow */
+.workflows-count-row {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+/* Trạng thái loading / lỗi */
+.workflows-state-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.workflows-state-error {
+    color: var(--danger-deep);
+}
+
+.workflows-empty-well {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 36px 16px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+@keyframes workflowsSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 2. Lưới Thẻ 3 Cột */
+.workflows-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.workflow-card-surface {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.03);
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
+.workflow-card-surface:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.07);
+}
+
+/* Dải màu ở đỉnh trên thẻ */
+.card-top-accent-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+/* Header thẻ */
+.workflow-card-header-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.workflow-card-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.workflow-icon-well {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.workflow-title-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mô tả luồng các bước */
+.workflow-steps-flow-text {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    min-height: 34px;
+    word-break: break-word;
+}
+
+/* Chân thẻ */
+.workflow-card-bottom-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 4px;
+}
+
+.workflow-type-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 10px;
+    letter-spacing: 0.04em;
+}
+
+.workflow-node-count {
+    font-size: 0.74rem;
+    color: var(--text-faint);
+}
+
+@media (max-width: 1100px) {
+    .workflows-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .workflows-filter-control-bar {
+        flex-wrap: wrap;
+    }
+}

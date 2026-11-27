@@ -1,6 +1,7 @@
 package com.knowledgehub.service.impl;
 
 import com.knowledgehub.dto.request.LoginRequest;
+import com.knowledgehub.dto.request.RefreshTokenRequest;
 import com.knowledgehub.dto.request.RegisterRequest;
 import com.knowledgehub.dto.request.SendOtpRequest;
 import com.knowledgehub.dto.request.VerifyOtpRequest;
@@ -154,7 +155,28 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Invalid email or password");
         }
 
-        return AuthResponse.of(jwtTokenService.issue(user), UserResponse.fromEntity(user));
+        return AuthResponse.of(
+                jwtTokenService.issue(user),
+                jwtTokenService.issueRefresh(user),
+                UserResponse.fromEntity(user));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AuthResponse refresh(RefreshTokenRequest request) {
+        // 1. Kiểm tra chữ ký + hạn của refresh token
+        UUID userId = jwtTokenService.verifyRefresh(request.refreshToken().trim());
+
+        // 2. User phải còn tồn tại và còn active
+        User user = userRepository.findById(userId)
+                .filter(User::isActive)
+                .orElseThrow(() -> new IllegalArgumentException("Session is no longer valid"));
+
+        // 3. Cấp bộ token mới (xoay refresh token để phiên không bao giờ hết khi user đang dùng)
+        return AuthResponse.of(
+                jwtTokenService.issue(user),
+                jwtTokenService.issueRefresh(user),
+                UserResponse.fromEntity(user));
     }
 
     @Override

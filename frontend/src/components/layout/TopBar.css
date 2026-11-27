@@ -1,0 +1,104 @@
+/* ==========================================================================
+   TopBar — navbar dùng chung cho Developer Hub, Project và Academy Hub.
+   ========================================================================== */
+.ui-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    width: 100%;
+    height: 48px;
+    padding: 0 20px;
+    background-color: var(--frame-bg);
+    border-bottom: 1px solid var(--frame-border);
+    box-sizing: border-box;
+}
+
+/* Nền tam giác động nằm dưới nội dung navbar */
+.ui-navbar > .triangle-field {
+    opacity: 0.35;
+}
+
+.ui-navbar-breadcrumbs,
+.ui-navbar-actions {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.ui-navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ---- Shortcut pills ------------------------------------------------------ */
+.ui-navbar-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ui-shortcut-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.12s ease;
+}
+
+.ui-shortcut-tag:hover {
+    color: var(--text-primary);
+}
+
+.ui-shortcut-tag.mini {
+    padding: 1px 4px;
+    border: 1px solid var(--frame-border);
+    border-radius: 10px;
+    background-color: var(--frame-key-bg);
+}
+
+/* ---- Primary action button ---------------------------------------------- */
+.ui-navbar-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.ui-navbar-cta:hover {
+    background-color: var(--solid-invert-bg-hover);
+}
+
+.ui-navbar .dropdown-caret {
+    color: var(--text-muted);
+}
+
+/* ---- Metric chips (Academy) --------------------------------------------- */
+.ui-navbar-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 860px) {
+    .ui-navbar-pills {
+        display: none;
+    }
+}

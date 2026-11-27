@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Request
@@ -11,6 +10,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.context import request_id_context
 from app.core.errors import ApiError, ErrorCode
+from app.core.metrics import METRICS
+from app.core.principal import Principal, ensure_workspace_allowed, get_principal
+from app.core.provider_errors import ProviderError, provider_api_error
 from app.core.security import require_api_key
 
 router = APIRouter(tags=["retrieval"], dependencies=[Depends(require_api_key)])
@@ -25,20 +27,34 @@ class RetrievalRequest(BaseModel):
 
 
 @router.post("/retrieval/search")
-async def search(request: Request, payload: Annotated[RetrievalRequest, Body(...)]) -> JSONResponse:
+async def search(
+    request: Request,
+    payload: Annotated[RetrievalRequest, Body(...)],
+    principal: Annotated[Principal, Depends(get_principal)],
+) -> JSONResponse:
+    ensure_workspace_allowed(principal, payload.workspace_id)
+    settings = request.app.state.settings
     try:
-        results = await asyncio.to_thread(
+        results = await request.app.state.work_gate.run(
             request.app.state.retriever.search,
             payload.query,
             workspace_id=payload.workspace_id,
             document_ids=payload.document_ids,
+            timeout=settings.app.request_timeout_seconds,
         )
+    except ProviderError as exc:
+        METRICS.inc("rag_retrieval_requests_total", labels={"status": "provider_error"})
+        raise provider_api_error(exc) from exc
     except RuntimeError as exc:
+        METRICS.inc("rag_retrieval_requests_total", labels={"status": "error"})
         raise ApiError(
             ErrorCode.INTERNAL_ERROR,
             "RAG retrieval provider failed",
             status_code=502,
         ) from exc
+
+    METRICS.inc("rag_retrieval_requests_total", labels={"status": "ok"})
+    METRICS.observe("rag_retrieval_results", len(results))
 
     return JSONResponse(
         status_code=200,

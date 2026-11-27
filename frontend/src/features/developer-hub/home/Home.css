@@ -1,0 +1,235 @@
+.time-range-toggles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px 6px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .edu-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .edu-split-sections {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .edu-resume-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .edu-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   Dev Hub identity — scoped overrides (Academy twin keeps emerald)
+   ========================================================================== */
+/* Đồng bộ bề ngang với tab Projects (vibe-projects-viewport = 1420px) */
+.edu-home-bounds.dev-home-bounds {
+    max-width: 1420px;
+}
+
+.dev-home-bounds .resume-icon-badge {
+    background-color: var(--accent-soft);
+    color: var(--accent);
+    border-color: rgba(var(--accent-rgb), 0.35);
+}
+
+.dev-home-bounds .resume-eyebrow {
+    color: var(--accent);
+}
+
+.dev-home-bounds .btn-continue-edu {
+    background-color: var(--accent);
+}
+
+.dev-home-bounds .btn-continue-edu:hover {
+    background-color: var(--accent-hover);
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.2);
+}
+
+.dev-home-bounds .progress-fill {
+    background-color: var(--accent);
+}
+
+/* Recent Projects rows */
+.home-project-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border: 1px solid var(--border-faint);
+    border-radius: 6px;
+    background-color: var(--surface-inset);
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.home-project-row:hover {
+    border-color: var(--accent);
+    background-color: var(--surface-card);
+    transform: translateY(-1px);
+}
+
+.home-project-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.home-project-name strong {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-project-name small {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-status-tag {
+    flex-shrink: 0;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.home-status-tag.active {
+    background-color: var(--success-soft);
+    color: var(--success);
+    border: 1px solid var(--success-border);
+}
+
+.home-status-tag.archived {
+    background-color: var(--surface-sunken-2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+
+.home-row-arrow {
+    flex-shrink: 0;
+    color: var(--text-faint);
+    transition:
+        transform 0.15s ease,
+        color 0.15s ease;
+}
+
+.home-project-row:hover .home-row-arrow {
+    color: var(--accent);
+    transform: translateX(2px);
+}
+
+/* Active Tasks rows */
+.home-task-list {
+    gap: 8px;
+}
+
+.home-task-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-faint);
+    border-radius: 6px;
+    background-color: var(--surface-inset);
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.home-task-row:hover {
+    border-color: var(--accent);
+    background-color: var(--surface-card);
+}
+
+.home-task-status {
+    flex-shrink: 0;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background-color: var(--surface-sunken-2);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border);
+    min-width: 64px;
+    text-align: center;
+}
+
+.home-task-status.to-do,
+.home-task-status.backlog {
+    background-color: var(--accent-soft);
+    color: var(--accent);
+    border-color: rgba(var(--accent-rgb), 0.35);
+}
+
+.home-task-status.in-progress {
+    background-color: var(--warning-soft-2);
+    color: var(--warning-strong);
+    border-color: var(--warning-border);
+}
+
+.home-task-status.done,
+.home-task-status.completed {
+    background-color: var(--success-soft);
+    color: var(--success);
+    border-color: var(--success-border);
+}
+
+.home-task-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.home-task-copy strong {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-task-copy small {
+    font-size: 0.7rem;
+    color: var(--text-faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-task-updated {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+}

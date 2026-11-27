@@ -1,27 +1,25 @@
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
 
 // Đề kiểm tra của tab Quizzes. status / score / lastAttempt do BE suy ra từ các
 // lượt làm của userId nên FE chỉ hiển thị.
 export const quizApi = {
     list: ({ ownerId, workspaceId, userId, status, search } = {}) => {
-        const params = new URLSearchParams();
-        if (ownerId) params.set("ownerId", ownerId);
-        if (workspaceId) params.set("workspaceId", workspaceId);
-        if (userId) params.set("userId", userId);
-        if (status) params.set("status", status);
-        if (search) params.set("search", search);
-        const query = params.toString();
-        return request(`/quizzes${query ? `?${query}` : ""}`);
+        return request(`/quizzes${buildQuery({
+            ownerId: ownerId,
+            workspaceId: workspaceId,
+            userId: userId,
+            status: status,
+            search: search,
+        })}`);
     },
 
     // Số liệu thanh "Quick Metrics" đầu tab
     stats: ({ ownerId, workspaceId, userId } = {}) => {
-        const params = new URLSearchParams();
-        if (ownerId) params.set("ownerId", ownerId);
-        if (workspaceId) params.set("workspaceId", workspaceId);
-        if (userId) params.set("userId", userId);
-        const query = params.toString();
-        return request(`/quizzes/stats${query ? `?${query}` : ""}`);
+        return request(`/quizzes/stats${buildQuery({
+            ownerId: ownerId,
+            workspaceId: workspaceId,
+            userId: userId,
+        })}`);
     },
 
     getById: (quizId, userId) => request(`/quizzes/${quizId}${userId ? `?userId=${userId}` : ""}`),

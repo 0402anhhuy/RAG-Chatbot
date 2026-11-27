@@ -13,6 +13,8 @@ from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from app.core.provider_errors import ProviderError, provider_error_from_http, retry_after_from_headers
+
 
 class EmbeddingModel(Protocol):
     def embed_query(self, text: str) -> list[float]: ...
@@ -81,17 +83,35 @@ class OpenAIEmbeddingModel:
             with urlopen(request, timeout=self.timeout) as response:
                 payload = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
-            raise RuntimeError(f"Embedding provider returned HTTP {exc.code}") from exc
+            retry_headers = dict(exc.headers.items()) if exc.headers else None
+            raise provider_error_from_http(
+                exc.code,
+                provider="openai-embedding",
+                action="Embedding provider",
+                retry_after=retry_after_from_headers(retry_headers),
+            ) from exc
         except (URLError, TimeoutError) as exc:
-            raise RuntimeError("Embedding provider request failed") from exc
+            raise ProviderError(
+                "timeout",
+                "Embedding provider request failed",
+                provider="openai-embedding",
+            ) from exc
         data = payload.get("data")
         if not isinstance(data, list) or len(data) != len(texts):
-            raise RuntimeError("Embedding provider returned an invalid response")
+            raise ProviderError(
+                "bad_response",
+                "Embedding provider returned an invalid response",
+                provider="openai-embedding",
+            )
         try:
             ordered = sorted(data, key=lambda item: int(item["index"]))
             return [[float(value) for value in item["embedding"]] for item in ordered]
         except (KeyError, TypeError, ValueError) as exc:
-            raise RuntimeError("Embedding provider returned invalid vectors") from exc
+            raise ProviderError(
+                "bad_response",
+                "Embedding provider returned invalid vectors",
+                provider="openai-embedding",
+            ) from exc
 
 
 class SentenceTransformersEmbeddingModel:

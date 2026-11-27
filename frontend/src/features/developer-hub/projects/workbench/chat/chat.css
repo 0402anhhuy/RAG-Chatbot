@@ -1,0 +1,1303 @@
+/* ==========================================================================
+   Agent Chat (Stream + Graph view)
+   Dùng chung cho cột 3 của IDE và tab Chat. Màu lấy từ biến theme Workbench.
+   ========================================================================== */
+
+.agent-chat {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.agent-chat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.agent-chat-head-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-primary);
+    min-width: 0;
+}
+
+.agent-status-text {
+    color: var(--text-muted, var(--text-secondary));
+    font-size: 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.agent-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-muted, #94a3b8);
+    flex-shrink: 0;
+}
+.agent-status-dot.thinking,
+.agent-status-dot.tool,
+.agent-status-dot.responding {
+    background: #a78bfa;
+    animation: agent-blink 1.1s ease-in-out infinite;
+}
+.agent-status-dot.done {
+    background: #34d399;
+}
+.agent-status-dot.error {
+    background: #ef4444;
+}
+.agent-status-dot.stopped {
+    background: #f59e0b;
+}
+
+@keyframes agent-blink {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.25;
+    }
+}
+
+/* ------------------------------------------------------- view toggle */
+
+.agent-view-toggle {
+    display: inline-flex;
+    padding: 2px;
+    gap: 2px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2, rgba(148, 163, 184, 0.08));
+    flex-shrink: 0;
+}
+
+.agent-view-toggle button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition:
+        background 120ms ease,
+        color 120ms ease;
+}
+
+.agent-view-toggle button.active {
+    background: var(--surface-card, #fff);
+    color: var(--accent);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* ------------------------------------------------------------- body */
+
+.agent-chat-body {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+.agent-empty {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 28px 22px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+    max-width: 340px;
+}
+.agent-empty svg {
+    color: var(--accent);
+}
+.agent-empty strong {
+    color: var(--text-primary);
+    font-size: 0.84rem;
+}
+
+/* ------------------------------------------------------ stream view */
+
+.agent-stream-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+}
+
+.agent-message {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.agent-message.user {
+    align-items: flex-end;
+}
+
+.agent-user-bubble {
+    max-width: 88%;
+    padding: 7px 11px;
+    border-radius: 10px;
+    background: var(--accent-soft, rgba(99, 102, 241, 0.12));
+    border: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* markdown */
+.agent-md {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+}
+.agent-md p {
+    margin: 0 0 6px;
+}
+.agent-md p:last-child {
+    margin-bottom: 0;
+}
+.agent-md h1,
+.agent-md h2,
+.agent-md h3,
+.agent-md h4 {
+    margin: 10px 0 4px;
+    font-size: 0.86rem;
+}
+.agent-md ul,
+.agent-md ol {
+    margin: 4px 0 6px;
+    padding-left: 18px;
+}
+.agent-md code {
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.74rem;
+    background: var(--surface-2, rgba(148, 163, 184, 0.16));
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+.agent-md pre code {
+    background: transparent;
+    padding: 0;
+}
+.agent-md a {
+    color: var(--accent);
+}
+.agent-md blockquote {
+    margin: 6px 0;
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+    color: var(--text-secondary);
+}
+
+/* code block + copy */
+.agent-code {
+    margin: 6px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0f1117;
+}
+
+.agent-code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    background: rgba(148, 163, 184, 0.1);
+    font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+    font-size: 0.66rem;
+    color: #94a3b8;
+}
+
+.agent-code-head button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 0;
+    background: transparent;
+    color: #cbd5e1;
+    font-size: 0.66rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+.agent-code-head button:hover {
+    background: rgba(148, 163, 184, 0.18);
+}
+
+.agent-code pre {
+    margin: 0;
+    padding: 9px 10px;
+    overflow-x: auto;
+    font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+    font-size: 0.72rem;
+    line-height: 1.55;
+    color: #e2e8f0;
+}
+
+/* syntax classes (dùng chung với editor) */
+.agent-code .syn-comment {
+    color: #6b7280;
+    font-style: italic;
+}
+.agent-code .syn-string {
+    color: #a5d6a7;
+}
+.agent-code .syn-number {
+    color: #f0b37e;
+}
+.agent-code .syn-keyword {
+    color: #c792ea;
+}
+.agent-code .syn-func {
+    color: #82aaff;
+}
+.agent-code .syn-tag {
+    color: #ffcb6b;
+}
+.agent-code .syn-attr {
+    color: #89ddff;
+}
+
+/* ---------------------------------------------------------- thinking */
+
+.agent-caret {
+    transition: transform 120ms ease;
+    flex-shrink: 0;
+}
+.agent-caret.open {
+    transform: rotate(90deg);
+}
+
+.agent-spin {
+    animation: agent-rotate 900ms linear infinite;
+}
+@keyframes agent-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* -------------------------------------------------------------- tool */
+
+.agent-tool {
+    border: 1px solid #7c3aed;
+    border-radius: 8px;
+    background: #0d0f16;
+    overflow: hidden;
+}
+
+.agent-tool.status-error {
+    border-color: #ef4444;
+}
+.agent-tool.status-stopped {
+    border-color: #f59e0b;
+}
+.agent-tool.is-edit {
+    border-color: #ea8a3c;
+}
+
+.agent-tool-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border: 0;
+    background: rgba(124, 58, 237, 0.1);
+    color: #e5e7eb;
+    font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-align: left;
+}
+
+.agent-tool-title {
+    flex: 1;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.agent-tool.is-edit .agent-tool-head {
+    background: rgba(234, 138, 60, 0.12);
+}
+
+.agent-tool-status {
+    display: inline-flex;
+    align-items: center;
+    color: #a7f3d0;
+}
+.agent-tool.status-running .agent-tool-status {
+    color: #93c5fd;
+}
+.agent-tool.status-error .agent-tool-status {
+    color: #f87171;
+}
+.agent-tool.status-stopped .agent-tool-status {
+    color: #fbbf24;
+}
+
+.agent-tool-body {
+    max-height: 240px;
+    overflow: auto;
+    padding: 6px 8px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.agent-tool-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+}
+
+.agent-tool-body pre {
+    margin: 2px 0 0;
+    font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+    font-size: 0.68rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* diff */
+.agent-diff {
+    font-family: var(--font-mono, ui-monospace, Menlo, monospace);
+    font-size: 0.68rem;
+    line-height: 1.5;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.agent-diff-row {
+    display: flex;
+    gap: 6px;
+    padding: 0 6px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: #cbd5e1;
+}
+.agent-diff-row.del {
+    background: rgba(239, 68, 68, 0.16);
+    color: #fecaca;
+}
+.agent-diff-row.add {
+    background: rgba(34, 197, 94, 0.16);
+    color: #bbf7d0;
+}
+
+.agent-diff-sign {
+    width: 8px;
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+/* ---------------------------------------------------------- composer */
+
+.agent-composer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    padding: 8px 10px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.agent-quick-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.agent-quick-chip {
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.66rem;
+    padding: 2px 7px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+.agent-quick-chip:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+.agent-quick-chip:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.agent-composer-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 5px 6px 5px 9px;
+    background: var(--surface-card);
+}
+
+.agent-prompt {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    resize: none;
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    max-height: 120px;
+    padding: 3px 0;
+}
+
+.agent-send {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 5px 8px;
+    cursor: pointer;
+}
+.agent-send:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.agent-send.stop {
+    background: #ef4444;
+}
+
+/* ============================================================== agent map */
+
+.agent-graph {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    container-type: inline-size;
+}
+
+.agent-graph-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.agent-graph-turnnav {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+}
+
+.agent-graph-turnnav .btn-icon-ghost:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.agent-graph-workbench {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.agent-graph-stage {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/*
+ * Map KHÓA tương tác: không zoom/pan/drag, không bôi đen chữ, không kéo icon.
+ * Cuộn trang và zoom trình duyệt vẫn hoạt động bình thường.
+ *
+ * width/height auto + max-* để tỉ lệ LUÔN vuông: viewBox square, preserveAspectRatio
+ * xMidYMid → hub nằm chính giữa khung ở mọi kích thước, 8 node luôn thấy đủ.
+ */
+.agent-map-svg {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1 / 1;
+    margin: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    touch-action: auto;
+    cursor: default;
+    overflow: visible;
+}
+
+/* Lớp bắt hover (đặt đúng vị trí 8 node, không chặn click) */
+.agent-map-hover-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.agent-map-hover-target {
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    margin: -28px 0 0 -28px;
+    border-radius: 50%;
+    pointer-events: auto;
+    cursor: default;
+}
+
+/* edges: nét mảnh 0.75, xám khi chưa dùng, màu riêng khi đã dùng */
+.agent-edge-line {
+    fill: none;
+    stroke-width: 0.75;
+    transition:
+        stroke 200ms ease,
+        stroke-opacity 200ms ease;
+}
+.agent-edge-line.idle {
+    stroke-opacity: 0.45;
+}
+.agent-edge-line.receiving,
+.agent-edge-line.running,
+.agent-edge-line.done {
+    stroke-opacity: 1;
+}
+.agent-edge-line.error {
+    stroke-opacity: 1;
+}
+
+/* beam: đầu hạt r=2.5 + glow nhẹ, đuôi 1.25 (hơi dài để đọc ra là đuôi) */
+.agent-beam-head {
+    filter: drop-shadow(0 0 3px var(--beam-color, #94a3b8));
+}
+.agent-beam-trail {
+    stroke-linecap: round;
+    opacity: 0.7;
+}
+
+/* hub */
+.agent-hub {
+    cursor: default;
+}
+.agent-hub-disc {
+    fill: var(--surface-card, #fff);
+    stroke: var(--border);
+    stroke-width: 0.75;
+}
+.agent-hub-progress {
+    fill: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    opacity: 0.95;
+    transition: stroke-dashoffset 240ms ease;
+}
+.agent-hub-progress.is-spinning {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: agent-ring-spin 1.1s linear infinite;
+}
+.agent-hub.state-idle .agent-hub-progress {
+    opacity: 0.35;
+}
+.agent-hub-icon {
+    color: var(--hub-color, var(--accent));
+}
+.agent-hub-label {
+    fill: var(--text-primary);
+    font-size: 11px;
+    font-weight: 600;
+    text-anchor: middle;
+}
+.agent-hub-state {
+    fill: var(--text-secondary);
+    font-size: 9px;
+    text-anchor: middle;
+}
+
+/* nodes */
+.agent-node {
+    cursor: pointer;
+    transition: opacity 200ms ease;
+}
+.agent-node.state-idle {
+    cursor: default;
+}
+.agent-node-disc {
+    fill: var(--surface-card, #fff);
+    pointer-events: none;
+}
+/* Vùng bắt tương tác: đúng đường tròn node, trong suốt */
+.agent-node-hit {
+    fill: transparent;
+    cursor: pointer;
+    outline: none;
+}
+.agent-node.state-idle .agent-node-hit {
+    cursor: default;
+}
+.agent-node-hit:focus-visible {
+    stroke: var(--node-color, var(--accent));
+    stroke-width: 1.25;
+    stroke-dasharray: 3 2;
+}
+.agent-node-border {
+    fill: none;
+    stroke-width: 0.75;
+    pointer-events: none;
+}
+/* Ring progress: cùng kiểu cho mọi node; idle thì không có ring.
+   Xoay và quay đầu cung (-90° để bắt đầu ở 12 giờ) bằng thuộc tính transform
+   của CHÍNH <g> node, nên không cần transform-origin và không bị lệch khỏi node. */
+.agent-node-progress {
+    fill: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 240ms ease;
+}
+.agent-node-progress.is-spinning {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: agent-ring-spin 1.1s linear infinite;
+}
+.agent-node:hover .agent-node-border,
+.agent-node.is-selected .agent-node-border {
+    stroke-width: 1.25;
+}
+
+/* Chạy xong: SÁNG RÕ — không mờ lại khi node khác chạy hay turn kết thúc */
+.agent-node.state-done {
+    opacity: 1;
+}
+.agent-node.state-done .agent-node-label {
+    fill: var(--text-primary);
+    font-weight: 600;
+}
+.agent-node.state-receiving .agent-node-label,
+.agent-node.state-running .agent-node-label {
+    fill: var(--text-primary);
+}
+.agent-node.state-error .agent-node-label {
+    fill: #f87171;
+}
+.agent-node.is-selected .agent-node-label {
+    fill: var(--node-color, var(--text-primary));
+    font-weight: 600;
+}
+
+@keyframes agent-ring-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+/* Ring SVG xoay quanh gốc của <g> đang chứa nó (xem transform-box: view-box).
+   Nhờ vậy cung progress luôn nằm đúng trên vòng tròn của node/hub. */
+
+.agent-node-badge {
+    fill: var(--surface-card, #fff);
+    stroke: var(--node-color, var(--border));
+    stroke-width: 0.75;
+}
+.agent-node-badge-text {
+    font-size: 7.5px;
+    font-weight: 700;
+    text-anchor: middle;
+    fill: var(--node-color, var(--text-primary));
+}
+.agent-node-label {
+    font-size: 9px;
+    fill: var(--text-secondary);
+    pointer-events: none;
+    transition: fill 200ms ease;
+}
+.agent-node-warn {
+    pointer-events: none;
+}
+.agent-node-icon {
+    pointer-events: none;
+}
+.agent-node-icon.is-spinning-icon {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: agent-rotate 1.6s linear infinite;
+}
+
+/* ------------------------------------------------------------- stepper */
+
+.agent-stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px 6px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+/* Khi Activity panel mở, stepper thu về đúng bề rộng cột map
+   để bước cuối + số đếm không bị panel che (class do GraphView gắn). */
+.agent-graph.has-trace .agent-stepper {
+    padding-right: 16px;
+}
+@container (min-width: 620px) {
+    .agent-graph.has-trace .agent-stepper {
+        padding-right: calc(264px + 12px);
+    }
+}
+
+.agent-stepper-track {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.agent-stepper-track::before,
+.agent-stepper-track::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 6px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--border);
+}
+
+.agent-stepper-track::after {
+    right: auto;
+    width: var(--stage-progress, 0%);
+    max-width: calc(100% - 12px);
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 240ms ease;
+}
+
+.agent-step {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+    color: var(--text-faint);
+    font-size: 0.58rem;
+    white-space: nowrap;
+}
+
+.agent-step:first-child {
+    align-items: flex-start;
+}
+.agent-step:last-child {
+    align-items: flex-end;
+}
+
+.agent-step-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--surface-card, #fff);
+    border: 1.5px solid var(--border-strong, #cbd5e1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    flex-shrink: 0;
+    transition:
+        background 160ms ease,
+        border-color 160ms ease;
+}
+
+.agent-step.done {
+    color: var(--text-secondary);
+}
+.agent-step.done .agent-step-dot {
+    background: #10b981;
+    border-color: #10b981;
+    color: #fff;
+}
+.agent-step.current {
+    color: var(--accent);
+    font-weight: 600;
+}
+.agent-step.current .agent-step-dot {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.agent-step.error {
+    color: #ef4444;
+    font-weight: 600;
+}
+.agent-step.error .agent-step-dot {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+}
+
+.agent-stepper-count {
+    flex-shrink: 0;
+    font-size: 0.6rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------- trace */
+
+.agent-trace {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 38%;
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface-sunken, #f8fafc) 55%, transparent);
+}
+
+.agent-trace-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-faint, var(--border));
+    flex-shrink: 0;
+}
+
+.agent-trace-count {
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--text-faint);
+}
+
+.agent-trace-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.agent-trace-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 5px 6px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+}
+
+.agent-trace-row:hover {
+    background: var(--surface-card, #fff);
+    border-color: var(--border);
+}
+
+.agent-trace-row:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+}
+
+.agent-trace-row.is-selected {
+    background: var(--accent-soft, #e0f2fe);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.agent-trace-row.running {
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.agent-trace-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--trace-color, var(--accent));
+    background: color-mix(in srgb, var(--trace-color, var(--accent)) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--trace-color, var(--accent)) 24%, transparent);
+    flex-shrink: 0;
+}
+
+.agent-trace-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.agent-trace-main strong {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.agent-trace-main small {
+    font-size: 0.59rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.agent-trace-time {
+    flex-shrink: 0;
+    font-size: 0.58rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+.agent-trace-state {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 12px;
+    color: #10b981;
+}
+
+.agent-trace-row.running .agent-trace-state {
+    color: var(--accent);
+}
+.agent-trace-row.error .agent-trace-state {
+    color: #ef4444;
+}
+.agent-trace-row.stopped .agent-trace-state {
+    color: var(--warning, #f59e0b);
+}
+
+.agent-trace-pill {
+    font-size: 0.55rem;
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--warning, #f59e0b) 16%, transparent);
+    color: var(--warning-strong, #b45309);
+}
+
+.agent-trace-empty {
+    margin: 8px;
+    font-size: 0.66rem;
+    color: var(--text-faint);
+}
+
+@container (min-width: 620px) {
+    .agent-graph-workbench {
+        flex-direction: row;
+    }
+    .agent-trace {
+        width: 264px;
+        max-height: none;
+        border-top: 0;
+        border-left: 1px solid var(--border);
+    }
+}
+
+/* legend */
+.agent-graph-legend {
+    position: absolute;
+    left: 10px;
+    bottom: 8px;
+    right: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+    background: color-mix(in srgb, var(--surface-card, #fff) 85%, transparent);
+    padding: 3px 7px;
+    border-radius: 6px;
+    pointer-events: none;
+}
+.agent-graph-legend .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 3px;
+}
+.agent-graph-legend .dot.thinking {
+    background: #a78bfa;
+}
+.agent-graph-legend .dot.tool {
+    background: #38bdf8;
+}
+.agent-graph-legend .dot.edit {
+    background: #fb923c;
+}
+.agent-graph-legend .dot.response {
+    background: #34d399;
+}
+
+/* Danh sách step bên trong panel chi tiết */
+.agent-detail-empty {
+    margin: 4px 2px;
+    font-size: 0.66rem;
+    color: var(--text-faint);
+}
+
+.agent-step-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.agent-step-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 6px;
+    border: 1px solid var(--border-faint, var(--border));
+    border-radius: 7px;
+    background: var(--surface-card, #fff);
+}
+
+.agent-step-row.error {
+    border-color: color-mix(in srgb, #ef4444 45%, var(--border));
+}
+
+.agent-step-index {
+    width: 15px;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    color: var(--text-faint);
+    text-align: right;
+}
+
+.agent-step-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.agent-step-main strong {
+    font-size: 0.64rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.agent-step-main small {
+    font-family: var(--font-mono);
+    font-size: 0.57rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.agent-step-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    font-size: 0.57rem;
+    color: var(--text-faint);
+}
+.agent-step-row.running .agent-step-state {
+    color: var(--node-color, var(--accent));
+}
+.agent-step-row.error .agent-step-state {
+    color: #ef4444;
+}
+.agent-step-state em {
+    font-style: normal;
+}
+
+/* --------------------------------------------------- detail panel */
+
+.agent-detail-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(320px, 55%);
+    background: var(--surface-card, #fff);
+    border-left: 1px solid var(--border);
+    box-shadow: -6px 0 18px rgba(0, 0, 0, 0.14);
+    display: flex;
+    flex-direction: column;
+    z-index: 4;
+}
+
+.agent-detail-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.agent-detail-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--node-color, var(--accent));
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+.agent-detail-titles {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.agent-detail-titles strong {
+    font-size: 0.74rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.agent-detail-titles small {
+    font-size: 0.64rem;
+    color: var(--text-secondary);
+}
+
+.agent-detail-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.agent-detail-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* -------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+    /* Tắt hạt bay và ring xoay; trạng thái (độ sáng, màu, icon) vẫn hiển thị */
+    .agent-beam,
+    .agent-spin,
+    .agent-node-icon.is-spinning-icon,
+    .agent-status-dot {
+        animation: none !important;
+    }
+    .agent-node-progress.is-spinning,
+    .agent-hub-progress.is-spinning {
+        animation: none !important;
+    }
+    .agent-caret {
+        transition: none;
+    }
+}
+
+/* --------------------------------------------- narrow: bottom sheet */
+
+@media (max-width: 720px) {
+    .agent-detail-panel {
+        top: auto;
+        left: 0;
+        right: 0;
+        width: auto;
+        max-height: 62%;
+        border-left: 0;
+        border-top: 1px solid var(--border);
+        border-radius: 12px 12px 0 0;
+        box-shadow: 0 -8px 22px rgba(0, 0, 0, 0.18);
+    }
+}
+
+/* Cột chat hẹp trong IDE: giảm padding cho đỡ chật */
+.wb-column-chat-pane:not(.is-standalone) .agent-stream-scroll {
+    padding: 8px;
+}
+.wb-column-chat-pane:not(.is-standalone) .agent-detail-panel {
+    width: 100%;
+}

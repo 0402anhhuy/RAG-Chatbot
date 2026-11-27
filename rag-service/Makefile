@@ -1,4 +1,4 @@
-.PHONY: dev test lint typecheck format lock
+.PHONY: dev test lint typecheck format lock eval eval-matrix
 
 dev:
 	python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
@@ -16,4 +16,10 @@ format:
 	python -m ruff format app config tests
 
 lock:
-	pip-compile --resolver=backtracking --generate-hashes --strip-extras --output-file=requirements.lock requirements.txt
+	@echo "requirements.txt is the supported manifest; CI installs it without a hash lock."
+
+eval:
+	python -m app.eval.cli --dataset eval/vi_golden.jsonl --out eval-out
+
+eval-matrix:
+	python -m app.eval.cli --dataset eval/vi_golden.jsonl --out eval-out --matrix --no-workflow

@@ -38,9 +38,19 @@ class VectorStorePort(ABC):
     def upsert(self, record: VectorRecord) -> str:
         """Insert or overwrite a record by its stable identifier."""
 
+    def upsert_many(self, records: Sequence[VectorRecord]) -> int:
+        """Insert or overwrite several records; stores may override to batch."""
+        for record in records:
+            self.upsert(record)
+        return len(records)
+
     @abstractmethod
     def delete(self, record_id: str) -> None:
         """Delete a record if it exists."""
+
+    @abstractmethod
+    def delete_by_document(self, document_id: str) -> int:
+        """Delete every record belonging to a document and return how many were removed."""
 
     @abstractmethod
     def search(

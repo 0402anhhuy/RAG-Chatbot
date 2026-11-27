@@ -1,0 +1,26 @@
+.ui-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px 16px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.ui-spinner-inline {
+    flex-direction: row;
+    padding: 0;
+    gap: 8px;
+}
+
+.ui-spinner-icon {
+    animation: ui-spin 0.9s linear infinite;
+}
+
+@keyframes ui-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -13,7 +13,7 @@ Từ thư mục gốc repository trong PowerShell:
 Set-Location rag-service
 py -3.12 -m venv .venv
 Copy-Item .env.example .env
-.\.venv\Scripts\python.exe -m pip install --require-hashes -r requirements.lock
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 

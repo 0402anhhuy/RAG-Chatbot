@@ -10,6 +10,7 @@ import com.knowledgehub.entity.Project;
 import com.knowledgehub.entity.ProjectLlmCredential;
 import com.knowledgehub.entity.ProjectSetting;
 import com.knowledgehub.entity.ProviderEndpoint;
+import com.knowledgehub.entity.ProviderModel;
 import com.knowledgehub.entity.ProviderType;
 import com.knowledgehub.entity.Task;
 import com.knowledgehub.entity.User;
@@ -22,6 +23,7 @@ import com.knowledgehub.repository.TaskRepository;
 import com.knowledgehub.repository.UserRepository;
 import com.knowledgehub.service.exception.ServiceEntityNotFoundException;
 import com.knowledgehub.service.interfaces.ProjectSettingService;
+import com.knowledgehub.service.interfaces.ProviderCredentialResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,7 @@ public class ProjectSettingServiceImpl implements ProjectSettingService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final EntityMapper entityMapper;
+    private final ProviderCredentialResolver providerCredentialResolver;
 
     // --------------------------------------------------------------- settings
     @Override
@@ -104,6 +107,7 @@ public class ProjectSettingServiceImpl implements ProjectSettingService {
         }
 
         ProjectSetting saved = settingRepository.save(setting);
+        providerCredentialResolver.invalidate(projectId, null);
         return toResponse(project, saved);
     }
 
@@ -130,10 +134,12 @@ public class ProjectSettingServiceImpl implements ProjectSettingService {
 
         credential.setApiKey(apiKey);
         credential.setEndpointCode(resolveEndpoint(request.provider(), request.endpointCode()).name());
+        credential.setModel(ProviderModel.resolveChatModel(request.provider(), request.model()));
         // "Add & Verify": key được coi là đã xác nhận ngay khi lưu thành công.
         credential.setVerified(true);
         credential.setLastVerifiedAt(Instant.now());
         credentialRepository.save(credential);
+        providerCredentialResolver.invalidate(projectId, null);
 
         return getSettings(projectId);
     }
@@ -145,6 +151,7 @@ public class ProjectSettingServiceImpl implements ProjectSettingService {
                 .filter(item -> item.getProject() != null && item.getProject().getId().equals(projectId))
                 .orElseThrow(() -> new ServiceEntityNotFoundException("Provider not found: " + credentialId));
         credentialRepository.delete(credential);
+        providerCredentialResolver.invalidate(projectId, null);
         return getSettings(projectId);
     }
 

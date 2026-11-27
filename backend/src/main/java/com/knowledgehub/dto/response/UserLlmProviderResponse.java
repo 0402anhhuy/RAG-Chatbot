@@ -18,6 +18,7 @@ public record UserLlmProviderResponse(
         String endpointCode,
         String endpointLabel,
         String baseUrl,
+        String model,
         String maskedKey,
         boolean connected,
         Instant updatedAt) {
@@ -31,6 +32,7 @@ public record UserLlmProviderResponse(
                 endpoint != null ? endpoint.name() : null,
                 endpoint != null ? endpoint.getLabel() : null,
                 endpoint != null ? endpoint.getBaseUrl() : null,
+                entity.getModel(),
                 maskKey(entity.getApiKey()),
                 true,
                 entity.getUpdatedAt());
@@ -46,6 +48,7 @@ public record UserLlmProviderResponse(
                 label(providerType),
                 null,
                 endpoint != null ? endpoint.getLabel() : null,
+                null,
                 null,
                 null,
                 false,

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { getNextTheme, THEMES } from "../components/common/theme/themeMeta";
+import { getNextTheme, THEMES } from "@/components/theme/themeMeta.jsx";
 
 const STORAGE_KEY = "prism-theme";
 

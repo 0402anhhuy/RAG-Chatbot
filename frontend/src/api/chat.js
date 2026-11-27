@@ -1,5 +1,5 @@
 // src/api/chat.js
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
 
 export const chatApi = {
     createSession: (payload) =>
@@ -26,14 +26,14 @@ export const chatApi = {
         page = 0,
         size = 50,
     } = {}) => {
-        const params = new URLSearchParams();
-        if (ownerId) params.set("ownerId", ownerId);
-        if (status) params.set("status", status);
-        if (search) params.set("search", search);
-        if (projectId) params.set("projectId", projectId);
-        params.set("page", String(page));
-        params.set("size", String(size));
-        return request(`/chat/conversations?${params.toString()}`);
+        return request(`/chat/conversations${buildQuery({
+            ownerId: ownerId,
+            status: status,
+            search: search,
+            projectId: projectId,
+            page: String(page),
+            size: String(size),
+        })}`);
     },
 
     updateSession: (id, changes) =>

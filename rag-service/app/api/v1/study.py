@@ -12,9 +12,12 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.core.context import request_id_context
 from app.core.errors import ApiError, ErrorCode
+from app.core.metrics import METRICS
+from app.core.principal import Principal, ensure_workspace_allowed, get_principal
+from app.core.provider_errors import ProviderError, provider_api_error
 from app.core.security import require_api_key
-from app.rag.factories.llm_factory import LLMFactory
 from app.rag.ingest_worker import chunk_from_record
+from app.rag.llm_resolver import create_chat_model, usage_of
 from app.rag.types import DocumentChunk
 
 router = APIRouter(tags=["study"], dependencies=[Depends(require_api_key)])
@@ -27,6 +30,8 @@ class StudyRequest(BaseModel):
     document_id: str | None = Field(default=None, alias="documentId", min_length=1, max_length=200)
     document_ids: list[str] | None = Field(default=None, alias="documentIds", max_length=100)
     max_items: int = Field(default=20, alias="maxItems", ge=1, le=50)
+    project_id: str | None = Field(default=None, alias="projectId", max_length=64)
+    user_id: str | None = Field(default=None, alias="userId", max_length=64)
 
     @model_validator(mode="after")
     def require_documents(self) -> StudyRequest:
@@ -45,18 +50,6 @@ def _json_array(text: str) -> list[dict[str, Any]]:
     return [item for item in value if isinstance(item, dict)]
 
 
-def _make_llm(request: Request) -> Any:
-    settings = request.app.state.settings.llm
-    return LLMFactory.create(
-        settings.provider,
-        model_name=settings.model,
-        temperature=settings.temperature,
-        max_tokens=settings.max_tokens,
-        timeout=settings.request_timeout,
-        max_retries=settings.max_retries,
-        api_key=settings.api_key.get_secret_value(),
-        base_url=settings.base_url,
-    )
 
 
 def _generate_items(
@@ -155,23 +148,40 @@ async def _generate(
     chunks = [chunk_from_record(record) for record in context.get("chunks", [])]
     if not chunks:
         raise ApiError(ErrorCode.NOT_FOUND, "Selected documents contain no indexed chunks", status_code=404)
+    settings = request.app.state.settings
+    resolution = create_chat_model(
+        request,
+        project_id=payload.project_id,
+        user_id=payload.user_id,
+    )
     try:
-        items = await asyncio.to_thread(
+        items = await request.app.state.work_gate.run(
             _generate_items,
             tool=tool,
             chunks=chunks,
             max_items=payload.max_items,
-            llm=_make_llm(request),
+            llm=resolution.model,
+            timeout=settings.app.request_timeout_seconds,
         )
+    except ProviderError as exc:
+        METRICS.inc("rag_study_requests_total", labels={"tool": tool, "status": "provider_error"})
+        raise provider_api_error(exc) from exc
     except RuntimeError as exc:
+        METRICS.inc("rag_study_requests_total", labels={"tool": tool, "status": "error"})
         raise ApiError(ErrorCode.INTERNAL_ERROR, "Study generation provider failed", status_code=502) from exc
     except ValueError as exc:
+        METRICS.inc("rag_study_requests_total", labels={"tool": tool, "status": "invalid_output"})
         raise ApiError(
             ErrorCode.INTERNAL_ERROR,
             "Study provider returned invalid structured output",
             status_code=502,
         ) from exc
 
+    METRICS.inc(
+        "rag_study_requests_total",
+        labels={"tool": tool, "status": "ok", "provider": resolution.provider},
+    )
+    METRICS.observe("rag_study_items", len(items), labels={"tool": tool})
     data_key = "flashcards" if tool == "flashcards" else "questions"
     return JSONResponse(
         status_code=200,
@@ -182,16 +192,29 @@ async def _generate(
                 "document_ids": sorted(ready_ids),
                 data_key: items,
             },
+            "provider": resolution.provider,
+            "model": resolution.model_name,
+            "usage": usage_of(resolution),
             "request_id": request_id_context.get(),
         },
     )
 
 
 @router.post("/study/flashcards")
-async def create_flashcards(request: Request, payload: Annotated[StudyRequest, Body(...)]) -> JSONResponse:
+async def create_flashcards(
+    request: Request,
+    payload: Annotated[StudyRequest, Body(...)],
+    principal: Annotated[Principal, Depends(get_principal)],
+) -> JSONResponse:
+    ensure_workspace_allowed(principal, payload.workspace_id)
     return await _generate(request, payload, "flashcards")
 
 
 @router.post("/study/exams")
-async def create_exam(request: Request, payload: Annotated[StudyRequest, Body(...)]) -> JSONResponse:
+async def create_exam(
+    request: Request,
+    payload: Annotated[StudyRequest, Body(...)],
+    principal: Annotated[Principal, Depends(get_principal)],
+) -> JSONResponse:
+    ensure_workspace_allowed(principal, payload.workspace_id)
     return await _generate(request, payload, "exams")

@@ -1,16 +1,15 @@
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
 
 // Notebook học tập của tab Conversations (Academy Hub). Mọi endpoint đều trả về
 // đầy đủ StudyWorkspaceResponse để cập nhật cả 3 cột trong một lần.
 export const studyApi = {
     // sessionId bỏ trống => BE chọn conversation mới nhất (tạo mới nếu chưa có)
     getWorkspace: ({ ownerId, workspaceId, sessionId } = {}) => {
-        const params = new URLSearchParams();
-        if (ownerId) params.set("ownerId", ownerId);
-        if (workspaceId) params.set("workspaceId", workspaceId);
-        if (sessionId) params.set("sessionId", sessionId);
-        const query = params.toString();
-        return request(`/study${query ? `?${query}` : ""}`);
+        return request(`/study${buildQuery({
+            ownerId: ownerId,
+            workspaceId: workspaceId,
+            sessionId: sessionId,
+        })}`);
     },
 
     // Upload file vào workspace của notebook (courseCode = NOTEBOOK để tách khỏi
@@ -58,11 +57,10 @@ export const studyApi = {
         }),
 
     addNote: (ownerId, sessionId, note) => {
-        const params = new URLSearchParams();
-        if (ownerId) params.set("ownerId", ownerId);
-        if (sessionId) params.set("sessionId", sessionId);
-        const query = params.toString();
-        return request(`/study/notes${query ? `?${query}` : ""}`, {
+        return request(`/study/notes${buildQuery({
+            ownerId: ownerId,
+            sessionId: sessionId,
+        })}`, {
             method: "POST",
             body: JSON.stringify(note),
         });

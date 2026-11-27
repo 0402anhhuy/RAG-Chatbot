@@ -31,8 +31,23 @@ class InMemoryVectorStore(VectorStorePort):
     def upsert(self, record: VectorRecord) -> str:
         return self.add(record)
 
+    def upsert_many(self, records: Sequence[VectorRecord]) -> int:
+        for record in records:
+            self._records[record.id] = record
+        return len(records)
+
     def delete(self, record_id: str) -> None:
         self._records.pop(record_id, None)
+
+    def delete_by_document(self, document_id: str) -> int:
+        stale = [
+            record_id
+            for record_id, record in self._records.items()
+            if str(record.metadata.get("document_id", "")) == document_id
+        ]
+        for record_id in stale:
+            del self._records[record_id]
+        return len(stale)
 
     def search(
         self,

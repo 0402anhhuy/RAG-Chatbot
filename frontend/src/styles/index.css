@@ -1,0 +1,5 @@
+/* Entry stylesheet — import order matters: tokens → base → primitives → shared */
+@import "./tokens.css";
+@import "./base.css";
+@import "./primitives.css";
+@import "./shared.css";

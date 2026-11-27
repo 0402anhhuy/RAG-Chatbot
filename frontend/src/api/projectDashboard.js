@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request } from "@/api/client.js";
 
 // KPI + My Tasks cho tab Dashboard của project.
 // viewerId dùng để biết task nào đang giao cho người đang xem.

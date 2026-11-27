@@ -1,13 +1,12 @@
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
 
 export const projectApi = {
     list: ({ ownerId, status, search } = {}) => {
-        const params = new URLSearchParams();
-        if (ownerId) params.set("ownerId", ownerId);
-        if (status && status !== "All") params.set("status", status.toUpperCase());
-        if (search) params.set("search", search);
-        const query = params.toString();
-        return request(`/projects${query ? `?${query}` : ""}`);
+        return request(`/projects${buildQuery({
+            ownerId: ownerId,
+            status: status && status !== "All" ? status.toUpperCase() : undefined,
+            search: search,
+        })}`);
     },
 
     getById: (id) => request(`/projects/${id}`),

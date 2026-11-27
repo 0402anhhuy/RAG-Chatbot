@@ -1,15 +1,38 @@
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
+
+/**
+ * Sinh mô tả task từ yêu cầu người dùng.
+ *
+ * BE HIỆN CHƯA CÓ endpoint này (TaskController không có route generate/assist).
+ * Hàm throw lỗi rõ ràng thay vì bịa nội dung, và UI sẽ hiện thông báo trong
+ * modal Description. Khi BE bổ sung (vd POST /tasks/description/generate trả
+ * { description }), chỉ cần thay phần throw bằng `request(...)` bên dưới.
+ */
+export const generateTaskDescription = async ({ prompt /*, title, projectId */ }) => {
+    if (!String(prompt || "").trim()) {
+        throw new Error("Describe what the task should do first.");
+    }
+
+    // Khi có API:
+    // const res = await request("/tasks/description/generate", {
+    //     method: "POST",
+    //     body: JSON.stringify({ prompt, title, projectId }),
+    // });
+    // return unwrap(res).description;
+    throw new Error(
+        "Description generation is not available yet: the backend has no generate endpoint.",
+    );
+};
 
 export const taskApi = {
     list: ({ ownerId, projectId, status, archived, search } = {}) => {
-        const params = new URLSearchParams();
-        if (ownerId) params.set("ownerId", ownerId);
-        if (projectId) params.set("projectId", projectId);
-        if (status) params.set("status", status);
-        if (archived !== undefined && archived !== null) params.set("archived", String(archived));
-        if (search) params.set("search", search);
-        const query = params.toString();
-        return request(`/tasks${query ? `?${query}` : ""}`);
+        return request(`/tasks${buildQuery({
+            ownerId: ownerId,
+            projectId: projectId,
+            status: status,
+            archived: archived !== undefined && archived !== null ? String(archived) : undefined,
+            search: search,
+        })}`);
     },
 
     getById: (id) => request(`/tasks/${id}`),

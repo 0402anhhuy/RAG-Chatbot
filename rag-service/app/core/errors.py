@@ -34,12 +34,14 @@ class ApiError(Exception):
         *,
         status_code: int,
         details: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
         self.status_code = status_code
         self.details = details or {}
+        self.headers = headers or {}
 
 
 def error_payload(
@@ -69,6 +71,7 @@ def install_error_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=exc.status_code,
             content=error_payload(exc.code, exc.message, exc.details),
+            headers=exc.headers or None,
         )
 
     @app.exception_handler(RequestValidationError)

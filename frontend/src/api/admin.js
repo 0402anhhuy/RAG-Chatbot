@@ -1,18 +1,4 @@
-import { request } from "./client";
-
-/** Bóc ApiResponse envelope { success, message, data } -> data */
-const unwrap = (res) => res?.data ?? res;
-
-const buildQuery = (params = {}) => {
-    const qs = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-            qs.set(key, value);
-        }
-    });
-    const str = qs.toString();
-    return str ? `?${str}` : "";
-};
+import { buildQuery, request, unwrap } from "@/api/client.js";
 
 export const adminApi = {
     /** Tổng quan nền tảng (days = 7 | 30 | 90) */

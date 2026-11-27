@@ -1,0 +1,65 @@
+version: 1
+updated_at: "2026-11-26"
+providers:
+  huggingface:
+    via: hf-router
+    scope: account
+    free_tier: null
+    notes: >-
+      Free accounts have no monthly inference credits. PRO gets $2/month,
+      Team/Enterprise $2 per seat per month. Rate limits are not documented;
+      monthly credits and pay-as-you-go are the limit.
+    source_url: "https://huggingface.co/docs/inference-providers/pricing"
+    verified_at: "2026-11-26"
+  groq:
+    via: direct-provider
+    scope: per-organization
+    free_tier:
+      rpm: 30
+      rpd: 1000
+      tpm: 8000
+      tpd: 200000
+    per_model:
+      openai/gpt-oss-120b:
+        rpm: 30
+        rpd: 1000
+        tpm: 8000
+        tpd: 200000
+      openai/gpt-oss-20b:
+        rpm: 30
+        rpd: 1000
+        tpm: 8000
+        tpd: 200000
+      qwen/qwen3.8-27b:
+        rpm: 30
+        rpd: 1000
+        tpm: 8000
+        tpd: 200000
+    notes: >-
+      Free plan values for the listed models. Exact limits are shown on the
+      Groq limits page and apply only to direct Groq API calls.
+    source_url: "https://console.groq.com/docs/rate-limits"
+    verified_at: "2026-11-26"
+  cerebras:
+    via: direct-provider
+    scope: per-organization
+    free_tier:
+      rpm: 5
+      uncached_tpm: 30000
+      total_tpm: 90000
+      tpd: 1000000
+    per_model:
+      gpt-oss-120b:
+        rpm: 5
+        uncached_tpm: 30000
+        total_tpm: 90000
+        tpd: 1000000
+      qwen-3.8-27b:
+        rpm: 300
+        uncached_tpm: 150000
+        total_tpm: 750000
+    notes: >-
+      Free Trial values while using the $5, 30-day trial credits. No permanent
+      free tier; limits apply only to direct Cerebras API calls.
+    source_url: "https://inference-docs.cerebras.ai/support/rate-limits"
+    verified_at: "2026-11-26"

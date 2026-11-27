@@ -1,12 +1,11 @@
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
 
 // Agent template của một project (tab Agents)
 export const agentApi = {
     list: (projectId, type) => {
-        const params = new URLSearchParams();
-        if (type) params.set("type", type);
-        const query = params.toString();
-        return request(`/projects/${projectId}/agents${query ? `?${query}` : ""}`);
+        return request(`/projects/${projectId}/agents${buildQuery({
+            type: type,
+        })}`);
     },
 
     getById: (projectId, agentId) => request(`/projects/${projectId}/agents/${agentId}`),

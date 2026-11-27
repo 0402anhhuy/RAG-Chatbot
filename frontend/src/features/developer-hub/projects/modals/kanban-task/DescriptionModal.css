@@ -1,0 +1,581 @@
+/* ==========================================================================
+   DescriptionModal — "Generate Task Description" (lớp trên của form task).
+   Màu 100% theme token → đúng ở Light / Dark / Blush.
+   ========================================================================== */
+
+.dm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 160;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(var(--shadow-rgb), 0.5);
+    backdrop-filter: blur(3px);
+    animation: dm-fade 0.16s ease-out;
+}
+
+.dm-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(770px, 100%);
+    height: min(760px, 90vh);
+    max-height: 90vh;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-modal);
+    overflow: hidden;
+    animation: dm-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* ---------- Header (cố định) ---------- */
+.dm-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid var(--border-faint);
+}
+
+.dm-heading h3 {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+}
+
+.dm-heading p {
+    margin: 3px 0 0;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.dm-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition:
+        background-color 0.14s ease,
+        color 0.14s ease;
+}
+.dm-close:hover {
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
+}
+
+/* ---------- Body: 2 cột, chỉ phần này cuộn ---------- */
+.dm-body {
+    display: grid;
+    grid-template-columns: minmax(0, 38fr) minmax(0, 62fr);
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+    padding: 14px 18px;
+    overflow: hidden;
+}
+
+.dm-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    min-height: 0;
+}
+
+.dm-eyebrow {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+/* Hai textarea dùng CHUNG một kiểu. Focus ring = border 1px đổi màu +
+   box-shadow 1px ⇒ không đổi kích thước, không làm field xê dịch. */
+.dm-textarea {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background-color: var(--surface-inset);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    resize: none;
+    box-sizing: border-box;
+    outline: none;
+    transition:
+        border-color 0.14s ease,
+        box-shadow 0.14s ease;
+}
+
+.dm-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.dm-textarea:hover:not(:disabled) {
+    border-color: var(--text-faint);
+}
+
+/* Viền focus duy nhất tại một thời điểm, ôm đúng bo góc field. */
+.dm-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+.dm-textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.dm-result-input {
+    font-family: var(
+        --font-mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace
+    );
+    font-size: 0.76rem;
+    background-color: var(--surface-card);
+}
+
+.dm-prompt-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Bộ đếm "N chars" ở trên, nút Generate full-width ở dưới */
+.dm-prompt-footer .dm-counter {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+.dm-counter {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.dm-generate {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    /* Rộng hết cột theo spec; box-sizing để padding không đẩy tràn cột */
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.14s ease,
+        border-color 0.14s ease,
+        opacity 0.14s ease;
+}
+
+.dm-generate:hover:not(:disabled) {
+    background-color: var(--surface-sunken);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.dm-generate:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ---------- Tabs ---------- */
+.dm-tabs {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-faint);
+}
+
+.dm-tab {
+    position: relative;
+    padding: 6px 2px 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.14s ease;
+}
+
+.dm-tab:hover {
+    color: var(--text-primary);
+}
+
+.dm-tab.is-active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Tab đang chọn: gạch chân. */
+.dm-tab.is-active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background-color: var(--accent);
+}
+
+.dm-result-wrap {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+/* ---------- Preview (markdown đã escape) ---------- */
+.dm-preview {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 10px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background-color: var(--surface-inset);
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+}
+
+.dm-preview-content {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+}
+.dm-preview-content h1,
+.dm-preview-content h2,
+.dm-preview-content h3 {
+    margin: 0.7em 0 0.35em;
+    font-size: 0.92rem;
+    font-weight: 650;
+    color: var(--text-primary);
+}
+.dm-preview-content h1:first-child,
+.dm-preview-content h2:first-child,
+.dm-preview-content h3:first-child {
+    margin-top: 0;
+}
+.dm-preview-content p {
+    margin: 0 0 0.6em;
+}
+.dm-preview-content ul,
+.dm-preview-content ol {
+    margin: 0 0 0.6em;
+    padding-left: 1.2em;
+}
+.dm-preview-content li {
+    margin: 0.15em 0;
+}
+.dm-preview-content code {
+    padding: 1px 5px;
+    border-radius: 5px;
+    background-color: var(--surface-sunken-2);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.92em;
+}
+.dm-preview-content pre {
+    padding: 9px 11px;
+    border-radius: 8px;
+    background-color: var(--surface-sunken-2);
+    overflow-x: auto;
+}
+.dm-preview-content pre code {
+    padding: 0;
+    background: transparent;
+}
+.dm-preview-content a {
+    color: var(--accent);
+}
+.dm-preview-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+.dm-preview-empty {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ---------- Loading ---------- */
+.dm-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border-radius: 10px;
+    background-color: color-mix(in srgb, var(--surface-card) 82%, transparent);
+    backdrop-filter: blur(1px);
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.dm-spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
+    border-top-color: var(--accent);
+    animation: dm-spin 0.8s linear infinite;
+}
+
+@keyframes dm-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.dm-error {
+    margin: 0;
+    flex-shrink: 0;
+    font-size: 0.73rem;
+    color: var(--danger-deep, var(--danger));
+}
+
+/* ---------- Footer (cố định) ---------- */
+.dm-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-faint);
+    background-color: var(--surface-card);
+}
+
+.dm-state-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.dm-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.dm-btn-ghost,
+.dm-btn-primary {
+    height: 32px;
+    padding: 0 16px;
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.14s ease,
+        border-color 0.14s ease,
+        opacity 0.14s ease;
+}
+
+.dm-btn-ghost {
+    border: 1px solid var(--border-strong);
+    background-color: var(--surface-card);
+    color: var(--text-secondary);
+}
+.dm-btn-ghost:hover {
+    background-color: var(--surface-sunken);
+    border-color: var(--text-faint);
+}
+
+.dm-btn-primary {
+    border: 1px solid transparent;
+    background-image: linear-gradient(
+        135deg,
+        var(--accent-bright),
+        var(--accent)
+    );
+    color: #ffffff;
+}
+.dm-btn-primary:hover:not(:disabled) {
+    filter: brightness(0.96) saturate(1.05);
+}
+.dm-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Focus ring bàn phím: dùng box-shadow để viền bo theo góc của từng nút/tab
+ * (outline luôn là hình vuông, không theo border-radius).
+ * Khác với trạng thái đang chọn: tab đang chọn có gạch chân, không có viền bao. */
+.dm-card button:focus-visible,
+.dm-card .dm-tab:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent);
+    border-radius: var(--radius-sm);
+}
+
+/* Hai textarea trong modal: box-shadow 1px bám đúng góc bo 10px */
+.dm-card .dm-textarea:focus,
+.dm-card .dm-textarea:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* ---------- Hỏi xác nhận (trong modal, không ra ngoài) ---------- */
+.dm-confirm-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(var(--shadow-rgb), 0.35);
+    backdrop-filter: blur(1px);
+}
+
+.dm-confirm {
+    width: min(360px, 100%);
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background-color: var(--surface-card);
+    box-shadow: var(--shadow-lg, var(--shadow-modal));
+}
+
+.dm-confirm p {
+    margin: 0 0 12px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.dm-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@keyframes dm-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes dm-pop {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ---------- Hẹp: 2 cột xếp dọc, footer vẫn thấy ---------- */
+@media (max-width: 760px) {
+    .dm-overlay {
+        padding: 12px;
+    }
+
+    .dm-card {
+        height: min(760px, 94vh);
+        max-height: 94vh;
+    }
+
+    .dm-body {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(120px, 40%) minmax(0, 60%);
+        gap: 10px;
+        overflow-y: auto;
+        padding: 12px;
+    }
+
+    .dm-promp-footer,
+    .dm-prompt-footer {
+        flex-wrap: wrap;
+    }
+
+    .dm-footer {
+        padding: 10px 12px;
+    }
+
+    .dm-state-text {
+        display: none;
+    }
+
+    /* Cột hẹp: đếm + nút Generate xếp dọc, nút full-width không tràn ngang.
+       Đặt trong media query cuối file để không bị rule .dm-generate phía trên ghi đè. */
+    .dm-prompt-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .dm-prompt-footer .dm-counter {
+        flex: 0 0 auto;
+    }
+
+    .dm-generate {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dm-overlay,
+    .dm-card,
+    .dm-spinner {
+        animation: none;
+    }
+}

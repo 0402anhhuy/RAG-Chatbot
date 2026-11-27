@@ -1,0 +1,111 @@
+/* Modal dùng chung — mọi modal trong app đi qua đây, không tự dựng overlay nữa. */
+.ui-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(var(--shadow-rgb), 0.45);
+    backdrop-filter: blur(2px);
+    animation: ui-modal-fade 0.16s ease-out;
+}
+
+.ui-modal-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-height: calc(100vh - 40px);
+    padding: 22px 24px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-modal);
+    animation: ui-modal-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.ui-modal-sm { max-width: 380px; }
+.ui-modal-md { max-width: 460px; }
+.ui-modal-lg { max-width: 620px; }
+.ui-modal-xl { max-width: 860px; }
+
+.ui-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ui-modal-heading h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+}
+
+.ui-modal-heading p {
+    margin: 3px 0 0;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.ui-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.ui-modal-close:hover {
+    background: var(--surface-sunken-2);
+    color: var(--text-primary);
+}
+
+.ui-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.ui-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border-faint);
+}
+
+.ui-modal-footer-split {
+    justify-content: space-between;
+}
+
+.ui-modal-footer-split .footer-right-buttons-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+@keyframes ui-modal-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes ui-modal-pop {
+    from { opacity: 0; transform: translateY(8px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}

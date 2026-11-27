@@ -71,6 +71,28 @@ class IngestJob:
 
 
 @dataclass(slots=True)
+class LLMUsage:
+    provider: str
+    model: str
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    cache_read_tokens: int = 0
+    cache_write_tokens: int = 0
+    estimated: bool = False
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "provider": self.provider,
+            "model": self.model,
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+            "cache_read_tokens": self.cache_read_tokens,
+            "cache_write_tokens": self.cache_write_tokens,
+            "estimated": self.estimated,
+        }
+
+
+@dataclass(slots=True)
 class Citation:
     document_id: str
     chunk_id: str

@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request } from "@/api/client.js";
 
 // Số liệu Analytics của project, tính từ các lượt dùng LLM đã ghi nhận ở BE.
 // month dạng "yyyy-MM"; bỏ trống thì BE trả tháng hiện tại.

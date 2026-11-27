@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sqlite3
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -15,11 +16,15 @@ from app.api.v1.router import router as api_router
 from app.core.backend_client import BackendRegistry
 from app.core.errors import install_error_handlers
 from app.core.logging import setup_logging
+from app.core.metrics import METRICS, MetricsMiddleware
 from app.core.middleware import RequestContextMiddleware
 from app.core.ratelimit import MemoryRateLimitStore, RateLimitMiddleware, RateLimitStore, RedisRateLimitStore
+from app.core.runtime import WorkGate
+from app.rag.embedding_cache import EmbeddingCache
 from app.rag.factories.embedding_factory import EmbeddingFactory
 from app.rag.ingest_service import DurableIngestQueue
 from app.rag.ingest_worker import DocumentIngestWorker
+from app.rag.provider_config import ProviderConfigClient
 from app.rag.retrievers.bm25 import BM25Index
 from app.rag.retrievers.service import HybridRetriever
 from app.rag.stores.store_factory import create_vector_store
@@ -41,7 +46,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.ready = False
+        METRICS.reset()
         setup_logging(resolved_settings.app.log_level, resolved_settings.app.log_format)
+        app.state.work_gate = WorkGate(resolved_settings.app.max_concurrent_requests)
         registry = BackendRegistry(
             resolved_settings.backend.base_url,
             api_key=resolved_settings.backend.api_key.get_secret_value(),
@@ -59,27 +66,47 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             bm25_index = BM25Index(
                 resolved_settings.bm25.persist_path,
                 rebuild_on_boot=resolved_settings.bm25.rebuild_on_boot,
+                strip_diacritics=resolved_settings.bm25.strip_diacritics,
+                expand_compounds=resolved_settings.bm25.expand_compounds,
+                index_version=resolved_settings.retrieval.index_version,
+            )
+            embedding_model_name = (
+                "text-embedding-3-small"
+                if resolved_settings.embedding.provider == "openai"
+                and resolved_settings.embedding.model == "sentence-transformers/all-MiniLM-L6-v2"
+                else resolved_settings.embedding.model
             )
             embedding_model = EmbeddingFactory.create(
                 resolved_settings.embedding.provider,
-                model_name=(
-                    "text-embedding-3-small"
-                    if resolved_settings.embedding.provider == "openai"
-                    and resolved_settings.embedding.model == "sentence-transformers/all-MiniLM-L6-v2"
-                    else resolved_settings.embedding.model
-                ),
+                model_name=embedding_model_name,
                 device=resolved_settings.embedding.device,
                 normalize=resolved_settings.embedding.normalize,
                 api_key=resolved_settings.embedding.api_key.get_secret_value(),
                 base_url=resolved_settings.embedding.base_url,
                 dimension=resolved_settings.embedding.dimension,
             )
+            embedding_cache: EmbeddingCache | None
+            try:
+                embedding_cache = EmbeddingCache(
+                    resolved_settings.embedding.cache_path,
+                    namespace=(
+                        f"{resolved_settings.embedding.provider}:{embedding_model_name}:"
+                        f"{resolved_settings.embedding.normalize}:{resolved_settings.embedding.dimension}"
+                    ),
+                    enabled=resolved_settings.embedding.cache_enabled,
+                )
+            except (sqlite3.Error, OSError):
+                logger.exception("embedding_cache_unavailable")
+                embedding_cache = None
             vector_store = create_vector_store(
                 resolved_settings.vector_store.backend,
                 collection_name=resolved_settings.vector_store.collection,
                 url=resolved_settings.vector_store.url,
+                api_key=resolved_settings.vector_store.api_key.get_secret_value(),
                 persist_path=resolved_settings.vector_store.persist_path,
                 vector_size=resolved_settings.vector_store.vector_size,
+                distance=resolved_settings.vector_store.distance,
+                timeout=resolved_settings.vector_store.timeout_seconds,
             )
             worker = DocumentIngestWorker(
                 queue,
@@ -88,6 +115,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 resolved_settings,
                 embedding_model,
                 vector_store,
+                embedding_cache=embedding_cache,
             )
             if resolved_settings.ingest.worker_enabled:
                 await worker.prepare()
@@ -106,10 +134,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             worker_task = (
                 asyncio.create_task(worker.run(stop_worker)) if resolved_settings.ingest.worker_enabled else None
             )
+            provider_config = ProviderConfigClient(resolved_settings.provider_config)
             app.state.backend = registry
+            app.state.provider_config = provider_config
             app.state.ingest_queue = queue
             app.state.bm25_index = bm25_index
             app.state.embedding_model = embedding_model
+            app.state.embedding_cache = embedding_cache
             app.state.vector_store = vector_store
             app.state.retriever = retriever
             app.state.ingest_worker = worker
@@ -123,6 +154,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 if worker_task is not None:
                     await worker_task
                 await asyncio.to_thread(vector_store.close)
+                if embedding_cache is not None:
+                    embedding_cache.close()
+                provider_config.close()
         finally:
             app.state.ready = False
             await asyncio.to_thread(registry.close)
@@ -155,6 +189,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings=resolved_settings.rate_limit,
         store=rate_limit_store,
     )
+    app.add_middleware(MetricsMiddleware)
     app.add_middleware(RequestContextMiddleware, header_name=resolved_settings.app.request_id_header)
     install_error_handlers(app)
     app.include_router(api_router, prefix="/api/v1")

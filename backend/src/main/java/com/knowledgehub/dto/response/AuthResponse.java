@@ -2,10 +2,11 @@ package com.knowledgehub.dto.response;
 
 public record AuthResponse(
         String accessToken,
+        String refreshToken,
         String tokenType,
         UserResponse user
 ) {
-    public static AuthResponse of(String accessToken, UserResponse user) {
-        return new AuthResponse(accessToken, "Bearer", user);
+    public static AuthResponse of(String accessToken, String refreshToken, UserResponse user) {
+        return new AuthResponse(accessToken, refreshToken, "Bearer", user);
     }
 }

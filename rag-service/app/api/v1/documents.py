@@ -11,9 +11,10 @@ import asyncio
 import hashlib
 import os
 import uuid
+from collections.abc import Callable
 from pathlib import Path
 from time import monotonic
-from typing import Annotated
+from typing import Annotated, Any, TypeVar
 
 from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
@@ -21,6 +22,7 @@ from fastapi.responses import JSONResponse, Response
 from app.core.backend_client import BackendNotFound, BackendRegistry, BackendUnavailable
 from app.core.context import request_id_context
 from app.core.errors import ApiError, ErrorCode
+from app.core.principal import Principal, ensure_workspace_allowed, get_principal
 from app.core.security import require_api_key
 from app.core.upload_policy import validate_upload_file
 from app.rag.ingest_service import DurableIngestQueue
@@ -51,16 +53,30 @@ def _worker(request: Request) -> DocumentIngestWorker:
     return worker
 
 
+def _ensure_scope(principal: Principal, workspace_id: str | None) -> None:
+    if workspace_id is None:
+        if not principal.unrestricted:
+            raise ApiError(
+                ErrorCode.FORBIDDEN,
+                "Workspace scope is required for this principal",
+                status_code=403,
+            )
+        return
+    ensure_workspace_allowed(principal, workspace_id)
+
+
 @router.post("/documents/upload")
 async def upload_document(
     request: Request,
     file: Annotated[UploadFile, File(...)],
+    principal: Annotated[Principal, Depends(get_principal)],
     dedup_strategy: Annotated[str | None, Form()] = None,
     workspace_id: Annotated[str | None, Form(alias="workspaceId")] = None,
     course_code: Annotated[str | None, Form(alias="courseCode")] = None,
     document_id: Annotated[str | None, Form(alias="documentId")] = None,
     wait_until_ready: Annotated[bool, Form(alias="waitUntilReady")] = False,
 ) -> JSONResponse:
+    _ensure_scope(principal, workspace_id)
     if file.filename is None or not file.filename.strip():
         raise ApiError(ErrorCode.VALIDATION_ERROR,
                        "file name is required", status_code=422)
@@ -221,8 +237,10 @@ async def _wait_until_ready(request: Request, document_id: str, job_id: str) -> 
 @router.get("/documents")
 async def list_documents(
     request: Request,
+    principal: Annotated[Principal, Depends(get_principal)],
     workspace_id: Annotated[str | None, Query(alias="workspaceId")] = None,
 ) -> JSONResponse:
+    _ensure_scope(principal, workspace_id)
     documents = await _backend(
         request, _registry(request).list_documents, workspace_id=workspace_id)
     result = [
@@ -250,7 +268,11 @@ async def list_documents(
 
 
 @router.get("/documents/jobs/{job_id}")
-async def get_job(request: Request, job_id: str) -> JSONResponse:
+async def get_job(
+    request: Request,
+    job_id: str,
+    principal: Annotated[Principal, Depends(get_principal)],
+) -> JSONResponse:
     job = await asyncio.to_thread(_queue(request).get_job, job_id)
     if job is None:
         raise ApiError(ErrorCode.NOT_FOUND,
@@ -260,6 +282,8 @@ async def get_job(request: Request, job_id: str) -> JSONResponse:
         if job.document_id
         else None
     )
+    if document is not None:
+        _ensure_scope(principal, str(document.get("workspaceId") or ""))
     return JSONResponse(
         status_code=200,
         content={
@@ -281,11 +305,16 @@ async def get_job(request: Request, job_id: str) -> JSONResponse:
 
 
 @router.delete("/documents/{document_id}")
-async def delete_document(request: Request, document_id: str) -> Response:
+async def delete_document(
+    request: Request,
+    document_id: str,
+    principal: Annotated[Principal, Depends(get_principal)],
+) -> Response:
     registry = _registry(request)
     document = await _backend(request, registry.get_document, document_id)
     if document is None:
         return Response(status_code=204)
+    _ensure_scope(principal, str(document.get("workspaceId") or ""))
 
     await _backend(request, registry.delete_document, document_id)
     if document.get("jobId"):
@@ -294,7 +323,10 @@ async def delete_document(request: Request, document_id: str) -> Response:
     return Response(status_code=204)
 
 
-async def _backend(request: Request, call, *args, **kwargs):
+T = TypeVar("T")
+
+
+async def _backend(request: Request, call: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """Run a blocking backend call in a worker thread and map transport errors."""
     try:
         return await asyncio.to_thread(call, *args, **kwargs)

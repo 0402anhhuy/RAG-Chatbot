@@ -16,6 +16,8 @@ def create_vector_store(
     api_key: str | None = None,
     persist_path: str | None = None,
     vector_size: int | None = None,
+    distance: str = "cosine",
+    timeout: float = 30.0,
 ) -> VectorStorePort:
     backend_name = (backend or "in_memory").lower()
     if backend_name == "in_memory":
@@ -26,6 +28,8 @@ def create_vector_store(
             url=url,
             api_key=api_key,
             vector_size=vector_size,
+            distance=distance,
+            timeout=timeout,
         )
     if backend_name == "faiss":
         return FAISSVectorStore(index_path=persist_path, vector_size=vector_size)

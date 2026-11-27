@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request } from "@/api/client.js";
 
 export const authApi = {
     login: (credentials) =>

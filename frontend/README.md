@@ -1,16 +1,42 @@
-# React + Vite
+# Frontend — React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Prism Studio frontend (Developer Hub, Academy Hub, Admin, Overview, Landing).
 
-Currently, two official plugins are available:
+## Commands
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install     # cài dependency
+npm run dev     # dev server (vite)
+npm run build   # build production -> dist/
+npm run lint    # oxlint
+```
 
-## React Compiler
+## Cấu trúc `src/`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+src/
+├── main.jsx              # entry: mount App + style toàn cục
+├── app/                  # App.jsx (routes) + providers (Theme/Toast)
+├── api/                  # client.js (request/buildQuery/unwrap) + 1 file mỗi domain
+├── components/
+│   ├── ui/               # primitives dùng chung: Modal, Spinner, EmptyState, SearchPill
+│   ├── layout/           # khung app: AppShell, SidebarRail, TopBar
+│   └── <domain>/         # breadcrumb, canvas, document-icon, logo, selector, theme, three, toast
+├── features/             # mỗi khu vực nghiệp vụ một thư mục
+│   ├── developer-hub/    #   layout/, modals/, home/, projects/, tasks/, conversations/, settings/
+│   ├── academy-hub/      #   layout/, home/, courses/, documents/, quizzes/, tools/, ...
+│   ├── admin/  auth/  landing/  overview/  profile/
+├── hooks/                # useAsyncData (fetch + loading/error/reload), useSession
+├── lib/                  # session.js (localStorage), validators.js
+├── styles/               # tokens.css (design token) → base.css → primitives.css → shared.css
+└── assets/               # icon định dạng file
+```
 
-## Expanding the Oxlint configuration
+## Quy ước
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- **Import tuyệt đối**: luôn dùng alias `@/...` (map tới `src/`), không dùng `../../..`.
+- **Gọi API**: mọi thứ đi qua `@/api` (client tự gắn Bearer token, `buildQuery` dựng query, `unwrap` bóc envelope).
+- **Tải dữ liệu**: dùng `useAsyncData(loader, deps, options)` thay cho `useEffect` + `setLoading/setError` tự viết.
+- **Modal**: dùng `@/components/ui/Modal` (overlay, header, footer, ESC, khoá scroll) — không tự dựng overlay.
+- **Điều hướng**: hub dùng `SidebarRail` + `TopBar`; mỗi hub chỉ khai báo `nav.js` (id/label/icon).
+- **CSS**: token nằm ở `styles/tokens.css`; block nào trùng ở ≥2 feature thì đưa vào `styles/shared.css`; style riêng đặt cạnh component.

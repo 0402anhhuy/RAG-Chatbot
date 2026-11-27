@@ -1,6 +1,7 @@
 package com.knowledgehub.controller;
 
 import com.knowledgehub.dto.request.LoginRequest;
+import com.knowledgehub.dto.request.RefreshTokenRequest;
 import com.knowledgehub.dto.request.RegisterRequest;
 import com.knowledgehub.dto.request.SendOtpRequest;
 import com.knowledgehub.dto.request.VerifyOtpRequest;
@@ -59,6 +60,16 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
                 .success(true)
                 .message("Login successful")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        AuthResponse response = authService.refresh(request);
+        return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
+                .success(true)
+                .message("Token refreshed successfully")
                 .data(response)
                 .build());
     }

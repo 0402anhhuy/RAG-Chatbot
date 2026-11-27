@@ -1,0 +1,28 @@
+version: 1
+updated_at: "2026-11-26"
+providers:
+  huggingface:
+    via: hf-router
+    free_tier: promotional_only
+    notes: >-
+      Free accounts have no monthly Inference Providers credits. PRO gets
+      $2/month and Team/Enterprise get $2 per seat per month.
+    source_url: "https://huggingface.co/docs/inference-providers/pricing"
+    verified_at: "2026-11-26"
+  groq:
+    via: direct-provider
+    free_tier: known
+    notes: >-
+      Free plan is rate-limited per organization and requires a Groq API key.
+      These limits do not apply when calling through the HF router.
+    source_url: "https://console.groq.com/docs/rate-limits"
+    verified_at: "2026-11-26"
+  cerebras:
+    via: direct-provider
+    free_tier: trial
+    notes: >-
+      New accounts get $5 in trial credits for 30 days. Cerebras does not offer
+      a permanently free tier; this does not apply through the HF router.
+    source_url: "https://inference-docs.cerebras.ai/support/rate-limits"
+    verified_at: "2026-11-26"
+promotions: []

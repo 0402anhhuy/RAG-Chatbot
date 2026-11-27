@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
 
 // Thành viên của một project (tab "Project Members")
 export const projectMemberApi = {
@@ -6,10 +6,9 @@ export const projectMemberApi = {
 
     // Tài khoản có thể thêm vào project (BE đã loại những người đã là member)
     searchCandidates: (projectId, search) => {
-        const params = new URLSearchParams();
-        if (search) params.set("search", search);
-        const query = params.toString();
-        return request(`/projects/${projectId}/members/candidates${query ? `?${query}` : ""}`);
+        return request(`/projects/${projectId}/members/candidates${buildQuery({
+            search: search,
+        })}`);
     },
 
     add: (projectId, member) =>

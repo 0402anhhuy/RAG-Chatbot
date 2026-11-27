@@ -1,17 +1,16 @@
-import { request } from "./client";
-import { API_BASE_URL } from "./config";
+import { buildQuery, request } from "@/api/client.js";
+import { API_BASE_URL } from "@/api/config.js";
 
 // Khóa học của Academy Hub. Tài liệu học tập nằm trong course.materials
 // (BE lấy từ documents cùng workspace có courseCode trùng mã khóa học).
 export const courseApi = {
     list: ({ ownerId, workspaceId, status, search } = {}) => {
-        const params = new URLSearchParams();
-        if (ownerId) params.set("ownerId", ownerId);
-        if (workspaceId) params.set("workspaceId", workspaceId);
-        if (status) params.set("status", status);
-        if (search) params.set("search", search);
-        const query = params.toString();
-        return request(`/courses${query ? `?${query}` : ""}`);
+        return request(`/courses${buildQuery({
+            ownerId: ownerId,
+            workspaceId: workspaceId,
+            status: status,
+            search: search,
+        })}`);
     },
 
     getById: (courseId) => request(`/courses/${courseId}`),

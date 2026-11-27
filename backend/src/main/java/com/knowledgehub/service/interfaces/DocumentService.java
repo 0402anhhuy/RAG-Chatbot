@@ -13,6 +13,8 @@ import java.util.UUID;
 
 public interface DocumentService {
     DocumentResponse upload(MultipartFile file, UUID workspaceId, String courseCode) throws IOException;
+
+    DocumentResponse upload(MultipartFile file, UUID workspaceId, String courseCode, UUID userId) throws IOException;
     DocumentResponse create(DocumentCreateRequest request, UUID workspaceId);
     DocumentResponse getById(UUID id);
     List<DocumentResponse> getByWorkspace(UUID workspaceId, String courseCode, String fileType);
@@ -20,4 +22,6 @@ public interface DocumentService {
     Resource loadAsResource(UUID id);
     DocumentResponse update(UUID id, DocumentUpdateRequest changes);
     void delete(UUID id);
+
+    void delete(UUID id, UUID userId);
 }

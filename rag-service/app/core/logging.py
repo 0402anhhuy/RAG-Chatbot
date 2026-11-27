@@ -61,7 +61,7 @@ def setup_logging(level: str = "INFO", log_format: str = "json") -> None:
     root.handlers[:] = [existing for existing in root.handlers if not getattr(existing, "_rag_service_handler", False)]
     root.addHandler(handler)
     root.setLevel(level.upper())
-    for logger_name in ("httpx", "httpcore", "aiosqlite", "redis"):
+    for logger_name in ("httpx", "httpcore", "redis"):
         logging.getLogger(logger_name).setLevel(logging.WARNING)
 
 

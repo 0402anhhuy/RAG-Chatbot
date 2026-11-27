@@ -1,5 +1,6 @@
 package com.knowledgehub.entity;
 
+import com.knowledgehub.security.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,8 +45,15 @@ public class ProjectLlmCredential {
     @Column(name = "endpoint_code", length = 50)
     private String endpointCode;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "api_key", nullable = false, columnDefinition = "TEXT")
     private String apiKey;
+
+    /**
+     * Model mặc định của provider; null/blank → catalog default.
+     */
+    @Column(length = 120)
+    private String model;
 
     /**
      * Kết quả lần kiểm tra key gần nhất (null = chưa kiểm tra).

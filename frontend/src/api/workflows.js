@@ -1,12 +1,11 @@
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
 
 // Workflow template của một project (tab Workflows)
 export const workflowApi = {
     list: (projectId, type) => {
-        const params = new URLSearchParams();
-        if (type) params.set("type", type);
-        const query = params.toString();
-        return request(`/projects/${projectId}/workflows${query ? `?${query}` : ""}`);
+        return request(`/projects/${projectId}/workflows${buildQuery({
+            type: type,
+        })}`);
     },
 
     getById: (projectId, workflowId) => request(`/projects/${projectId}/workflows/${workflowId}`),

@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { buildQuery, request } from "@/api/client.js";
 
 // Công cụ học tập của tab Tools (Academy Hub). Catalog, tài liệu nguồn và kết quả
 // chạy đều do BE trả từ dữ liệu thật — FE chỉ hiển thị.
@@ -8,11 +8,10 @@ export const academyToolApi = {
 
     // Tài liệu có thể chọn làm nguồn cho một tool
     context: (userId, toolId, workspaceId) => {
-        const params = new URLSearchParams();
-        if (workspaceId) params.set("workspaceId", workspaceId);
-        const query = params.toString();
         return request(
-            `/users/${userId}/academy-tools/${toolId}/context${query ? `?${query}` : ""}`,
+            `/users/${userId}/academy-tools/${toolId}/context${buildQuery({
+            workspaceId: workspaceId,
+        })}`,
         );
     },
 

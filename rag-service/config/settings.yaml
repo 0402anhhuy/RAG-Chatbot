@@ -9,11 +9,16 @@ app:
     - http://localhost:3000
     - http://localhost:5173
   request_id_header: X-Request-ID
+  request_timeout_seconds: 120
+  max_concurrent_requests: 8
 
 security:
   enabled: true
   api_key: ""
   api_keys: {}
+  require_principal: false
+  principal_header: X-User-Id
+  principal_workspaces_header: X-User-Workspaces
 
 rate_limit:
   enabled: false
@@ -28,32 +33,41 @@ embedding:
   dimension: 384
   device: cpu
   normalize: true
+  cache_enabled: true
+  cache_path: ./data/embedding_cache.sqlite3
 
 vector_store:
   backend: in_memory
   collection: documents
   url: http://localhost:6333
-  host: localhost
-  port: 6333
+  api_key: ""
   persist_path: ./data/vector_store
   vector_size: null
   distance: cosine
+  timeout_seconds: 30
 
 retrieval:
   top_k_dense: 10
   top_k_sparse: 10
   rerank_top_k: 4
   score_threshold: 0.65
-  fusion_strategy: rrf
+  fusion_strategy: weighted
   rrf_k: 60
   dense_weight: 0.7
   sparse_weight: 0.3
   chunk_size: 600
   chunk_overlap: 100
+  chunk_unit: tokens
+  chunk_size_tokens: 512
+  chunk_overlap_tokens: 64
+  min_chunk_tokens: 24
+  index_version: chunk-v3
 
 bm25:
   persist_path: ./data/bm25_index.jsonl
   rebuild_on_boot: true
+  strip_diacritics: false
+  expand_compounds: true
 
 llm:
   provider: mock
@@ -63,7 +77,14 @@ llm:
   request_timeout: 60
   max_retries: 2
   retry_backoff_ms: 500
-  max_context_chars: 12000
+
+provider_config:
+  enabled: true
+  base_url: http://localhost:8080
+  internal_token: local-development-rag-internal-token-32
+  cache_ttl_seconds: 60
+  timeout_seconds: 5
+  failure_cooldown_seconds: 30
 
 prompts:
   system_qa: |
@@ -84,13 +105,20 @@ prompts:
 
 graph:
   max_rewrite_retries: 2
-  grade_batch: true
   context_max_chars: 12000
   truncation_strategy: tail
+  skip_rewrite_max_words: 8
+  rewrite_cache_ttl_seconds: 600
+  grade_batch: false
+  grade_batch_size: 5
 
 reranker:
   provider: none
-  top_k: 4
+  model: BAAI/bge-reranker-v2-m3
+  api_key: ""
+  top_n: 30
+  timeout_seconds: 20
+  fallback_provider: simple
 
 ingest:
   worker_timeout_seconds: 300

@@ -35,7 +35,7 @@ public class AcademyDocumentController {
             @RequestParam(value = "courseCode", defaultValue = "GEN") String courseCode) throws IOException {
         workspaceAccess.requireReadAccess(user.getId(), workspaceId, List.of());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(documentService.upload(file, workspaceId, courseCode));
+                .body(documentService.upload(file, workspaceId, courseCode, user.getId()));
     }
 
     @PostMapping
@@ -105,7 +105,7 @@ public class AcademyDocumentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@AuthenticationPrincipal User user, @PathVariable UUID id) {
         requireDocumentAccess(user, id);
-        documentService.delete(id);
+        documentService.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 

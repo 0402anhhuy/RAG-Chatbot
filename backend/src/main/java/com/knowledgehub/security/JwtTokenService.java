@@ -23,14 +23,18 @@ public class JwtTokenService {
     private static final String JWT_HEADER = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final TypeReference<Map<String, Object>> JSON_OBJECT = new TypeReference<>() {};
+    private static final String TOKEN_TYPE_ACCESS = "access";
+    private static final String TOKEN_TYPE_REFRESH = "refresh";
 
     private final byte[] secret;
     private final Duration lifetime;
+    private final Duration refreshLifetime;
     private final ObjectMapper objectMapper;
 
     public JwtTokenService(
             @Value("${JWT_SECRET:}") String secret,
-            @Value("${JWT_TTL:PT1H}") Duration lifetime,
+            @Value("${JWT_TTL:PT168H}") Duration lifetime,
+            @Value("${JWT_REFRESH_TTL:P30D}") Duration refreshLifetime,
             ObjectMapper objectMapper) {
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
         if (this.secret.length < 32) {
@@ -39,25 +43,51 @@ public class JwtTokenService {
         if (lifetime.isZero() || lifetime.isNegative()) {
             throw new IllegalStateException("JWT_TTL must be a positive duration");
         }
-        if (lifetime.compareTo(Duration.ofHours(24)) > 0) {
-            throw new IllegalStateException("JWT_TTL must not exceed 24 hours");
+        if (lifetime.compareTo(Duration.ofDays(30)) > 0) {
+            throw new IllegalStateException("JWT_TTL must not exceed 30 days");
+        }
+        if (refreshLifetime.isZero() || refreshLifetime.isNegative()) {
+            throw new IllegalStateException("JWT_REFRESH_TTL must be a positive duration");
+        }
+        if (refreshLifetime.compareTo(Duration.ofDays(365)) > 0) {
+            throw new IllegalStateException("JWT_REFRESH_TTL must not exceed 365 days");
         }
         this.lifetime = lifetime;
+        this.refreshLifetime = refreshLifetime;
         this.objectMapper = objectMapper;
     }
 
     public String issue(User user) {
+        return issue(user, lifetime, TOKEN_TYPE_ACCESS);
+    }
+
+    /** Sinh refresh token (sống lâu hơn access token) để client tự gia hạn phiên. */
+    public String issueRefresh(User user) {
+        return issue(user, refreshLifetime, TOKEN_TYPE_REFRESH);
+    }
+
+    private String issue(User user, Duration ttl, String type) {
         Instant issuedAt = Instant.now();
         Map<String, Object> claims = Map.of(
                 "sub", user.getId().toString(),
                 "iat", issuedAt.getEpochSecond(),
-                "exp", issuedAt.plus(lifetime).getEpochSecond());
+                "exp", issuedAt.plus(ttl).getEpochSecond(),
+                "type", type);
         String payload = encodeJson(claims);
         String unsignedToken = JWT_HEADER + "." + payload;
         return unsignedToken + "." + Base64.getUrlEncoder().withoutPadding().encodeToString(sign(unsignedToken));
     }
 
     public UUID verify(String token) {
+        return verify(token, TOKEN_TYPE_ACCESS);
+    }
+
+    /** Xác thực refresh token (từ chối access token dùng sai mục đích). */
+    public UUID verifyRefresh(String token) {
+        return verify(token, TOKEN_TYPE_REFRESH);
+    }
+
+    private UUID verify(String token, String expectedType) {
         if (token == null || token.length() > 8192) {
             throw new IllegalArgumentException("Invalid bearer token");
         }
@@ -86,6 +116,11 @@ public class JwtTokenService {
         Object expiry = claims.get("exp");
         if (!(subject instanceof String userId) || !(expiry instanceof Number expiration)) {
             throw new IllegalArgumentException("Invalid bearer token claims");
+        }
+        // Access token cũ (phát hành trước khi có refresh) không có claim "type" -> coi như access.
+        Object type = claims.get("type");
+        if (type != null && !expectedType.equals(type)) {
+            throw new IllegalArgumentException("Invalid bearer token type");
         }
         if (Instant.now().getEpochSecond() >= expiration.longValue()) {
             throw new IllegalArgumentException("Bearer token has expired");

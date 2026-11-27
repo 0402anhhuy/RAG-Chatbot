@@ -1,0 +1,577 @@
+/* ==========================================================================
+   Shared UI primitives used by more than one feature (anti-duplication).
+   Kept tiny on purpose — feature-specific styles live next to their component.
+   ========================================================================== */
+
+/* Spinner xoay tiện ích — trước đây chỉ khai báo trong Conversation.css nhưng
+   được dùng ở navbar, tool workspaces và documents nên nhiều nơi bị mất hiệu ứng. */
+.ui-spin-inline,
+.ws-spinner {
+    animation: ui-spin 0.8s linear infinite;
+}
+
+@keyframes ui-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---- Blocks consolidated from feature CSS (identical copies) ---- */
+.actions-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-rec-intro {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+    line-height: 1.45;
+}
+
+.banner-title-col h2 {
+    margin: 0 0 2px;
+    font-size: 1.28rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.banner-title-col span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.btn-action-glyph {
+    background: transparent;
+    border: none;
+    color: var(--text-faint);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    transition: all 0.12s ease;
+}
+
+.btn-action-glyph:hover {
+    color: var(--text-primary);
+    background-color: var(--surface-sunken-2);
+}
+
+.btn-card-more-menu {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    transition: background-color 0.12s ease;
+}
+
+.btn-card-more-menu:hover {
+    background-color: var(--surface-sunken-2);
+    color: var(--text-primary);
+}
+
+.btn-card-remove:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.btn-card-remove:hover {
+    background-color: var(--danger-soft);
+    color: var(--danger);
+}
+
+.btn-continue-edu {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background-color: var(--success);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.btn-continue-edu:hover {
+    background-color: var(--success-strong);
+    box-shadow: 0 4px 12px rgba(var(--success-rgb), 0.2);
+}
+
+.btn-filter-pill {
+    padding: 5px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 999px;;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-filter-pill.active {
+    background-color: var(--solid-invert-bg);
+    color: var(--solid-invert-text);
+    font-weight: 600;
+}
+
+.btn-filter-pill:hover {
+    color: var(--text-primary);
+}
+
+.btn-footer-close-pill:hover {
+    background-color: var(--surface-sunken);
+}
+
+.btn-reload-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    transition: all 0.15s ease;
+}
+
+.btn-reload-icon:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-reload-icon:hover:not(:disabled) {
+    background-color: var(--border);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--surface-sunken);
+}
+
+.btn-text-link {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.12s ease;
+    padding: 0;
+}
+
+.btn-text-link:hover {
+    color: var(--success);
+}
+
+.course-meta-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.course-next-row small {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.course-progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--surface-sunken-2);
+    border-radius: 10px;
+}
+
+.course-progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.course-title-unit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.course-title-unit code {
+    font-size: 0.7rem;
+    font-weight: 700;
+    background-color: var(--success-soft);
+    color: var(--success);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+}
+
+.course-title-unit strong {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.courses-progress-card,
+.ai-recs-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.02);
+    min-height: 180px;
+    box-sizing: border-box;
+}
+
+.drill-action-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.drill-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--surface-inset);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.drill-box small {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.drill-box strong {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.drill-box:hover {
+    border-color: var(--success);
+    background-color: var(--success-soft);
+    transform: translateY(-1px);
+}
+
+.edu-home-bounds {
+    max-width: 1280px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 30px;
+    box-sizing: border-box;
+}
+
+.edu-kpi-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 104px;
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.02);
+    box-sizing: border-box;
+    transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.edu-kpi-card .kpi-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.edu-kpi-card .kpi-icon-muted {
+    color: var(--text-faint);
+}
+
+.edu-kpi-card .kpi-label {
+    font-size: 0.76rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.edu-kpi-card .kpi-sub-note {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+}
+
+.edu-kpi-card .kpi-value {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.edu-kpi-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.05);
+}
+
+.edu-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.edu-resume-hero {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.03);
+    box-sizing: border-box;
+}
+
+.edu-resume-hero .resume-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.edu-resume-hero .resume-copy h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edu-resume-hero .resume-copy p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edu-resume-hero .resume-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--success);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.edu-resume-hero .resume-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background-color: var(--success-soft);
+    color: var(--success);
+    border: 1px solid var(--success-border);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.edu-split-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.field-title-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.filter-pill-switch-group {
+    display: flex;
+    align-items: center;
+    background-color: var(--surface-sunken-2);
+    padding: 3px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+.filter-select-pill {
+    padding: 6px 16px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    outline: none;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.filter-select-pill:hover {
+    border-color: var(--text-faint);
+}
+
+.kanban-modal-selector .custom-select-container {
+    display: block;
+    width: 100%;
+}
+
+.members-spin {
+    animation: membersSpin 0.9s linear infinite;
+}
+
+.progress-bar-track {
+    width: 100%;
+    height: 6px;
+    background-color: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--success);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.progress-percent {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.resume-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.resume-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+    flex: 1;
+}
+
+.search-glyph-muted {
+    color: var(--text-faint);
+    flex-shrink: 0;
+}
+
+.search-pill-container {
+    width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 6px 14px;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+
+.search-pill-container input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.78rem;
+    color: var(--text-primary);
+    width: 100%;
+}
+
+.search-pill-container:focus-within {
+    border-color: var(--success);
+}
+
+.section-empty-feedback {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 8px 0;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--surface-sunken-2);
+}
+
+.section-title-row strong {
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.stripe-amber {
+    height: 14px;
+    background-color: var(--warning);
+}
+
+.stripe-blue {
+    height: 20px;
+    background-color: var(--accent);
+}
+
+.stripe-emerald {
+    height: 14px;
+    background-color: var(--success-bright);
+}
+
+.td-actions {
+    text-align: right;
+}
+
+.td-project span {
+    color: var(--text-tertiary);
+}
+
+.th-actions {
+    text-align: right;
+}
+
+.workflows-spin {
+    animation: workflowsSpin 0.9s linear infinite;
+}
+

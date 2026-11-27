@@ -10,15 +10,17 @@ services:
       APP__PORT: 8000
       APP__LOG_LEVEL: INFO
       APP__LOG_FORMAT: json
-      DATABASE__PATH: /app/data/app.db
       VECTOR_STORE__BACKEND: in_memory
       VECTOR_STORE__PERSIST_PATH: /app/data/vector_store
+      EMBEDDING__CACHE_PATH: /app/data/embedding_cache.sqlite3
       BM25__PERSIST_PATH: /app/data/bm25_index.jsonl
-      INGEST__QUEUE_PATH: /app/data/ingest_queue.db
       RATE_LIMIT__ENABLED: "false"
       SECURITY__ENABLED: "true"
       SECURITY__API_KEY: ${RAG_SERVICE_API_KEY:-local-development-rag-service-key-32}
       LLM__PROVIDER: mock
+      PROVIDER_CONFIG__ENABLED: "true"
+      PROVIDER_CONFIG__BASE_URL: http://host.docker.internal:8080
+      PROVIDER_CONFIG__INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-local-development-rag-internal-token-32}
       EMBEDDING__PROVIDER: dummy
     ports:
       - "8001:8000"

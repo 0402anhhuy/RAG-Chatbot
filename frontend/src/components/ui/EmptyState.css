@@ -1,0 +1,32 @@
+.ui-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.ui-empty-icon {
+    color: var(--text-faint);
+}
+
+.ui-empty-state.tone-error .ui-empty-icon {
+    color: var(--danger);
+}
+
+.ui-empty-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.ui-empty-desc {
+    margin: 0;
+    max-width: 420px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}

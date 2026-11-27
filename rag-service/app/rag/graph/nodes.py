@@ -67,17 +67,45 @@ def _grade_response(payload: str) -> bool:
     return bool(score_value)
 
 
+def _parse_batch_grades(payload: str, expected: int) -> list[bool] | None:
+    cleaned = payload.strip()
+    start = cleaned.find("[")
+    if start >= 0:
+        try:
+            parsed, _ = json.JSONDecoder().raw_decode(cleaned[start:])
+            if isinstance(parsed, list) and len(parsed) == expected:
+                return [bool(item) if not isinstance(item, str) else item.lower() == "yes" for item in parsed]
+        except json.JSONDecodeError:
+            pass
+    return None
+
+
 def grade_documents(
     state: RAGState,
     llm: ChatModel,
     *,
     prompt_template: str,
     max_batch_size: int | None = None,
+    batch: bool = False,
 ) -> RAGState:
     """Keep only the snippets the model considers useful for the question."""
     candidates = list(state.reranked_results or state.retrieval_results)
     if max_batch_size is not None:
         candidates = candidates[:max_batch_size]
+
+    if batch and len(candidates) > 1:
+        batch_prompt = (
+            "Decide whether each numbered snippet is relevant to answering the question. "
+            "Return ONLY a JSON array of booleans in the same order, e.g. [true, false].\n\n"
+            f"Question: {state.rewritten_query or state.question}\n\n"
+            + "\n\n".join(f"[{index}] {result.content}" for index, result in enumerate(candidates))
+        )
+        decisions = _parse_batch_grades(llm.complete(batch_prompt), len(candidates))
+        if decisions is not None:
+            state.relevant_results = [
+                result for result, keep in zip(candidates, decisions, strict=True) if keep
+            ]
+            return state
 
     state.relevant_results = []
     for result in candidates:
@@ -121,6 +149,23 @@ def build_citations(results: list[SearchResult]) -> list[Citation]:
     return citations
 
 
+def build_answer_prompt(
+    state: RAGState,
+    *,
+    system_template: str,
+    max_context_chars: int = 12000,
+    truncation_strategy: str = "tail",
+) -> str:
+    """Build and store the truncated context, returning the system prompt."""
+    context_parts = [f"[{index + 1}] {result.content}" for index, result in enumerate(state.relevant_results)]
+    state.context = _truncate_context(
+        "\n".join(context_parts),
+        max_chars=max_context_chars,
+        strategy=truncation_strategy,
+    )
+    return system_template.format(context=state.context)
+
+
 def generate_answer(
     state: RAGState,
     llm: ChatModel,
@@ -130,13 +175,12 @@ def generate_answer(
     truncation_strategy: str = "tail",
 ) -> RAGState:
     """Create a final answer from the relevant snippets and attach citations."""
-    context_parts = [f"[{index + 1}] {result.content}" for index, result in enumerate(state.relevant_results)]
-    state.context = _truncate_context(
-        "\n".join(context_parts),
-        max_chars=max_context_chars,
-        strategy=truncation_strategy,
+    system_prompt = build_answer_prompt(
+        state,
+        system_template=system_template,
+        max_context_chars=max_context_chars,
+        truncation_strategy=truncation_strategy,
     )
-    system_prompt = system_template.format(context=state.context)
     state.answer = llm.complete(
         state.rewritten_query or state.question,
         system_prompt=system_prompt,

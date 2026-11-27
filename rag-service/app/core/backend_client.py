@@ -131,12 +131,11 @@ class BackendRegistry:
         document_ids: Sequence[str] | None = None,
         limit: int | None = None,
     ) -> list[dict[str, Any]]:
-        params: list[tuple[str, str]] = []
+        params: dict[str, Any] = {}
         if limit is not None:
-            params.append(("limit", str(limit)))
+            params["limit"] = str(limit)
         if document_ids:
-            params.extend(("documentIds", document_id)
-                          for document_id in document_ids)
+            params["documentIds"] = list(document_ids)
         return self._list(self.client.get("/api/rag/chunks", params=params))
 
     def count_chunks(self, document_id: str) -> int:

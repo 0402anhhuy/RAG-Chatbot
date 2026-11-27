@@ -8,6 +8,8 @@ public record UserLlmProviderUpsertRequest(
         @Size(max = 500)
         String apiKey,
         @Size(max = 50)
-        String endpointCode) {
+        String endpointCode,
+        @Size(max = 120)
+        String model) {
 
 }

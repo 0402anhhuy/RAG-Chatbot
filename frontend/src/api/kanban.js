@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request } from "@/api/client.js";
 
 // Bảng Kanban của một project: 4 cột (kèm task) + danh sách member để filter/assign.
 export const kanbanApi = {

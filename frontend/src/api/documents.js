@@ -1,13 +1,13 @@
-import { request, requestBlob } from "./client";
+import { buildQuery, request, requestBlob } from "@/api/client.js";
 
 export const documentApi = {
     getByWorkspace: (workspaceId, { courseCode, fileType, status } = {}) => {
-        const params = new URLSearchParams({ workspaceId });
-        if (courseCode && courseCode !== "all") params.append("courseCode", courseCode);
-        if (fileType && fileType !== "all") params.append("fileType", fileType);
-        if (status) params.append("status", status);
-
-        return request(`/documents?${params.toString()}`);
+        return request(`/documents${buildQuery({
+            workspaceId: workspaceId,
+            courseCode: courseCode && courseCode !== "all" ? courseCode : undefined,
+            fileType: fileType && fileType !== "all" ? fileType : undefined,
+            status: status,
+        })}`);
     },
 
     getById: (id) => request(`/documents/${id}`),

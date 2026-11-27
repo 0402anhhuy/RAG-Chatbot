@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request } from "@/api/client.js";
 
 // Tab Settings của một project: thông tin chung, LLM provider + budget và
 // danh sách task đã archive. Toàn bộ số liệu do BE trả về.

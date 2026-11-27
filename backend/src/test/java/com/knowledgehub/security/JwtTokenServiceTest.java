@@ -33,6 +33,22 @@ class JwtTokenServiceTest {
     }
 
     @Test
+    void acceptsSevenDayLifetime() {
+        JwtTokenService service = new JwtTokenService(SECRET, Duration.ofDays(7), new ObjectMapper());
+        User user = new User();
+        user.setId(UUID.randomUUID());
+
+        assertEquals(user.getId(), service.verify(service.issue(user)));
+    }
+
+    @Test
+    void rejectsLifetimeAboveThirtyDays() {
+        assertThrows(
+                IllegalStateException.class,
+                () -> new JwtTokenService(SECRET, Duration.ofDays(31), new ObjectMapper()));
+    }
+
+    @Test
     void rejectsWeakSigningSecret() {
         assertThrows(
                 IllegalStateException.class,

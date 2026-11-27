@@ -1,6 +1,7 @@
 package com.knowledgehub.config;
 
 import com.knowledgehub.security.JwtAuthenticationFilter;
+import com.knowledgehub.security.RagServiceApiKeyFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -19,7 +20,8 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            RagServiceApiKeyFilter ragServiceApiKeyFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
@@ -29,13 +31,21 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
+                                "/api/auth/refresh",
                                 "/api/auth/send-otp",
                                 "/api/auth/verify-otp",
                                 "/api/health",
-                                "/error")
+                                "/error",
+                                "/api/internal/**",
+                                "/api/rag/documents/**",
+                                "/api/rag/documents",
+                                "/api/rag/chunks",
+                                "/api/rag/document-context",
+                                "/api/rag/ingest/**")
                         .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
+                .addFilterBefore(ragServiceApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
