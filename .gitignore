@@ -21,3 +21,4 @@ frontend/.prettierrc
 */target
 backend/src/main/resources/application.properties
 .settings/
+rag-service/docs
